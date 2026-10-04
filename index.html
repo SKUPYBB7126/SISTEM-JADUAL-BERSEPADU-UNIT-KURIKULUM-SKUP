@@ -2136,30 +2136,38 @@
       }).join('');
     }
 
-    function updateGantiAndBadge(idx, value) {
+     function updateGantiAndBadge(idx, value) {
       cadanganGanti[idx].guruGanti = value;
       
-      // KOD BAHARU: KIRA SEMULA SEMUA BEBAN MASA TERLEBIH DAHULU (Termasuk yang baru dipilih)
+      // 1. KIRA SEMULA KESELURUHAN BEBAN MASA (TERKINI) UNTUK SEMUA CALON DI SEMUA BARIS
       cadanganGanti.forEach(c => {
         c.candidatesWithWorkload.forEach(cand => {
            cand.workload = calculateTeacherWorkload(cand.name, c.hari);
         });
       });
 
-      // SELEPAS SIAP KIRA, BARU KITA PAPARKAN DI LENCANA (BADGE) SUPAYA MATEMATIK TEPAT 100%
-      const selectedCand = cadanganGanti[idx].candidatesWithWorkload.find(c => c.name === value);
-      const workload = selectedCand ? selectedCand.workload : 0;
-      const badge = document.getElementById(`badge-${idx}`);
-      const badgeDisplay = value ? workload : '-';
-      
-      if (badge) {
-        badge.textContent = badgeDisplay;
-        badge.className = `workload-badge ${value ? getWorkloadColorClass(workload) : 'bg-gray-300'}`;
-      }
-      
-      // Refresh UI options untuk row yang belum dipilih sahaja
+      // 2. KEMAS KINI VISUAL UI SECARA PUKAL (SERENTAK UNTUK SEMUA BARIS JADUAL)
       cadanganGanti.forEach((c, i) => {
-         if(!c.guruGanti && i !== idx) {
+         
+         // A. Penyegerakan Lencana (Badge)
+         const badge = document.getElementById(`badge-${i}`);
+         if (badge) {
+            if (c.guruGanti) {
+                // Jika baris ini ada guru yang dipilih, tarik nilai beban terkini guru tersebut
+                const selectedCand = c.candidatesWithWorkload.find(cand => cand.name === c.guruGanti);
+                const workload = selectedCand ? selectedCand.workload : 0;
+                badge.textContent = workload;
+                badge.className = `workload-badge ${getWorkloadColorClass(workload)}`;
+            } else {
+                // Kosongkan semula lencana jika tiada guru dipilih
+                badge.textContent = '-';
+                badge.className = 'workload-badge bg-gray-300';
+            }
+         }
+
+         // B. Penyegerakan Pilihan Dropdown (Refresh options)
+         // Sentiasa kemas kini dropdown yang belum dipilih ATAU dropdown yang baru diubah
+         if (!c.guruGanti || i === idx) {
              const sel = document.getElementById(`select-${i}`);
              if(sel) {
                  const currVal = sel.value;
@@ -2174,13 +2182,14 @@
                       ${cand.name}${teksKurungan}
                     </option>`;
                   }).join('');
-                 sel.value = currVal;
+                 sel.value = currVal; // Kekalkan nama guru jika ia adalah baris yang baru dipilih
              }
          }
       });
 
       updateButtonStates();
     }
+
 
      async function simpanJadual() {
       const conflict = hasConflicts();
