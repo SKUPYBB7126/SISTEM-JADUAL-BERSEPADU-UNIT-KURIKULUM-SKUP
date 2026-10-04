@@ -2139,6 +2139,14 @@
     function updateGantiAndBadge(idx, value) {
       cadanganGanti[idx].guruGanti = value;
       
+      // KOD BAHARU: KIRA SEMULA SEMUA BEBAN MASA TERLEBIH DAHULU (Termasuk yang baru dipilih)
+      cadanganGanti.forEach(c => {
+        c.candidatesWithWorkload.forEach(cand => {
+           cand.workload = calculateTeacherWorkload(cand.name, c.hari);
+        });
+      });
+
+      // SELEPAS SIAP KIRA, BARU KITA PAPARKAN DI LENCANA (BADGE) SUPAYA MATEMATIK TEPAT 100%
       const selectedCand = cadanganGanti[idx].candidatesWithWorkload.find(c => c.name === value);
       const workload = selectedCand ? selectedCand.workload : 0;
       const badge = document.getElementById(`badge-${idx}`);
@@ -2148,14 +2156,6 @@
         badge.textContent = badgeDisplay;
         badge.className = `workload-badge ${value ? getWorkloadColorClass(workload) : 'bg-gray-300'}`;
       }
-
-      // KOD BAHARU: Apabila cikgu pilih satu nama, sistem automatik kemas kini beban nama tersebut 
-      // di kotak carian yang lain supaya tidak berlaku pertindihan beban ganti hari yang sama.
-      cadanganGanti.forEach(c => {
-        c.candidatesWithWorkload.forEach(cand => {
-           cand.workload = calculateTeacherWorkload(cand.name, c.hari);
-        });
-      });
       
       // Refresh UI options untuk row yang belum dipilih sahaja
       cadanganGanti.forEach((c, i) => {
