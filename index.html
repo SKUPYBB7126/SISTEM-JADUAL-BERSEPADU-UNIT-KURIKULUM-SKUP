@@ -2136,54 +2136,74 @@
       }).join('');
     }
 
-     function updateGantiAndBadge(idx, value) {
+   function updateGantiAndBadge(idx, value) {
       cadanganGanti[idx].guruGanti = value;
       
-      // 1. KIRA SEMULA KESELURUHAN BEBAN MASA (TERKINI) UNTUK SEMUA CALON DI SEMUA BARIS
-      cadanganGanti.forEach(c => {
+      // 1. KIRA SEMULA KESELURUHAN BEBAN MASA MENGIKUT URUTAN (RUNNING TOTAL DARI ATAS KE BAWAH)
+      cadanganGanti.forEach((c, i) => {
         c.candidatesWithWorkload.forEach(cand => {
-           cand.workload = calculateTeacherWorkload(cand.name, c.hari);
+           // A. Kira beban hakiki (Jadual Asal tanpa kelas ganti hari ini)
+           const hakiki = jadualInduk.filter(j => {
+             const jHari = (j['HARI'] || '').toUpperCase();
+             const jGuru = (j['GURU ASAL'] || j['Guru Asal'] || '').toUpperCase();
+             return jHari === c.hari && jGuru === cand.name.toUpperCase();
+           }).length;
+
+           // B. Kira beban ganti TERKUMPUL dari baris teratas (0) sehingga ke baris ini (i)
+           let gantiTerkumpul = 0;
+           for (let k = 0; k <= i; k++) {
+              if (cadanganGanti[k].hari === c.hari && cadanganGanti[k].guruGanti === cand.name) {
+                 gantiTerkumpul++;
+              }
+           }
+           
+           // C. Kira beban ganti SEBELUM baris ini (0 hingga i-1)
+           let gantiSebelum = 0;
+           for (let k = 0; k < i; k++) {
+              if (cadanganGanti[k].hari === c.hari && cadanganGanti[k].guruGanti === cand.name) {
+                 gantiSebelum++;
+              }
+           }
+
+           // D. Jika dia dipilih di baris ini, lencana tunjuk jumlah TERKUMPUL (Kesan Situasi 1).
+           //    Jika dia belum dipilih (dropdown sahaja), tunjuk jumlah SEBELUM baris ini.
+           cand.workload = (c.guruGanti === cand.name) ? (hakiki + gantiTerkumpul) : (hakiki + gantiSebelum);
         });
       });
 
-      // 2. KEMAS KINI VISUAL UI SECARA PUKAL (SERENTAK UNTUK SEMUA BARIS JADUAL)
+      // 2. KEMAS KINI VISUAL UI SECARA PUKAL UNTUK KESEMUA BARIS (KESAN RANTAIAN / CASCADE)
       cadanganGanti.forEach((c, i) => {
          
-         // A. Penyegerakan Lencana (Badge)
+         // A. Kemas kini Lencana (Badge)
          const badge = document.getElementById(`badge-${i}`);
          if (badge) {
             if (c.guruGanti) {
-                // Jika baris ini ada guru yang dipilih, tarik nilai beban terkini guru tersebut
                 const selectedCand = c.candidatesWithWorkload.find(cand => cand.name === c.guruGanti);
                 const workload = selectedCand ? selectedCand.workload : 0;
                 badge.textContent = workload;
                 badge.className = `workload-badge ${getWorkloadColorClass(workload)}`;
             } else {
-                // Kosongkan semula lencana jika tiada guru dipilih
                 badge.textContent = '-';
                 badge.className = 'workload-badge bg-gray-300';
             }
          }
-
-         // B. Penyegerakan Pilihan Dropdown (Refresh options)
-         // Sentiasa kemas kini dropdown yang belum dipilih ATAU dropdown yang baru diubah
-         if (!c.guruGanti || i === idx) {
-             const sel = document.getElementById(`select-${i}`);
-             if(sel) {
-                 const currVal = sel.value;
-                 sel.innerHTML = `<option value="">-- Pilih Guru --</option>` +
-                  c.candidatesWithWorkload.map(cand => {
-                    let infoTambahan = [];
-                    if (cand.isPentadbir) infoTambahan.push('🛡️ Pentadbir');
-                    if (cand.sejarahBulanan > 0) infoTambahan.push(`Rekod: ${cand.sejarahBulanan}x`);
-                    const teksKurungan = infoTambahan.length > 0 ? ` (${infoTambahan.join(' | ')})` : '';
-                    
-                    return `<option value="${cand.name}" data-workload="${cand.workload}">
-                      ${cand.name}${teksKurungan}
-                    </option>`;
-                  }).join('');
-                 sel.value = currVal; // Kekalkan nama guru jika ia adalah baris yang baru dipilih
-             }
+         
+         // B. Kemas kini Dropdown untuk SEMUA baris supaya rantaian tepat jika pengguna memadam guru di atas (Situasi 2)
+         const sel = document.getElementById(`select-${i}`);
+         if (sel) {
+             const currVal = sel.value; // Simpan memori nilai yang sedang dipilih
+             sel.innerHTML = `<option value="">-- Pilih Guru --</option>` +
+              c.candidatesWithWorkload.map(cand => {
+                let infoTambahan = [];
+                if (cand.isPentadbir) infoTambahan.push('🛡️ Pentadbir');
+                if (cand.sejarahBulanan > 0) infoTambahan.push(`Rekod: ${cand.sejarahBulanan}x`);
+                const teksKurungan = infoTambahan.length > 0 ? ` (${infoTambahan.join(' | ')})` : '';
+                
+                return `<option value="${cand.name}" data-workload="${cand.workload}">
+                  ${cand.name}${teksKurungan}
+                </option>`;
+              }).join('');
+             sel.value = currVal; // Kekalkan nilai pilihan
          }
       });
 
