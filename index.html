@@ -865,7 +865,19 @@
         
         if (result.status === "berjaya" && result.data) {
             const data = result.data;
-            const setVal = (id, val) => { if(document.getElementById(id) && val !== undefined) document.getElementById(id).value = val; };
+            
+            // KOD BAHARU: Pembaikian Enjin Pengecaman Masa dari Google Sheets (Auto-Convert ISO String ke HH:mm)
+            const setVal = (id, val) => { 
+                if(document.getElementById(id) && val !== undefined && val !== "") {
+                    let finalVal = String(val);
+                    if (finalVal.includes('T') && finalVal.includes('Z')) {
+                        let d = new Date(finalVal);
+                        finalVal = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+                    }
+                    document.getElementById(id).value = finalVal;
+                }
+            };
+            
             const setCheck = (id, val) => { if(document.getElementById(id)) document.getElementById(id).checked = (val === true || val === 'true' || val === 'TRUE'); };
 
             if (data.fasa1_asas && data.fasa1_asas.length > 1) {
