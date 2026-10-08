@@ -62,49 +62,13 @@
     .bar-chart-bar { flex: 1; height: 12px; border-radius: 6px; position: relative; overflow: hidden; }
     .bar-chart-value { font-size: 11px; font-weight: bold; min-width: 30px; text-align: right; }
     
-    /* Jadual Moden Terapung */
+   /* Jadual Moden Terapung */
     .modern-table { border-collapse: separate; border-spacing: 0 8px; }
     .modern-table tbody tr { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s; border-radius: 8px; }
     .modern-table tbody tr:hover { transform: scale(1.01); box-shadow: 0 4px 10px rgba(0,0,0,0.05); z-index: 10; position: relative; }
     .modern-table td { padding: 12px 16px; border: none; }
     .modern-table td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
     .modern-table td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-  </style>
-   <style>
-    body { box-sizing: border-box; }
-    
-    /* KOD BAHARU: Kecerunan Aurora Dinamik */
-    .aurora-bg {
-        background: linear-gradient(-45deg, #f8fafc, #e0e7ff, #f3e8ff, #dbeafe);
-        background-size: 400% 400%;
-        animation: auroraMove 15s ease infinite;
-    }
-    @keyframes auroraMove {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
-    /* KOD BAHARU: Bebola Cahaya Aurora (Abstrak) */
-    .aurora-blob {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(90px);
-        opacity: 0.6;
-        z-index: 0;
-        animation: floatBlob 20s infinite alternate ease-in-out;
-        pointer-events: none;
-    }
-    .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #c7d2fe; }
-    .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #ddd6fe; animation-delay: -5s; }
-    .blob-3 { top: 30%; left: 40%; width: 45vw; height: 45vw; background: #bae6fd; animation-delay: -10s; }
-    
-    @keyframes floatBlob {
-        0% { transform: translate(0px, 0px) scale(1); }
-        33% { transform: translate(30px, -50px) scale(1.1); }
-        66% { transform: translate(-20px, 20px) scale(0.9); }
-        100% { transform: translate(0px, 0px) scale(1); }
-    }
   </style>
  </head>
  <body class="h-full text-gray-800 aurora-bg overflow-hidden relative">
@@ -693,24 +657,79 @@
 
       <!-- KONTENA HASIL JADUAL (DISOROK SEHINGGA DIJANA) -->
       <div id="f2-hasil-jadual" class="hidden mt-10 pt-10 border-t border-gray-200 fade-in">
-         <div class="bg-white p-6 rounded-2xl shadow-inner border border-gray-200 relative">
-            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase shadow-md">Paparan Pratonton</div>
-            <h2 class="text-xl font-black text-center text-indigo-900 mb-6 uppercase tracking-widest mt-2">Jadual Waktu Persekolahan SK Ulu Pelagus</h2>
-            
-              <!-- Paparan Induk: Tiada lagi butang navigasi. Semua kelas dicetak serentak ke bawah -->
-            <div class="overflow-x-auto rounded-lg border border-gray-300 mt-4" style="scrollbar-width: thin; max-height: 800px;">
-               <table class="w-full text-[10px] md:text-xs border-collapse text-center min-w-[1200px] bg-white shadow-sm">
-                 <thead class="bg-indigo-50 sticky top-0 z-20 shadow-md">
-                     <tr id="jadual-header-masa">
-                        <th class="border border-gray-300 p-2 text-indigo-900 font-black w-20">HARI</th>
-                        <th class="border border-gray-300 p-2 text-indigo-900 font-black w-24">KELAS</th>
-                     </tr>
-                  </thead>
-                  <tbody id="jadual-kelas-tbody">
-                     <!-- Jadual Induk Diisi oleh AI Javascript -->
-                  </tbody>
-               </table>
+          <div class="bg-white p-6 rounded-2xl shadow-inner border border-gray-200 relative">
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase shadow-md">Paparan Pratonton AI</div>
+            <div class="text-center mb-6 mt-2">
+                <h2 id="tajuk-jadual-utama" class="text-lg md:text-xl font-black text-indigo-900 uppercase tracking-widest">JADUAL INDUK WAKTU PERSEKOLAHAN SK ULU PELAGUS 2027</h2>
+                <h3 id="subtajuk-jadual-guru" class="text-sm font-bold text-rose-600 uppercase tracking-widest mt-1 hidden">NAMA GURU</h3>
             </div>
+            
+            <!-- 3 TAB NAVIGASI PINTAR -->
+
+             <div class="flex flex-col md:flex-row gap-2 bg-gray-100 p-2 rounded-2xl mb-4 relative z-10 shadow-inner">
+                <button id="btn-paparan-induk" onclick="tukarPaparanJadual('induk')" class="flex-1 py-3 text-[10px] md:text-xs font-black rounded-xl transition-all shadow-md bg-indigo-600 text-white transform scale-105 z-10"><i class="fa-solid fa-layer-group mr-2"></i> Paparan Induk Keseluruhan</button>
+                <button id="btn-paparan-kelas" onclick="tukarPaparanJadual('kelas')" class="flex-1 py-3 text-[10px] md:text-xs font-bold rounded-xl transition-all hover:bg-emerald-50 text-emerald-700 bg-white border border-emerald-100"><i class="fa-solid fa-chalkboard-user mr-2"></i> Paparan Individu Kelas</button>
+                <button id="btn-paparan-guru" onclick="tukarPaparanJadual('guru')" class="flex-1 py-3 text-[10px] md:text-xs font-bold rounded-xl transition-all hover:bg-rose-50 text-rose-700 bg-white border border-rose-100"><i class="fa-solid fa-user-tie mr-2"></i> Paparan Individu Guru</button>
+            </div>
+
+            <!-- KOD BAHARU: Butang Cetak A4 Melintang Pintar -->
+            <div class="flex justify-center md:justify-end mb-4 relative z-10">
+                <button onclick="cetakJadualAktifA4()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black px-6 py-3 rounded-xl shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-3 text-xs md:text-sm">
+                    <i class="fa-solid fa-print text-lg"></i> CETAK JADUAL A4 (MELINTANG)
+                </button>
+            </div>
+
+            <!-- 1. PAPARAN INDUK (KESELURUHAN) -->
+            <div id="paparan-induk" class="fade-in">
+                <div class="overflow-x-auto rounded-lg border border-gray-300" style="scrollbar-width: thin; max-height: 800px;">
+                   <table class="w-full text-[10px] md:text-xs border-collapse text-center min-w-[1200px] bg-white shadow-sm">
+                     <thead class="bg-indigo-50 sticky top-0 z-20 shadow-md">
+                         <tr id="jadual-header-masa-induk"></tr>
+                      </thead>
+                      <tbody id="jadual-induk-tbody"></tbody>
+                   </table>
+                </div>
+            </div>
+
+            <!-- 2. PAPARAN KELAS INDIVIDU -->
+            <div id="paparan-kelas" class="fade-in hidden">
+                <div data-html2canvas-ignore="true" class="flex items-center gap-3 bg-emerald-50 p-3 rounded-xl border border-emerald-200 mb-4 shadow-sm">
+                    <label class="text-[10px] md:text-xs font-black text-emerald-900 uppercase tracking-widest shrink-0"><i class="fa-solid fa-filter text-emerald-500 mr-2"></i> Pilih Kelas:</label>
+                    <select id="pilih-paparan-kelas" onchange="renderPaparanKelas()" class="flex-1 px-4 py-2 border-2 border-emerald-200 rounded-lg text-xs md:text-sm font-bold text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400 bg-white shadow-sm cursor-pointer"></select>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-gray-300 mb-4" style="scrollbar-width: thin;">
+                   <table class="w-full text-[10px] md:text-xs border-collapse text-center min-w-[1200px] bg-white shadow-sm">
+                     <thead class="bg-emerald-50 sticky top-0 z-20 shadow-md">
+                         <tr id="jadual-header-masa-kelas"></tr>
+                      </thead>
+                      <tbody id="jadual-kelas-tbody"></tbody>
+                   </table>
+                </div>
+                <!-- KOD BAHARU: Petunjuk Guru Untuk Rujukan Murid/Ibu Bapa -->
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-sm page-break-inside-avoid">
+                    <h4 class="text-xs font-black text-gray-700 uppercase tracking-widest mb-3 border-b border-gray-200 pb-2"><i class="fa-solid fa-chalkboard-user mr-2 text-emerald-600"></i> Petunjuk Guru Mata Pelajaran</h4>
+                    <div id="petunjuk-guru-kelas" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <!-- Senarai akan diisi oleh AI JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. PAPARAN GURU INDIVIDU -->
+            <div id="paparan-guru" class="fade-in hidden">
+                <div class="flex items-center gap-3 bg-rose-50 p-3 rounded-xl border border-rose-200 mb-4 shadow-sm">
+                    <label class="text-[10px] md:text-xs font-black text-rose-900 uppercase tracking-widest shrink-0"><i class="fa-solid fa-filter text-rose-500 mr-2"></i> Pilih Guru:</label>
+                    <select id="pilih-paparan-guru" onchange="renderPaparanGuru()" class="flex-1 px-4 py-2 border-2 border-rose-200 rounded-lg text-xs md:text-sm font-bold text-rose-900 outline-none focus:ring-2 focus:ring-rose-400 bg-white shadow-sm cursor-pointer"></select>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-gray-300" style="scrollbar-width: thin;">
+                   <table class="w-full text-[10px] md:text-xs border-collapse text-center min-w-[1200px] bg-white shadow-sm">
+                     <thead class="bg-rose-50 sticky top-0 z-20 shadow-md">
+                         <tr id="jadual-header-masa-guru"></tr>
+                      </thead>
+                      <tbody id="jadual-guru-tbody"></tbody>
+                   </table>
+                </div>
+            </div>
+
          </div>
       </div>
 
@@ -802,7 +821,7 @@
     }
 
     // KOD BAHARU: Pembolehubah Induk & Enjin Pangkalan Data Google Sheet
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuRes72v-uhqb6agJrE_KcQumUmMQ0Q2S2pgzs07afH7OHoUJ69UY9BF2pqwtShvgr/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxec5KgNWUA0ycfYUUQzI5zeHu7mcEID5l8upb2Uu2z4OZTb-cF0KzfJDV25qLQEjSy/exec";
 
    async function fetchDatabase() {
       try {
@@ -837,6 +856,187 @@
       } catch (error) {
         console.error("Gagal menarik data dari Google Sheet:", error);
       }
+    }
+
+   async function fetchFasa1Data() {
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=readFasa1`);
+        const result = await response.json();
+        
+        if (result.status === "berjaya" && result.data) {
+            const data = result.data;
+            const setVal = (id, val) => { if(document.getElementById(id) && val !== undefined) document.getElementById(id).value = val; };
+            const setCheck = (id, val) => { if(document.getElementById(id)) document.getElementById(id).checked = (val === true || val === 'true' || val === 'TRUE'); };
+
+            if (data.fasa1_asas && data.fasa1_asas.length > 1) {
+                data.fasa1_asas.forEach(row => {
+                    let kat = row[0], item = row[1], val = row[2];
+                    if (kat === "Perhimpunan") {
+                        if (item === "Hari") setVal('tetapan-perhimpunan', val);
+                        if (item === "Tamat") setVal('waktu-perhimpunan-tamat', val);
+                    } else if (kat === "Rehat_Biasa") {
+                        if (item === "Mula") setVal('waktu-rehat-mula', val);
+                        if (item === "Tamat") setVal('waktu-rehat-tamat', val);
+                    } else if (kat === "Rehat_Jumaat") {
+                        if (item === "Mula") setVal('waktu-rehat-jum-mula', val);
+                        if (item === "Tamat") setVal('waktu-rehat-jum-tamat', val);
+                    } else if (kat === "Hari_Rehat") {
+                        setCheck('rehat-' + item.toLowerCase(), val);
+                    } else if (kat === "Tasmik_Hari") {
+                        setCheck('tasmik-' + item.toLowerCase(), val);
+                    } else if (kat === "Had_Beban") {
+                        if (item === "GB") { setVal('max-gb', val); hadBebanJawatan.gb = parseInt(val) || 7; }
+                        if (item === "PK") { setVal('max-pk', val); hadBebanJawatan.pk = parseInt(val) || 12; }
+                        if (item === "GAB") { setVal('max-gab', val); hadBebanJawatan.gab = parseInt(val) || 30; }
+                    } else if (kat === "Mula_Sekolah") {
+                        if (item === "Waktu") setVal('waktu-mula-sekolah', val);
+                    }
+                });
+                if(typeof kawalInputRehat === 'function') kawalInputRehat();
+                if(typeof hadkanTasmik === 'function') hadkanTasmik();
+            }
+
+            if (data.fasa1_matriks && data.fasa1_matriks.length > 1) {
+                data.fasa1_matriks.forEach((row, i) => {
+                    if (i === 0) return; 
+                    let hari = row[0];
+                    let t1 = row[2], t2 = row[3], t3 = row[4];
+                    let pfx = hari === 'ISNIN' ? 'isn' : (hari === 'SELASA' ? 'sel' : (hari === 'RABU' ? 'rab' : (hari === 'KHAMIS' ? 'kha' : 'jum')));
+                    setVal(`waktu-${pfx}-t1`, t1);
+                    setVal(`waktu-${pfx}-t2`, t2);
+                    setVal(`waktu-${pfx}-t3`, t3);
+                });
+            }
+
+            if (data.fasa1_subjek && data.fasa1_subjek.length > 1) {
+                let arrT1 = [], arrT2 = [], arrT3 = [];
+                data.fasa1_subjek.forEach((row, i) => {
+                    if (i === 0) return; 
+                    let tahap = row[0].toString();
+                    let nama = row[1];
+                    let waktu = parseInt(row[2]) || 0;
+                    if (tahap === "1") arrT1.push({ nama, waktu });
+                    else if (tahap === "2") arrT2.push({ nama, waktu });
+                    else if (tahap === "3") arrT3.push({ nama, waktu });
+                });
+                if (arrT1.length > 0) arraySubjekTahap1 = arrT1;
+                if (arrT2.length > 0) arraySubjekTahap2 = arrT2;
+                if (arrT3.length > 0) arraySubjekTahap3 = arrT3;
+                renderSubjekFasa1();
+            }
+        }
+      } catch (error) {
+        console.error("Gagal menarik data Fasa 1 dari Google Sheet:", error);
+      }
+    }
+
+    // KOD BAHARU: Sedut Pangkalan Data Fasa 2 (Profil & Jadual)
+    async function fetchFasa2Data() {
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=readFasa2`);
+        const result = await response.json();
+        if (result.status === "berjaya" && result.data) {
+            const data = result.data;
+            
+            if (data.fasa2_profil && data.fasa2_profil.length > 1) {
+                f2_senaraiGuruPenuh = []; 
+                let tempGuruMap = {};
+                data.fasa2_profil.forEach((row, i) => {
+                    if(i===0) return;
+                    let obj = {
+                        kod: row[0], nama: row[1], jawatan: row[2], warna: row[3], maxWaktu: row[4],
+                        totalWaktu: 0, isLebih: false, senaraiTugas: []
+                    };
+                    tempGuruMap[row[0]] = obj;
+                });
+
+                if (data.fasa2_tugas && data.fasa2_tugas.length > 1) {
+                    data.fasa2_tugas.forEach((row, i) => {
+                        if(i===0) return;
+                        let kodG = row[0], kls = row[1].toString(), subj = row[2], bil = parseInt(row[3])||0;
+                        if (tempGuruMap[kodG]) {
+                            tempGuruMap[kodG].senaraiTugas.push({ tahun: kls, subjek: subj, waktu: bil });
+                            tempGuruMap[kodG].totalWaktu += bil;
+                        }
+                    });
+                }
+
+                Object.keys(tempGuruMap).forEach(k => {
+                    let g = tempGuruMap[k];
+                    g.isLebih = (g.maxWaktu !== '-' && g.totalWaktu > parseInt(g.maxWaktu));
+                    f2_senaraiGuruPenuh.push(g);
+                });
+                renderGridGuru();
+            }
+
+            if (data.fasa2_jadual && data.fasa2_jadual.length > 1) {
+                f2_jadualSediaAda = {};
+                f2_senaraiKelasUnik = [];
+                let kelasSet = new Set();
+                data.fasa2_jadual.forEach((row, i) => {
+                    if(i===0) return;
+                    let kls = row[0].toString(), hari = row[1], slotIdx = parseInt(row[2]), subj = row[3], kodG = row[4], warna = row[5];
+                    kelasSet.add(kls);
+                    if (!f2_jadualSediaAda[kls]) {
+                        f2_jadualSediaAda[kls] = {
+                            'ISNIN': new Array(15).fill(null), 'SELASA': new Array(15).fill(null),
+                            'RABU': new Array(15).fill(null), 'KHAMIS': new Array(15).fill(null), 'JUMAAT': new Array(15).fill(null)
+                        };
+                    }
+                    f2_jadualSediaAda[kls][hari][slotIdx] = { subjek: subj, kodGuru: kodG, warna: warna };
+                });
+                f2_senaraiKelasUnik = Array.from(kelasSet).sort();
+                if (f2_senaraiKelasUnik.length > 0) {
+                    document.getElementById('f2-hasil-jadual').classList.remove('hidden');
+                    renderJadualUI();
+                }
+            }
+        }
+      } catch(e) {
+        console.error("Gagal menarik data Fasa 2 dari Google Sheet:", e);
+      }
+    }
+
+    // KOD BAHARU: Simpan Pangkalan Data Fasa 2 (Profil & Jadual) ke Google Sheets secara senyap di latar belakang
+    async function simpanFasa2Database() {
+        let fasa2_profil = [["KOD_GURU", "NAMA_GURU", "JAWATAN", "WARNA_JADUAL", "WAKTU_MAKSIMUM"]];
+        let fasa2_tugas = [["KOD_GURU", "KELAS", "SUBJEK", "BILANGAN_WAKTU"]];
+        
+        f2_senaraiGuruPenuh.forEach(g => {
+            fasa2_profil.push([g.kod, g.nama, g.jawatan, g.warna, g.maxWaktu]);
+            g.senaraiTugas.forEach(t => {
+                fasa2_tugas.push([g.kod, t.tahun, t.subjek, t.waktu]);
+            });
+        });
+
+        let fasa2_jadual = [["KELAS", "HARI", "SLOT_INDEKS", "SUBJEK", "KOD_GURU", "WARNA"]];
+        if (f2_senaraiKelasUnik.length > 0 && Object.keys(f2_jadualSediaAda).length > 0) {
+            f2_senaraiKelasUnik.forEach(kls => {
+                ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hari => {
+                    if(f2_jadualSediaAda[kls] && f2_jadualSediaAda[kls][hari]) {
+                        let slots = f2_jadualSediaAda[kls][hari];
+                        slots.forEach((s, idx) => {
+                            if (s !== null) {
+                                fasa2_jadual.push([kls, hari, idx, s.subjek, s.kodGuru, s.warna]);
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        try {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                body: JSON.stringify({
+                    action: 'saveFasa2',
+                    fasa2_profil: fasa2_profil,
+                    fasa2_tugas: fasa2_tugas,
+                    fasa2_jadual: fasa2_jadual
+                })
+            });
+        } catch(e) { console.error("Ralat rangkaian simpan Fasa 2", e); }
     }
 
     function timeToMinutes(timeStr) {
@@ -1788,6 +1988,12 @@
 
       // KOD BAHARU: Tarik memori tempatan (Data Jadual Fasa 1 & Fasa 2) jika wujud
       muatLocalState();
+      
+      // KOD BAHARU: Tarik Data Fasa 1 dari Google Sheet (Mendominasi storan lokal)
+      await fetchFasa1Data();
+      
+      // KOD BAHARU: Tarik Data Fasa 2 dari Google Sheet (Pangkalan Data Guru & Jadual)
+      await fetchFasa2Data();
 
       const yearSelect = document.getElementById('filter-tahun');
       const deleteYearSelect = document.getElementById('delete-filter-tahun');
@@ -2989,15 +3195,15 @@
         return { c1: capT1, c2: capT2, c3: capT3, t1: jumSubjekT1, t2: jumSubjekT2, t3: jumSubjekT3 };
     }
 
-    // Pendinding Fasa 1 (Halang simpanan jika tidak seimbang)
-    function simpanFasa1() {
+   // Pendinding Fasa 1 (Halang simpanan jika tidak seimbang)
+    async function simpanFasa1() {
        let d = kemaskiniKapasitiLive();
        
        if (d.t1 !== d.c1) { showToast(`RALAT: Peruntukan Subjek Tahap 1 (${d.t1}) tidak seimbang dengan Kapasiti Masa (${d.c1})!`, 'error'); return; }
        if (d.t2 !== d.c2) { showToast(`RALAT: Peruntukan Subjek Tahap 2 (${d.t2}) tidak seimbang dengan Kapasiti Masa (${d.c2})!`, 'error'); return; }
        if (d.t3 !== d.c3) { showToast(`RALAT: Peruntukan Subjek Tahap 3 (${d.t3}) tidak seimbang dengan Kapasiti Masa (${d.c3})!`, 'error'); return; }
 
-       showLoading('Menyimpan Pangkalan Fasa 1...');
+       showLoading('Menyimpan Pangkalan Fasa 1 ke Google Sheet...');
        
        hadBebanJawatan = {
            gb: parseInt(document.getElementById('max-gb').value) || 7,
@@ -3024,13 +3230,74 @@
            if(inputWaktu) s.waktu = parseInt(inputWaktu.value) || 0;
        });
 
-       simpanLocalState(); 
+       simpanLocalState(); // Kekalkan sandaran tempatan untuk Fasa 2
 
-       setTimeout(() => {
+       const val = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
+       const isChecked = (id) => document.getElementById(id) ? document.getElementById(id).checked : false;
+
+       let fasa1_asas = [
+           ["KATEGORI", "ITEM", "NILAI"],
+           ["Perhimpunan", "Hari", val('tetapan-perhimpunan')],
+           ["Perhimpunan", "Tamat", val('waktu-perhimpunan-tamat')],
+           ["Rehat_Biasa", "Mula", val('waktu-rehat-mula')],
+           ["Rehat_Biasa", "Tamat", val('waktu-rehat-tamat')],
+           ["Rehat_Jumaat", "Mula", val('waktu-rehat-jum-mula')],
+           ["Rehat_Jumaat", "Tamat", val('waktu-rehat-jum-tamat')],
+           ["Hari_Rehat", "Isnin", isChecked('rehat-isnin')],
+           ["Hari_Rehat", "Selasa", isChecked('rehat-selasa')],
+           ["Hari_Rehat", "Rabu", isChecked('rehat-rabu')],
+           ["Hari_Rehat", "Khamis", isChecked('rehat-khamis')],
+           ["Hari_Rehat", "Jumaat", isChecked('rehat-jumaat')],
+           ["Tasmik_Hari", "Isnin", isChecked('tasmik-isnin')],
+           ["Tasmik_Hari", "Selasa", isChecked('tasmik-selasa')],
+           ["Tasmik_Hari", "Rabu", isChecked('tasmik-rabu')],
+           ["Tasmik_Hari", "Khamis", isChecked('tasmik-khamis')],
+           ["Tasmik_Hari", "Jumaat", isChecked('tasmik-jumaat')],
+           ["Had_Beban", "GB", val('max-gb')],
+           ["Had_Beban", "PK", val('max-pk')],
+           ["Had_Beban", "GAB", val('max-gab')],
+           ["Mula_Sekolah", "Waktu", val('waktu-mula-sekolah')]
+       ];
+
+       let fasa1_matriks = [
+           ["HARI", "WAKTU_MULA_SEKOLAH", "TAHAP_1", "TAHAP_2", "TAHAP_3"],
+           ["ISNIN", val('waktu-mula-sekolah'), val('waktu-isn-t1'), val('waktu-isn-t2'), val('waktu-isn-t3')],
+           ["SELASA", val('waktu-mula-sekolah'), val('waktu-sel-t1'), val('waktu-sel-t2'), val('waktu-sel-t3')],
+           ["RABU", val('waktu-mula-sekolah'), val('waktu-rab-t1'), val('waktu-rab-t2'), val('waktu-rab-t3')],
+           ["KHAMIS", val('waktu-mula-sekolah'), val('waktu-kha-t1'), val('waktu-kha-t2'), val('waktu-kha-t3')],
+           ["JUMAAT", val('waktu-mula-sekolah'), val('waktu-jum-t1'), val('waktu-jum-t2'), val('waktu-jum-t3')]
+       ];
+
+       let fasa1_subjek = [["TAHAP", "NAMA_SUBJEK", "WAKTU_MINGGUAN"]];
+       arraySubjekTahap1.forEach(s => fasa1_subjek.push(["1", s.nama, s.waktu]));
+       arraySubjekTahap2.forEach(s => fasa1_subjek.push(["2", s.nama, s.waktu]));
+       arraySubjekTahap3.forEach(s => fasa1_subjek.push(["3", s.nama, s.waktu]));
+
+       try {
+           const response = await fetch(SCRIPT_URL, {
+               method: 'POST',
+               redirect: 'follow',
+               body: JSON.stringify({
+                   action: 'saveFasa1',
+                   fasa1_asas: fasa1_asas,
+                   fasa1_matriks: fasa1_matriks,
+                   fasa1_subjek: fasa1_subjek
+               })
+           });
+           const result = await response.json();
            hideLoading();
-           showToast('Fasa 1 Berjaya Disimpan!');
-           switchTab(5); 
-       }, 1500);
+           
+           if (result.status === "berjaya") {
+               showToast('Fasa 1 Berjaya Disimpan ke Google Sheet!');
+               switchTab(5); 
+           } else {
+               showToast('Gagal simpan Fasa 1. ' + result.message, 'error');
+           }
+       } catch (e) {
+           hideLoading();
+           console.error(e);
+           showToast('Ralat rangkaian semasa menyimpan Fasa 1', 'error');
+       }
     }
 
     // Fungsi 1: Had Maksimum Auto-Isi (Tarik Dari Array Fasa 1)
@@ -3296,6 +3563,7 @@
 
       renderGridGuru();
       simpanLocalState();
+      simpanFasa2Database(); // KOD BAHARU: Update Profil ke Google Sheet
       
       showToast('Profil Cikgu ' + nama + ' berjaya disimpan!');
       
@@ -3353,6 +3621,7 @@
        f2_senaraiGuruPenuh.splice(idx, 1);
        renderGridGuru();
        simpanLocalState();
+       simpanFasa2Database(); // KOD BAHARU: Update buangan dari Google Sheet
        showToast('Profil berjaya dipadam.');
     }
 
@@ -3959,13 +4228,14 @@
            }
        }
 
-       setTimeout(() => {
+      setTimeout(() => {
           hideLoading();
           if (jadualBerjaya) {
               showToast(`Jadual Induk Sempurna Berjaya Dijana! (Dalam ${percubaan} percubaan)`, 'success');
               const hasilDiv = document.getElementById('f2-hasil-jadual');
               hasilDiv.classList.remove('hidden');
               renderJadualUI();
+              simpanFasa2Database(); // KOD BAHARU: Simpan Matriks Jadual Induk ke Google Sheet
               hasilDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
           } else {
               showToast(`RALAT: Gagal mencari susunan bebas pertembungan selepas ${maxPercubaan} percubaan. Sila kurangkan beban jadual.`, 'error');
@@ -3973,8 +4243,32 @@
        }, 2000);
     }
 
-   // Fungsi Render Visual Menerima Had Masa Dari Matriks Dinamik
-    function renderJadualUI() {
+  // KOD BAHARU: Navigasi Pintar Jadual 3-Dalam-1 dengan Tajuk Dinamik
+    window.tukarPaparanJadual = function(jenis) {
+        document.getElementById('btn-paparan-induk').className = (jenis === 'induk') ? 'flex-1 py-3 text-[10px] md:text-xs font-black rounded-xl transition-all shadow-md bg-indigo-600 text-white transform scale-105 z-10' : 'flex-1 py-3 text-[10px] md:text-xs font-bold rounded-xl transition-all hover:bg-indigo-50 text-indigo-700 bg-white border border-indigo-100';
+        document.getElementById('btn-paparan-kelas').className = (jenis === 'kelas') ? 'flex-1 py-3 text-[10px] md:text-xs font-black rounded-xl transition-all shadow-md bg-emerald-600 text-white transform scale-105 z-10' : 'flex-1 py-3 text-[10px] md:text-xs font-bold rounded-xl transition-all hover:bg-emerald-50 text-emerald-700 bg-white border border-emerald-100';
+        document.getElementById('btn-paparan-guru').className = (jenis === 'guru') ? 'flex-1 py-3 text-[10px] md:text-xs font-black rounded-xl transition-all shadow-md bg-rose-600 text-white transform scale-105 z-10' : 'flex-1 py-3 text-[10px] md:text-xs font-bold rounded-xl transition-all hover:bg-rose-50 text-rose-700 bg-white border border-rose-100';
+
+        document.getElementById('paparan-induk').classList.add('hidden');
+        document.getElementById('paparan-kelas').classList.add('hidden');
+        document.getElementById('paparan-guru').classList.add('hidden');
+
+        document.getElementById(`paparan-${jenis}`).classList.remove('hidden');
+
+        if (jenis === 'induk') {
+            document.getElementById('tajuk-jadual-utama').innerText = `JADUAL INDUK WAKTU PERSEKOLAHAN SK ULU PELAGUS 2027`;
+            document.getElementById('subtajuk-jadual-guru').classList.add('hidden');
+        } else if (jenis === 'kelas') {
+            renderPaparanKelas();
+        } else if (jenis === 'guru') {
+            renderPaparanGuru();
+        }
+    };
+
+    let bgKelasMap = {}; 
+    const hexColorsKelas = ['#fecaca', '#bfdbfe', '#bbf7d0', '#fef08a', '#e9d5ff', '#fbcfe8', '#fed7aa', '#a5f3fc', '#c7d2fe', '#d9f99d', '#f5d0fe', '#fecdd3'];
+
+    window.renderJadualUI = function() {
         let elemenPerhimpunan = document.getElementById('tetapan-perhimpunan');
         const hariPerhimpunan = elemenPerhimpunan ? elemenPerhimpunan.value : 'RABU';
         
@@ -3997,7 +4291,7 @@
         const waktuMula = document.getElementById('waktu-mula-sekolah') ? document.getElementById('waktu-mula-sekolah').value : '07:30';
         const waktuPerhimpunanTamat = document.getElementById('waktu-perhimpunan-tamat') ? document.getElementById('waktu-perhimpunan-tamat').value : '08:00';
         const waktuRehatMula = document.getElementById('waktu-rehat-mula') ? document.getElementById('waktu-rehat-mula').value : '10:00';
-        const waktuRehatTamat = document.getElementById('waktu-rehat-tamat') ? document.getElementById('waktu-rehat-tamat').value : '10:15';;
+        const waktuRehatTamat = document.getElementById('waktu-rehat-tamat') ? document.getElementById('waktu-rehat-tamat').value : '10:15';
         const waktuRehatJumMula = document.getElementById('waktu-rehat-jum-mula') ? document.getElementById('waktu-rehat-jum-mula').value : '10:00';
         const waktuRehatJumTamat = document.getElementById('waktu-rehat-jum-tamat') ? document.getElementById('waktu-rehat-jum-tamat').value : '10:30';
 
@@ -4011,145 +4305,366 @@
 
         let isRehatSama = (waktuRehatMula === waktuRehatJumMula && waktuRehatTamat === waktuRehatJumTamat && hariAdaRehat['ISNIN'] === hariAdaRehat['JUMAAT']);
         let jumAdaRehat = hariAdaRehat['JUMAAT'];
-        
         let tasmikJumaatBoleh = document.getElementById('tasmik-jumaat') ? document.getElementById('tasmik-jumaat').checked : false;
         
-        // Cari had petak Jumaat paling jauh (global) supaya header cukup memuatkannya
         let maxJumT1 = kiraMaxSlotDinamik('waktu-jum-t1', hariAdaRehat['JUMAAT'], true);
         let maxJumT2 = kiraMaxSlotDinamik('waktu-jum-t2', hariAdaRehat['JUMAAT'], true);
         let maxJumT3 = kiraMaxSlotDinamik('waktu-jum-t3', hariAdaRehat['JUMAAT'], true);
         let slotJumMaxGlobal = Math.max(maxJumT1, maxJumT2, maxJumT3);
         let totalMaxJumSlot = slotJumMaxGlobal + (tasmikJumaatBoleh ? 2 : 0); 
 
-        let thHtml = `<th class="border border-gray-300 p-2 text-indigo-900 font-black w-20">HARI</th>
-                      <th class="border border-gray-300 p-2 text-indigo-900 font-black w-24">KELAS</th>`;
-        
+        let thHtmlMasa = ``;
         let currentMasa = waktuMula; let jumCurrentMasa = waktuMula; let jumSlotIndex = 0; 
 
-        // Header Pagi
         for(let i = 0; i < rehatIndex; i++) {
-            // Jika ini kotak pertama, dan hari ini ada perhimpunan, pastikan tempoh patuh waktu tamat perhimpunan (Contoh: 07:30 - 08:00)
             let nextMasa = (i === 0) ? waktuPerhimpunanTamat : addMinutes(currentMasa, 30);
             let nextJum = (i === 0) ? waktuPerhimpunanTamat : addMinutes(jumCurrentMasa, 30);
-            
             let showJumNote = (jumSlotIndex < totalMaxJumSlot) && (!isRehatSama) && (currentMasa !== jumCurrentMasa || nextMasa !== nextJum);
-            if (showJumNote) thHtml += `<th class="border border-gray-300 p-2 text-gray-700 font-bold whitespace-nowrap">${currentMasa}<br>${nextMasa}<br><span class="text-[9px] text-emerald-700 block mt-1">JUM: ${jumCurrentMasa}-${nextJum}</span></th>`;
-            else thHtml += `<th class="border border-gray-300 p-2 text-gray-700 font-bold whitespace-nowrap">${currentMasa}<br>${nextMasa}</th>`;
-            
+            // KOD BAHARU: Buang whitespace-nowrap, tambah min-w-[55px] dan susun masa Jumaat ke bawah
+            if (showJumNote) thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 text-gray-700 font-bold text-center min-w-[55px] leading-tight break-words">${currentMasa}<br>${nextMasa}<br><span class="text-[8px] text-emerald-700 block mt-0.5">JUM: ${jumCurrentMasa}<br>${nextJum}</span></th>`;
+            else thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 text-gray-700 font-bold text-center min-w-[55px] leading-tight break-words">${currentMasa}<br>${nextMasa}</th>`;
             currentMasa = nextMasa; jumCurrentMasa = nextJum; jumSlotIndex++;
         }
         
         let teksRehat = `${waktuRehatMula}<br>${waktuRehatTamat}`;
         if (jumAdaRehat) {
-            if (!isRehatSama) teksRehat += `<br><span class="text-[9px] text-emerald-700 block mt-1">JUM: ${waktuRehatJumMula}-${waktuRehatJumTamat}</span>`;
+            if (!isRehatSama) teksRehat += `<br><span class="text-[8px] text-emerald-700 block mt-0.5">JUM: ${waktuRehatJumMula}<br>${waktuRehatJumTamat}</span>`;
             jumCurrentMasa = waktuRehatJumTamat;
         } else {
             let nextJum = addMinutes(jumCurrentMasa, 30);
             let showJumNote = (jumSlotIndex < totalMaxJumSlot) && !isRehatSama && (waktuRehatMula !== jumCurrentMasa || waktuRehatTamat !== nextJum);
-            if (showJumNote) teksRehat += `<br><span class="text-[9px] text-emerald-700 block mt-1">JUM: ${jumCurrentMasa}-${nextJum}</span>`;
+            if (showJumNote) teksRehat += `<br><span class="text-[8px] text-emerald-700 block mt-0.5">JUM: ${jumCurrentMasa}<br>${nextJum}</span>`;
             jumSlotIndex++; jumCurrentMasa = nextJum;
         }
-        thHtml += `<th class="border border-gray-300 p-2 bg-amber-100 text-amber-800 font-black whitespace-nowrap">${teksRehat}</th>`;
+        // KOD BAHARU: Buang whitespace-nowrap pada petak rehat
+        thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 bg-amber-100 text-amber-800 font-black text-center min-w-[55px] leading-tight break-words">${teksRehat}</th>`;
         currentMasa = waktuRehatTamat;
 
-        for(let i = rehatIndex; i < 15; i++) { // Beri ruang secukupnya hingga ke petang (15 slot max)
+        for(let i = rehatIndex; i < 15; i++) {
             let nextMasa = addMinutes(currentMasa, 30);
             let nextJum = addMinutes(jumCurrentMasa, 30);
-
             let showJumNote = (jumSlotIndex < totalMaxJumSlot) && (!isRehatSama) && (currentMasa !== jumCurrentMasa || nextMasa !== nextJum);
-            if (showJumNote) thHtml += `<th class="border border-gray-300 p-2 text-gray-700 font-bold whitespace-nowrap">${currentMasa}<br>${nextMasa}<br><span class="text-[9px] text-emerald-700 block mt-1">JUM: ${jumCurrentMasa}-${nextJum}</span></th>`;
-            else thHtml += `<th class="border border-gray-300 p-2 text-gray-700 font-bold whitespace-nowrap">${currentMasa}<br>${nextMasa}</th>`;
-            
+            // KOD BAHARU: Susun masa Jumaat ke bawah pada sesi selepas rehat
+            if (showJumNote) thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 text-gray-700 font-bold text-center min-w-[55px] leading-tight break-words">${currentMasa}<br>${nextMasa}<br><span class="text-[8px] text-emerald-700 block mt-0.5">JUM: ${jumCurrentMasa}<br>${nextJum}</span></th>`;
+            else thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 text-gray-700 font-bold text-center min-w-[55px] leading-tight break-words">${currentMasa}<br>${nextMasa}</th>`;
             currentMasa = nextMasa; jumCurrentMasa = nextJum; jumSlotIndex++;
         }
         
-        const headerTr = document.getElementById('jadual-header-masa');
-        if(headerTr) headerTr.innerHTML = thHtml;
+        document.getElementById('jadual-header-masa-induk').innerHTML = `<th class="border border-gray-300 p-2 text-indigo-900 font-black w-20">HARI</th><th class="border border-gray-300 p-2 text-indigo-900 font-black w-24">KELAS</th>` + thHtmlMasa;
+        
+        document.getElementById('jadual-header-masa-induk').innerHTML = `<th class="border border-gray-300 p-2 text-indigo-900 font-black w-20">HARI</th><th class="border border-gray-300 p-2 text-indigo-900 font-black w-24">KELAS</th>` + thHtmlMasa;
+        document.getElementById('jadual-header-masa-kelas').innerHTML = `<th class="border border-gray-300 p-2 text-emerald-900 font-black w-20">HARI</th><th class="border border-gray-300 p-2 text-emerald-900 font-black w-24">KELAS</th>` + thHtmlMasa;
+        document.getElementById('jadual-header-masa-guru').innerHTML = `<th class="border border-gray-300 p-2 text-rose-900 font-black w-20">HARI</th>` + thHtmlMasa;
 
-        const tbody = document.getElementById('jadual-kelas-tbody');
-        let html = '';
+        const selKelas = document.getElementById('pilih-paparan-kelas');
+        selKelas.innerHTML = f2_senaraiKelasUnik.map(k => `<option value="${k}">${k.toUpperCase()}</option>`).join('');
+        
+        const selGuru = document.getElementById('pilih-paparan-guru');
+        let semuaGuruList = [...new Set(f2_senaraiGuruPenuh.map(g => g.nama))].sort();
+        selGuru.innerHTML = semuaGuruList.map(g => `<option value="${g}">${g.toUpperCase()}</option>`).join('');
 
-        // KOD BAHARU: Ekstrak Warna Cikgu Secara Tepat dari pangkalan data guru Fasa 2
+        bgKelasMap = {};
+        f2_senaraiKelasUnik.forEach((k, i) => { bgKelasMap[k] = hexColorsKelas[i % hexColorsKelas.length]; });
+
         const cariWarnaCikgu = (kodGuruRaw) => {
             let jumpa = f2_senaraiGuruPenuh.find(g => g.kod === kodGuruRaw || g.nama === kodGuruRaw);
             return jumpa ? (jumpa.warna || '#f3f4f6') : '#f3f4f6';
         };
 
-        const renderSlot = (slot) => {
+        const renderSlotObj = (slot, viewMode) => {
             if(!slot) return `<td class="border border-gray-300 p-2 bg-gray-50"><div class="text-xs text-gray-300">-</div></td>`;
             if(slot.subjek === 'PERHIMPUNAN') return ``; 
             
             let bgColorStyle = '';
-            if (slot.kodGuru.includes(' / ')) {
-                let gurus = slot.kodGuru.split(' / ');
-                let c1 = cariWarnaCikgu(gurus[0].trim());
-                let c2 = cariWarnaCikgu(gurus[1].trim());
-                bgColorStyle = `background: linear-gradient(135deg, ${c1} 50%, ${c2} 50%);`;
+            let bottomText = '';
+            
+            if (viewMode === 'guru') {
+                // Untuk paparan Guru: Warna jadual mesti selaras dengan warna profil cikgu tersebut
+                let targetTeacherName = document.getElementById('pilih-paparan-guru').value;
+                bgColorStyle = `background-color: ${cariWarnaCikgu(targetTeacherName)};`; 
+                bottomText = slot.kodGuru; // Di sini kodGuru menyimpan memori kelas
             } else {
-                bgColorStyle = `background-color: ${cariWarnaCikgu(slot.kodGuru)};`;
+                if (slot.kodGuru.includes(' / ')) {
+                    let gurus = slot.kodGuru.split(' / ');
+                    let c1 = cariWarnaCikgu(gurus[0].trim());
+                    let c2 = cariWarnaCikgu(gurus[1].trim());
+                    bgColorStyle = `background: linear-gradient(135deg, ${c1} 50%, ${c2} 50%);`;
+                } else {
+                    bgColorStyle = `background-color: ${cariWarnaCikgu(slot.kodGuru)};`;
+                }
+                bottomText = slot.kodGuru;
             }
 
-            // Tambah sedikit efek shadow pada petak supaya jadual lebih mewah dan cantik
-            return `<td class="border border-gray-300 p-2 shadow-sm relative overflow-hidden" style="${bgColorStyle}">
+            return `<td class="border border-gray-300 p-2 shadow-sm relative overflow-hidden min-w-[80px]" style="${bgColorStyle}">
                         <div class="absolute inset-0 bg-white opacity-[0.15]"></div>
-                        <div class="relative z-10">
-                            <div class="font-black text-black/80 text-sm drop-shadow-sm">${slot.subjek}</div>
-                            <div class="text-[10px] font-extrabold text-black/60 mt-0.5">${slot.kodGuru}</div>
+                        <div class="relative z-10 flex flex-col justify-center h-full">
+                            <div class="font-black text-black/80 text-[11px] md:text-sm drop-shadow-sm leading-tight">${slot.subjek}</div>
+                            <div class="text-[9px] font-extrabold text-black/60 mt-1 uppercase leading-tight">${bottomText}</div>
                         </div>
                     </td>`;
         };
 
+        // KOD BAHARU: Enjin Melukis Baris (Row) Pintar
+        const renderJadualTr = (hari, labelTepi, arrSlots, maxSlot, rowspan, isRowStart, themeColor, viewMode) => {
+            let tr = `<tr class="hover:bg-${themeColor}-50/50 transition-colors">`;
+            
+            // Pengurusan Tailwind JIT Bypass untuk warna
+            let bgH = themeColor === 'indigo' ? 'bg-indigo-100' : (themeColor === 'emerald' ? 'bg-emerald-100' : 'bg-rose-100');
+            let txtH = themeColor === 'indigo' ? 'text-indigo-900' : (themeColor === 'emerald' ? 'text-emerald-900' : 'text-rose-900');
+
+            if (isRowStart) tr += `<td class="border border-gray-300 p-2 font-black ${bgH} ${txtH} tracking-widest uppercase align-middle" rowspan="${rowspan}">${hari}</td>`;
+            
+            // KOD BAHARU: Buang lajur Nama Guru pada paparan jadual cikgu
+            if (viewMode !== 'guru') {
+                tr += `<td class="border border-gray-300 p-2 font-extrabold bg-white text-gray-800 whitespace-nowrap text-[10px] md:text-xs text-left px-3">${labelTepi.toUpperCase()}</td>`;
+            }
+            
+            let tasmikSlot1 = arrSlots[maxSlot]; let tasmikSlot2 = arrSlots[maxSlot + 1]; 
+            let adaRehat = hariAdaRehat[hari];
+
+            // Bahagian Pagi
+            for(let i=0; i < rehatIndex; i++) {
+                if (hari === hariPerhimpunan && i === 0 && viewMode !== 'guru') {
+                    // KOD BAHARU: Tetapkan warna PERHIMPUNAN seragam (bg-indigo-50) untuk semua jadual
+                    if (isRowStart) tr += `<td class="border border-gray-300 p-2 bg-indigo-50 font-black text-indigo-900 tracking-widest uppercase align-middle" rowspan="${rowspan}">PERH</td>`;
+                } else if (hari === hariPerhimpunan && i === 0 && viewMode === 'guru') {
+                     // KOD BAHARU: Tetapkan warna PERHIMPUNAN seragam (bg-indigo-50) untuk semua jadual
+                     tr += `<td class="border border-gray-300 p-2 bg-indigo-50 font-black text-indigo-900 tracking-widest uppercase align-middle">PERH</td>`;
+                } else {
+                    if (i < maxSlot) tr += renderSlotObj(arrSlots[i], viewMode);
+                    else tr += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px]">TAMAT</td>`;
+                }
+            }
+            
+            // Waktu Rehat
+            if (adaRehat) {
+                if (isRowStart) tr += `<td class="border border-gray-300 p-2 bg-amber-50 font-black text-amber-600 tracking-widest align-middle" rowspan="${rowspan}">REHAT</td>`;
+            } else {
+                if (rehatIndex < maxSlot) tr += renderSlotObj(arrSlots[rehatIndex], viewMode);
+                else tr += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px]">TAMAT</td>`;
+            }
+            
+            // Selepas Rehat
+            let startPetak = adaRehat ? rehatIndex : rehatIndex + 1;
+            let bakiLompong = adaRehat ? (15 - rehatIndex) : (15 - rehatIndex - 1);
+            
+            for(let i = startPetak; i < 15; i++) {
+                if (i < maxSlot) { tr += renderSlotObj(arrSlots[i], viewMode); bakiLompong--; } 
+                else if (i === maxSlot && tasmikSlot1) { tr += renderSlotObj(arrSlots[i], viewMode); bakiLompong--; } 
+                else if (i === maxSlot + 1 && tasmikSlot2) { tr += renderSlotObj(arrSlots[i], viewMode); bakiLompong--; } 
+            }
+            
+            if (bakiLompong > 0) tr += `<td class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest" colspan="${bakiLompong}">TAMAT</td>`;
+            tr += `</tr>`;
+            return tr;
+        };
+
 
         const hariRender = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'];
-        
-        hariRender.forEach((hari) => {
-            f2_senaraiKelasUnik.forEach((kelas, index) => {
-                let isFirstClass = (index === 0);
-                
-                let hadSlotTertinggi = getLimit(kelas, hari);
 
-                html += `<tr class="hover:bg-indigo-50/50 transition-colors">`;
-                
-                if (isFirstClass) html += `<td class="border border-gray-300 p-2 font-black bg-indigo-100 text-indigo-900 tracking-widest uppercase align-middle" rowspan="${f2_senaraiKelasUnik.length}">${hari}</td>`;
-                html += `<td class="border border-gray-300 p-2 font-extrabold bg-white text-gray-800 whitespace-nowrap text-xs text-left px-3">${kelas.toUpperCase()}</td>`;
-                
-                let slots = f2_jadualSediaAda[kelas][hari];
-                let tasmikSlot1 = slots[hadSlotTertinggi]; 
-                let tasmikSlot2 = slots[hadSlotTertinggi + 1]; 
-                let adaRehat = hariAdaRehat[hari];
-                
-                for(let i=0; i < rehatIndex; i++) {
-                    if (hari === hariPerhimpunan && i === 0) {
-                        if (isFirstClass) html += `<td class="border border-gray-300 p-2 bg-indigo-50 font-black text-indigo-900 tracking-widest uppercase align-middle" rowspan="${f2_senaraiKelasUnik.length}">PERH</td>`;
-                    } else {
-                        if (i < hadSlotTertinggi) html += renderSlot(slots[i]);
-                        else html += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px]">TAMAT</td>`;
-                    }
-                }
-                
-                if (adaRehat) {
-                    if (isFirstClass) html += `<td class="border border-gray-300 p-2 bg-amber-50 font-black text-amber-600 tracking-widest align-middle" rowspan="${f2_senaraiKelasUnik.length}">REHAT</td>`;
-                } else {
-                    if (rehatIndex < hadSlotTertinggi) html += renderSlot(slots[rehatIndex]);
-                    else html += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px]">TAMAT</td>`;
-                }
-                
-                let startPetak = adaRehat ? rehatIndex : rehatIndex + 1;
-                // Paparkan sehingga 15 kotak supaya sekata dengan header baharu
-                let bakiLompong = adaRehat ? (15 - rehatIndex) : (15 - rehatIndex - 1);
-                
-                for(let i = startPetak; i < 15; i++) {
-                    if (i < hadSlotTertinggi) { html += renderSlot(slots[i]); bakiLompong--; } 
-                    else if (i === hadSlotTertinggi && tasmikSlot1) { html += renderSlot(slots[i]); bakiLompong--; } 
-                    else if (i === hadSlotTertinggi + 1 && tasmikSlot2) { html += renderSlot(slots[i]); bakiLompong--; } 
-                }
-                
-                if (bakiLompong > 0) html += `<td class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-xs tracking-widest" colspan="${bakiLompong}">TAMAT</td>`;
-                html += `</tr>`;
+        // 1. Enjin Cetak Paparan Induk Keseluruhan
+        let htmlInduk = '';
+        hariRender.forEach(hari => {
+            f2_senaraiKelasUnik.forEach((kelas, index) => {
+                htmlInduk += renderJadualTr(hari, kelas, f2_jadualSediaAda[kelas][hari], getLimit(kelas, hari), f2_senaraiKelasUnik.length, index === 0, 'indigo', 'induk');
             });
         });
+        document.getElementById('jadual-induk-tbody').innerHTML = htmlInduk;
+
+        // 2. Enjin Dinamik Cetak Kelas Individu Bersama Petunjuk Guru
+        window.renderPaparanKelas = function() {
+            let kPilih = document.getElementById('pilih-paparan-kelas').value;
+            if(!kPilih) return;
+            
+            if (!document.getElementById('paparan-kelas').classList.contains('hidden')) {
+                document.getElementById('tajuk-jadual-utama').innerText = `JADUAL WAKTU TAHUN ${kPilih.toUpperCase()} SK ULU PELAGUS 2027`;
+                document.getElementById('subtajuk-jadual-guru').classList.add('hidden');
+            }
+
+            let htmlKelas = '';
+            // KOD BAHARU: Pengumpul Data Petunjuk Guru (Unik)
+            let senaraiGuruTerlibat = new Set();
+
+            hariRender.forEach(hari => {
+                let slotsSehari = f2_jadualSediaAda[kPilih][hari];
+                
+                // Cari kod guru dalam jadual kelas ini untuk dikumpulkan
+                slotsSehari.forEach(s => {
+                    if (s && s.kodGuru && s.kodGuru !== '-') {
+                        if (s.kodGuru.includes(' / ')) {
+                            s.kodGuru.split(' / ').forEach(g => senaraiGuruTerlibat.add(g.trim()));
+                        } else {
+                            senaraiGuruTerlibat.add(s.kodGuru);
+                        }
+                    }
+                });
+
+                htmlKelas += renderJadualTr(hari, kPilih, slotsSehari, getLimit(kPilih, hari), 1, true, 'emerald', 'kelas');
+            });
+            
+            document.getElementById('jadual-kelas-tbody').innerHTML = htmlKelas;
+
+            // KOD BAHARU: Render kotak Petunjuk Guru di bawah jadual
+            let bekasPetunjuk = document.getElementById('petunjuk-guru-kelas');
+            let htmlPetunjuk = '';
+            
+            if (senaraiGuruTerlibat.size > 0) {
+                // Padankan kod guru yang dikumpul dengan pangkalan data profil
+                let arrayGuruPetunjuk = Array.from(senaraiGuruTerlibat).map(kodG => {
+                    let profil = f2_senaraiGuruPenuh.find(g => g.kod === kodG);
+                    return profil ? profil : { kod: kodG, nama: 'TIDAK DIKETAHUI', warna: '#e5e7eb' };
+                }).sort((a, b) => a.kod.localeCompare(b.kod));
+
+                htmlPetunjuk = arrayGuruPetunjuk.map(g => `
+                    <div class="flex items-center gap-2 p-2 bg-white rounded shadow-sm border border-gray-100">
+                        <div class="w-5 h-5 rounded shadow-inner shrink-0 border border-gray-200" style="background-color: ${g.warna};"></div>
+                        <div class="flex flex-col min-w-0">
+                            <span class="text-[10px] font-black text-gray-800 leading-tight">${g.kod}</span>
+                            <span class="text-[8px] font-bold text-gray-500 uppercase truncate leading-tight" title="${g.nama}">${g.nama}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                htmlPetunjuk = `<div class="col-span-full text-center text-xs text-gray-400 font-bold py-2">Tiada maklumat guru.</div>`;
+            }
+            
+            if(bekasPetunjuk) bekasPetunjuk.innerHTML = htmlPetunjuk;
+        };
+
+         // 3. Enjin Ekstrak Data & Cetak Jadual Guru Individu (Sistem Split PI/PM Terjemahan Tepat)
+        window.renderPaparanGuru = function() {
+            let gPilih = document.getElementById('pilih-paparan-guru').value;
+            if(!gPilih) return;
+            
+            // KOD BAHARU: Ekstrak Profil Guru Penuh bagi mencari KOD GURU dan memori tugasnya
+            let guruProfilLengkap = f2_senaraiGuruPenuh.find(g => g.nama === gPilih);
+            if (!guruProfilLengkap) return; 
+
+            // Carian di dalam matriks jadual wajib menggunakan KOD GURU
+            let kodGuruCarian = guruProfilLengkap.kod;
+
+            if (!document.getElementById('paparan-guru').classList.contains('hidden')) {
+                document.getElementById('tajuk-jadual-utama').innerText = `JADUAL WAKTU GURU SK ULU PELAGUS 2027`;
+                document.getElementById('subtajuk-jadual-guru').innerText = `NAMA: ${guruProfilLengkap.nama.toUpperCase()}`;
+                document.getElementById('subtajuk-jadual-guru').classList.remove('hidden');
+            }
+
+            let htmlGuru = '';
+            
+            hariRender.forEach(hari => {
+                let sCikgu = new Array(15).fill(null);
+                let maksSlotSekolahHariIni = 0;
+                
+                f2_senaraiKelasUnik.forEach(k => {
+                    let kLimit = getLimit(k, hari);
+                    if (kLimit > maksSlotSekolahHariIni) maksSlotSekolahHariIni = kLimit;
+                    let kSlots = f2_jadualSediaAda[k][hari];
+                    for(let x=0; x<15; x++) {
+                        // KOD BAHARU: Pencarian kini mensasarkan kodGuruCarian bukannya gPilih (Nama Penuh)
+                        if (kSlots[x] && kSlots[x].kodGuru && kSlots[x].kodGuru.includes(kodGuruCarian)) {
+                            let subjekPapar = kSlots[x].subjek;
+                            
+                              // KOD BAHARU: Pemisahan Dinamik PI & PM yang diyakini tepat (Dipendekkan ke PI / PM)
+                            if (subjekPapar === 'PI / PM') {
+                                let adaPI = guruProfilLengkap.senaraiTugas.find(t => t.tahun === k && (t.subjek === 'PI' || t.subjek.includes('ISLAM')));
+                                if (adaPI) subjekPapar = 'PI';
+                                else {
+                                    let adaPM = guruProfilLengkap.senaraiTugas.find(t => t.tahun === k && (t.subjek === 'PM' || t.subjek.includes('MORAL')));
+                                    if (adaPM) subjekPapar = 'PM';
+                                }
+                            }
+
+                            
+                            // MENGGANTIKAN memori kodGuru di tapak lukisan ini kepada Nama Kelas (Hanya untuk cetakan antaramuka)
+                            sCikgu[x] = { subjek: subjekPapar, kodGuru: k }; 
+                        }
+                    }
+                });
+                
+                // Gunakan Kod Guru sebagai parameter lukisan supaya warna latar dapat ditangkap dengan tepat.
+                htmlGuru += renderJadualTr(hari, kodGuruCarian, sCikgu, maksSlotSekolahHariIni, 1, true, 'rose', 'guru');
+            });
+            document.getElementById('jadual-guru-tbody').innerHTML = htmlGuru;
+        };
+
+       // Auto-Trigger Paparan Untuk Mod Kelas & Guru Apabila Sistem Siap Dijana
+        if (f2_senaraiKelasUnik.length > 0) renderPaparanKelas();
+        if (semuaGuruList.length > 0) renderPaparanGuru();
         
-        tbody.innerHTML = html;
+       // KOD BAHARU: Memastikan Mod Induk menjadi lalai (default) dan tajuk dikemaskini
+        tukarPaparanJadual('induk');
+    }
+
+   // KOD BAHARU: Fungsi Cetakan Jadual A4 Melintang Pintar
+    function cetakJadualAktifA4() {
+        let activeTabId = '';
+        if (!document.getElementById('paparan-induk').classList.contains('hidden')) activeTabId = 'paparan-induk';
+        else if (!document.getElementById('paparan-kelas').classList.contains('hidden')) activeTabId = 'paparan-kelas';
+        else if (!document.getElementById('paparan-guru').classList.contains('hidden')) activeTabId = 'paparan-guru';
+
+        if (!activeTabId) {
+            showToast('Tiada jadual aktif untuk dicetak', 'error');
+            return;
+        }
+
+        const jadualHTML = document.getElementById(activeTabId).innerHTML;
+        const tajukUtama = document.getElementById('tajuk-jadual-utama').innerText;
+        const subTajukEl = document.getElementById('subtajuk-jadual-guru');
+        const subTajuk = subTajukEl && !subTajukEl.classList.contains('hidden') ? subTajukEl.innerText : '';
+
+        // TANGKAP SEMUA STYLES (TERMASUK TAILWIND) DARI PARENT WINDOW UNTUK ELAK JADUAL KOSONG/PUTIH
+        const parentStyles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('\n');
+
+        const printWindow = window.open('', '_blank');
+        
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="ms">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Cetakan Jadual A4 Melintang</title>
+                ${parentStyles}
+                <style>
+                    * { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+                    @page { size: A4 landscape; margin: 10mm; }
+                    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; }
+                    
+                    /* SEMBUNYIKAN MENU & SCROLLBAR, PAKSA JADUAL MUNCUL PENUH */
+                    div:has(> select), .bg-emerald-50.p-3, .bg-rose-50.p-3, label, select { display: none !important; }
+                    .overflow-x-auto, .scroll-container { overflow: visible !important; max-height: none !important; }
+                    
+                    table { width: 100% !important; min-width: 0 !important; border-collapse: collapse !important; table-layout: fixed; }
+                    th, td { border: 1px solid #9ca3af !important; padding: 4px !important; overflow: hidden; word-wrap: break-word; }
+                    
+                    /* REKA LETAK HEADER */
+                    .header-cetak { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 15px; }
+                    .header-cetak img { height: 75px; width: auto; object-fit: contain; }
+                    .header-teks { text-align: left; display: flex; flex-direction: column; justify-content: center; }
+                    .header-teks h1 { font-size: 18px; font-weight: 900; color: #1e3a8a; margin: 0; text-transform: uppercase; }
+                    .header-teks h2 { font-size: 14px; font-weight: 700; color: #e11d48; margin: 4px 0 0 0; }
+                </style>
+            </head>
+            <body class="bg-white text-gray-900">
+                <div class="header-cetak">
+                    <img src="https://iili.io/nRloUF9.png" alt="Logo Sekolah">
+                    <div class="header-teks">
+                        <h1>${tajukUtama}</h1>
+                        ${subTajuk ? '<h2>' + subTajuk + '</h2>' : ''}
+                    </div>
+                </div>
+                <div class="kandungan-jadual-cetak w-full">${jadualHTML}</div>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        
+        // Masa menunggu tambahan 800ms untuk browser bersedia memeluk saiz penuh tanpa ralat potong
+        setTimeout(() => {
+            printWindow.print();
+        }, 800);
     }
 
     initApp();
