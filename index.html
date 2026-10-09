@@ -821,7 +821,7 @@
     }
 
     // KOD BAHARU: Pembolehubah Induk & Enjin Pangkalan Data Google Sheet
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypIdd8Plg_xi8JoSOn7Hafst1_IeL5bu0YWUTRCGB6YlYaAMAGr8K6z2QkfTC_lDT5/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwzHZLHeK1WJPl236LsV_RM-0vluo6pnmLeeQdoKhUSd9X9DX-upKovjn6fzhbfb7vX/exec";
 
    async function fetchDatabase() {
       try {
@@ -941,6 +941,115 @@
       } catch (error) {
         console.error("Gagal menarik data Fasa 1 dari Google Sheet:", error);
       }
+    }
+
+    // KOD BAHARU: Sedut Pangkalan Data Fasa 2 (Profil & Jadual)
+    async function fetchFasa2Data() {
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=readFasa2`);
+        const result = await response.json();
+        if (result.status === "berjaya" && result.data) {
+            const data = result.data;
+            
+            if (data.fasa2_profil && data.fasa2_profil.length > 1) {
+                f2_senaraiGuruPenuh = []; 
+                let tempGuruMap = {};
+                data.fasa2_profil.forEach((row, i) => {
+                    if(i===0) return;
+                    let obj = {
+                        kod: row[0], nama: row[1], jawatan: row[2], warna: row[3], maxWaktu: row[4],
+                        totalWaktu: 0, isLebih: false, senaraiTugas: []
+                    };
+                    tempGuruMap[row[0]] = obj;
+                });
+
+                if (data.fasa2_tugas && data.fasa2_tugas.length > 1) {
+                    data.fasa2_tugas.forEach((row, i) => {
+                        if(i===0) return;
+                        let kodG = row[0], kls = row[1].toString(), subj = row[2], bil = parseInt(row[3])||0;
+                        if (tempGuruMap[kodG]) {
+                            tempGuruMap[kodG].senaraiTugas.push({ tahun: kls, subjek: subj, waktu: bil });
+                            tempGuruMap[kodG].totalWaktu += bil;
+                        }
+                    });
+                }
+
+                Object.keys(tempGuruMap).forEach(k => {
+                    let g = tempGuruMap[k];
+                    g.isLebih = (g.maxWaktu !== '-' && g.totalWaktu > parseInt(g.maxWaktu));
+                    f2_senaraiGuruPenuh.push(g);
+                });
+                renderGridGuru();
+            }
+
+            if (data.fasa2_jadual && data.fasa2_jadual.length > 1) {
+                f2_jadualSediaAda = {};
+                f2_senaraiKelasUnik = [];
+                let kelasSet = new Set();
+                data.fasa2_jadual.forEach((row, i) => {
+                    if(i===0) return;
+                    let kls = row[0].toString(), hari = row[1], slotIdx = parseInt(row[2]), subj = row[3], kodG = row[4], warna = row[5];
+                    kelasSet.add(kls);
+                    if (!f2_jadualSediaAda[kls]) {
+                        f2_jadualSediaAda[kls] = {
+                            'ISNIN': new Array(15).fill(null), 'SELASA': new Array(15).fill(null),
+                            'RABU': new Array(15).fill(null), 'KHAMIS': new Array(15).fill(null), 'JUMAAT': new Array(15).fill(null)
+                        };
+                    }
+                    f2_jadualSediaAda[kls][hari][slotIdx] = { subjek: subj, kodGuru: kodG, warna: warna };
+                });
+                f2_senaraiKelasUnik = Array.from(kelasSet).sort();
+                if (f2_senaraiKelasUnik.length > 0) {
+                    document.getElementById('f2-hasil-jadual').classList.remove('hidden');
+                    renderJadualUI();
+                }
+            }
+        }
+      } catch(e) {
+        console.error("Gagal menarik data Fasa 2 dari Google Sheet:", e);
+      }
+    }
+
+    // KOD BAHARU: Simpan Pangkalan Data Fasa 2 (Profil & Jadual) ke Google Sheets secara senyap di latar belakang
+    async function simpanFasa2Database() {
+        let fasa2_profil = [["KOD_GURU", "NAMA_GURU", "JAWATAN", "WARNA_JADUAL", "WAKTU_MAKSIMUM"]];
+        let fasa2_tugas = [["KOD_GURU", "KELAS", "SUBJEK", "BILANGAN_WAKTU"]];
+        
+        f2_senaraiGuruPenuh.forEach(g => {
+            fasa2_profil.push([g.kod, g.nama, g.jawatan, g.warna, g.maxWaktu]);
+            g.senaraiTugas.forEach(t => {
+                fasa2_tugas.push([g.kod, t.tahun, t.subjek, t.waktu]);
+            });
+        });
+
+        let fasa2_jadual = [["KELAS", "HARI", "SLOT_INDEKS", "SUBJEK", "KOD_GURU", "WARNA"]];
+        if (f2_senaraiKelasUnik.length > 0 && Object.keys(f2_jadualSediaAda).length > 0) {
+            f2_senaraiKelasUnik.forEach(kls => {
+                ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hari => {
+                    if(f2_jadualSediaAda[kls] && f2_jadualSediaAda[kls][hari]) {
+                        let slots = f2_jadualSediaAda[kls][hari];
+                        slots.forEach((s, idx) => {
+                            if (s !== null) {
+                                fasa2_jadual.push([kls, hari, idx, s.subjek, s.kodGuru, s.warna]);
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        try {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                body: JSON.stringify({
+                    action: 'saveFasa2',
+                    fasa2_profil: fasa2_profil,
+                    fasa2_tugas: fasa2_tugas,
+                    fasa2_jadual: fasa2_jadual
+                })
+            });
+        } catch(e) { console.error("Ralat rangkaian simpan Fasa 2", e); }
     }
 
     function timeToMinutes(timeStr) {
@@ -1895,6 +2004,9 @@
       
       // KOD BAHARU: Tarik Data Fasa 1 dari Google Sheet
       await fetchFasa1Data();
+      
+      // KOD BAHARU: Tarik Data Fasa 2 dari Google Sheet (Profil Guru & Jadual AI)
+      await fetchFasa2Data();
 
       const yearSelect = document.getElementById('filter-tahun');
       const deleteYearSelect = document.getElementById('delete-filter-tahun');
@@ -3489,6 +3601,7 @@
 
       renderGridGuru();
       simpanLocalState();
+      simpanFasa2Database(); // KOD BAHARU: Update Profil ke Google Sheet
       
       showToast('Profil Cikgu ' + nama + ' berjaya disimpan!');
       
@@ -3546,6 +3659,7 @@
        f2_senaraiGuruPenuh.splice(idx, 1);
        renderGridGuru();
        simpanLocalState();
+       simpanFasa2Database(); // KOD BAHARU: Update buangan dari Google Sheet
        showToast('Profil berjaya dipadam.');
     }
 
@@ -4159,6 +4273,7 @@
               const hasilDiv = document.getElementById('f2-hasil-jadual');
               hasilDiv.classList.remove('hidden');
               renderJadualUI();
+              simpanFasa2Database(); // KOD BAHARU: Simpan Matriks Jadual Induk ke Google Sheet
               hasilDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
           } else {
               showToast(`RALAT: Gagal mencari susunan bebas pertembungan selepas ${maxPercubaan} percubaan. Sila kurangkan beban jadual.`, 'error');
