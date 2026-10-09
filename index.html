@@ -2116,8 +2116,35 @@
       return `${d}/${m}/${y}`;
     }
 
-    /* KOD BAHARU: API CSV Lama telah dipadamkan sepenuhnya. Guru, Sebab & Jadual kini dibina 100% dari Pangkalan Data Fasa 2 melalui binaJadualGuruGantiDariFasa2() */
+async function loadJadualInduk() {
+      try {
+        const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVHsEfF5rJ6M3unRSPNJ_Ie6sRnBowigSD-PB46QShkyY95xRr8oYoKCcTRYQ3ktlP3zaUV_pV4Qka/pub?gid=0&single=true&output=csv';
+        const response = await fetch(url);
+        const text = await response.text();
+        jadualInduk = parseCSV(text);
+      } catch (error) {
+        console.error('Error loading jadual induk:', error);
+        showToast('Gagal memuatkan jadual induk', 'error');
+      }
+    }
 
+    async function loadGuruSebab() {
+      try {
+        const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVHsEfF5rJ6M3unRSPNJ_Ie6sRnBowigSD-PB46QShkyY95xRr8oYoKCcTRYQ3ktlP3zaUV_pV4Qka/pub?gid=941392614&single=true&output=csv';
+        const response = await fetch(url);
+        const text = await response.text();
+        const data = parseCSV(text);
+        
+        guruList = [...new Set(data.map(r => r['Guru Asal'] || r['GURU ASAL']).filter(Boolean))];
+        sebabList = [...new Set(data.map(r => r['Sebab Tidak Hadir'] || r['SEBAB TIDAK HADIR']).filter(Boolean))];
+        
+        populateDropdown('input-guru', guruList, '-- Pilih Guru --');
+        populateDropdown('input-sebab', sebabList, '-- Pilih Sebab --');
+      } catch (error) {
+        console.error('Error loading guru/sebab:', error);
+        showToast('Gagal memuatkan senarai guru', 'error');
+      }
+    }
     function parseCSV(text) {
       const lines = text.trim().split('\n');
       if (lines.length < 2) return [];
