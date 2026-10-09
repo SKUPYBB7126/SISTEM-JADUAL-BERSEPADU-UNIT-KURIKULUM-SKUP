@@ -821,7 +821,7 @@
     }
 
     // KOD BAHARU: Pembolehubah Induk & Enjin Pangkalan Data Google Sheet
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZWJxTM2azA0osasoUeeJyc07mFlrWiI4HpwvBkivTdOp0BPx3WhDrcbLA15uQXwL_/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypIdd8Plg_xi8JoSOn7Hafst1_IeL5bu0YWUTRCGB6YlYaAMAGr8K6z2QkfTC_lDT5/exec";
 
    async function fetchDatabase() {
       try {
@@ -855,6 +855,91 @@
         }
       } catch (error) {
         console.error("Gagal menarik data dari Google Sheet:", error);
+      }
+    }
+
+   // KOD BAHARU: Menarik Data Fasa 1 dari Google Sheets (Dengan Pembetulan Format Masa)
+   async function fetchFasa1Data() {
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=readFasa1`);
+        const result = await response.json();
+        
+        if (result.status === "berjaya" && result.data) {
+            const data = result.data;
+            
+            // Pengecaman Format Masa Google Sheets (Auto-Convert ISO String ke HH:mm)
+            const setVal = (id, val) => { 
+                if(document.getElementById(id) && val !== undefined && val !== "") {
+                    let finalVal = String(val);
+                    if (finalVal.includes('T') && finalVal.includes('Z')) {
+                        let d = new Date(finalVal);
+                        finalVal = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+                    }
+                    document.getElementById(id).value = finalVal;
+                }
+            };
+            
+            const setCheck = (id, val) => { if(document.getElementById(id)) document.getElementById(id).checked = (val === true || val === 'true' || val === 'TRUE'); };
+
+            if (data.fasa1_asas && data.fasa1_asas.length > 1) {
+                data.fasa1_asas.forEach(row => {
+                    let kat = row[0], item = row[1], val = row[2];
+                    if (kat === "Perhimpunan") {
+                        if (item === "Hari") setVal('tetapan-perhimpunan', val);
+                        if (item === "Tamat") setVal('waktu-perhimpunan-tamat', val);
+                    } else if (kat === "Rehat_Biasa") {
+                        if (item === "Mula") setVal('waktu-rehat-mula', val);
+                        if (item === "Tamat") setVal('waktu-rehat-tamat', val);
+                    } else if (kat === "Rehat_Jumaat") {
+                        if (item === "Mula") setVal('waktu-rehat-jum-mula', val);
+                        if (item === "Tamat") setVal('waktu-rehat-jum-tamat', val);
+                    } else if (kat === "Hari_Rehat") {
+                        setCheck('rehat-' + item.toLowerCase(), val);
+                    } else if (kat === "Tasmik_Hari") {
+                        setCheck('tasmik-' + item.toLowerCase(), val);
+                    } else if (kat === "Had_Beban") {
+                        if (item === "GB") { setVal('max-gb', val); hadBebanJawatan.gb = parseInt(val) || 7; }
+                        if (item === "PK") { setVal('max-pk', val); hadBebanJawatan.pk = parseInt(val) || 12; }
+                        if (item === "GAB") { setVal('max-gab', val); hadBebanJawatan.gab = parseInt(val) || 30; }
+                    } else if (kat === "Mula_Sekolah") {
+                        if (item === "Waktu") setVal('waktu-mula-sekolah', val);
+                    }
+                });
+                if(typeof kawalInputRehat === 'function') kawalInputRehat();
+                if(typeof hadkanTasmik === 'function') hadkanTasmik();
+            }
+
+            if (data.fasa1_matriks && data.fasa1_matriks.length > 1) {
+                data.fasa1_matriks.forEach((row, i) => {
+                    if (i === 0) return; 
+                    let hari = row[0];
+                    let t1 = row[2], t2 = row[3], t3 = row[4];
+                    let pfx = hari === 'ISNIN' ? 'isn' : (hari === 'SELASA' ? 'sel' : (hari === 'RABU' ? 'rab' : (hari === 'KHAMIS' ? 'kha' : 'jum')));
+                    setVal(`waktu-${pfx}-t1`, t1);
+                    setVal(`waktu-${pfx}-t2`, t2);
+                    setVal(`waktu-${pfx}-t3`, t3);
+                });
+            }
+
+            if (data.fasa1_subjek && data.fasa1_subjek.length > 1) {
+                let arrT1 = [], arrT2 = [], arrT3 = [];
+                data.fasa1_subjek.forEach((row, i) => {
+                    if (i === 0) return; 
+                    let tahap = row[0].toString();
+                    let nama = row[1];
+                    let waktu = parseInt(row[2]) || 0;
+                    if (tahap === "1") arrT1.push({ nama, waktu });
+                    else if (tahap === "2") arrT2.push({ nama, waktu });
+                    else if (tahap === "3") arrT3.push({ nama, waktu });
+                });
+                if (arrT1.length > 0) arraySubjekTahap1 = arrT1;
+                if (arrT2.length > 0) arraySubjekTahap2 = arrT2;
+                if (arrT3.length > 0) arraySubjekTahap3 = arrT3;
+                renderSubjekFasa1();
+            }
+        }
+      } catch (error) {
+        console.error("Gagal menarik data Fasa 1 dari Google Sheet:", error);
       }
     }
 
@@ -1807,6 +1892,9 @@
 
       // KOD BAHARU: Tarik memori tempatan (Data Jadual Fasa 1 & Fasa 2) jika wujud
       muatLocalState();
+      
+      // KOD BAHARU: Tarik Data Fasa 1 dari Google Sheet
+      await fetchFasa1Data();
 
       const yearSelect = document.getElementById('filter-tahun');
       const deleteYearSelect = document.getElementById('delete-filter-tahun');
@@ -3009,14 +3097,14 @@
     }
 
     // Pendinding Fasa 1 (Halang simpanan jika tidak seimbang)
-    function simpanFasa1() {
+    async function simpanFasa1() {
        let d = kemaskiniKapasitiLive();
        
        if (d.t1 !== d.c1) { showToast(`RALAT: Peruntukan Subjek Tahap 1 (${d.t1}) tidak seimbang dengan Kapasiti Masa (${d.c1})!`, 'error'); return; }
        if (d.t2 !== d.c2) { showToast(`RALAT: Peruntukan Subjek Tahap 2 (${d.t2}) tidak seimbang dengan Kapasiti Masa (${d.c2})!`, 'error'); return; }
        if (d.t3 !== d.c3) { showToast(`RALAT: Peruntukan Subjek Tahap 3 (${d.t3}) tidak seimbang dengan Kapasiti Masa (${d.c3})!`, 'error'); return; }
 
-       showLoading('Menyimpan Pangkalan Fasa 1...');
+       showLoading('Menyimpan Pangkalan Fasa 1 ke Google Sheet...');
        
        hadBebanJawatan = {
            gb: parseInt(document.getElementById('max-gb').value) || 7,
@@ -3043,13 +3131,74 @@
            if(inputWaktu) s.waktu = parseInt(inputWaktu.value) || 0;
        });
 
-       simpanLocalState(); 
+       simpanLocalState(); // Kekalkan sandaran tempatan untuk Fasa 2
 
-       setTimeout(() => {
+       const val = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
+       const isChecked = (id) => document.getElementById(id) ? document.getElementById(id).checked : false;
+
+       let fasa1_asas = [
+           ["KATEGORI", "ITEM", "NILAI"],
+           ["Perhimpunan", "Hari", val('tetapan-perhimpunan')],
+           ["Perhimpunan", "Tamat", val('waktu-perhimpunan-tamat')],
+           ["Rehat_Biasa", "Mula", val('waktu-rehat-mula')],
+           ["Rehat_Biasa", "Tamat", val('waktu-rehat-tamat')],
+           ["Rehat_Jumaat", "Mula", val('waktu-rehat-jum-mula')],
+           ["Rehat_Jumaat", "Tamat", val('waktu-rehat-jum-tamat')],
+           ["Hari_Rehat", "Isnin", isChecked('rehat-isnin')],
+           ["Hari_Rehat", "Selasa", isChecked('rehat-selasa')],
+           ["Hari_Rehat", "Rabu", isChecked('rehat-rabu')],
+           ["Hari_Rehat", "Khamis", isChecked('rehat-khamis')],
+           ["Hari_Rehat", "Jumaat", isChecked('rehat-jumaat')],
+           ["Tasmik_Hari", "Isnin", isChecked('tasmik-isnin')],
+           ["Tasmik_Hari", "Selasa", isChecked('tasmik-selasa')],
+           ["Tasmik_Hari", "Rabu", isChecked('tasmik-rabu')],
+           ["Tasmik_Hari", "Khamis", isChecked('tasmik-khamis')],
+           ["Tasmik_Hari", "Jumaat", isChecked('tasmik-jumaat')],
+           ["Had_Beban", "GB", val('max-gb')],
+           ["Had_Beban", "PK", val('max-pk')],
+           ["Had_Beban", "GAB", val('max-gab')],
+           ["Mula_Sekolah", "Waktu", val('waktu-mula-sekolah')]
+       ];
+
+       let fasa1_matriks = [
+           ["HARI", "WAKTU_MULA_SEKOLAH", "TAHAP_1", "TAHAP_2", "TAHAP_3"],
+           ["ISNIN", val('waktu-mula-sekolah'), val('waktu-isn-t1'), val('waktu-isn-t2'), val('waktu-isn-t3')],
+           ["SELASA", val('waktu-mula-sekolah'), val('waktu-sel-t1'), val('waktu-sel-t2'), val('waktu-sel-t3')],
+           ["RABU", val('waktu-mula-sekolah'), val('waktu-rab-t1'), val('waktu-rab-t2'), val('waktu-rab-t3')],
+           ["KHAMIS", val('waktu-mula-sekolah'), val('waktu-kha-t1'), val('waktu-kha-t2'), val('waktu-kha-t3')],
+           ["JUMAAT", val('waktu-mula-sekolah'), val('waktu-jum-t1'), val('waktu-jum-t2'), val('waktu-jum-t3')]
+       ];
+
+       let fasa1_subjek = [["TAHAP", "NAMA_SUBJEK", "WAKTU_MINGGUAN"]];
+       arraySubjekTahap1.forEach(s => fasa1_subjek.push(["1", s.nama, s.waktu]));
+       arraySubjekTahap2.forEach(s => fasa1_subjek.push(["2", s.nama, s.waktu]));
+       arraySubjekTahap3.forEach(s => fasa1_subjek.push(["3", s.nama, s.waktu]));
+
+       try {
+           const response = await fetch(SCRIPT_URL, {
+               method: 'POST',
+               redirect: 'follow',
+               body: JSON.stringify({
+                   action: 'saveFasa1',
+                   fasa1_asas: fasa1_asas,
+                   fasa1_matriks: fasa1_matriks,
+                   fasa1_subjek: fasa1_subjek
+               })
+           });
+           const result = await response.json();
            hideLoading();
-           showToast('Fasa 1 Berjaya Disimpan!');
-           switchTab(5); 
-       }, 1500);
+           
+           if (result.status === "berjaya") {
+               showToast('Fasa 1 Berjaya Disimpan ke Google Sheet!');
+               switchTab(5); 
+           } else {
+               showToast('Gagal simpan Fasa 1. ' + result.message, 'error');
+           }
+       } catch (e) {
+           hideLoading();
+           console.error(e);
+           showToast('Ralat rangkaian semasa menyimpan Fasa 1', 'error');
+       }
     }
 
     // Fungsi 1: Had Maksimum Auto-Isi (Tarik Dari Array Fasa 1)
