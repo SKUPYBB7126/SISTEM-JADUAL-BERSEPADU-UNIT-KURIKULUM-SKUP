@@ -2944,13 +2944,38 @@
     }
 
     // Aksi Tambah / Buang Subjek Fasa 1
+    function simpanInputSubjekSeketika() {
+        // KOD BAHARU: Membaca teks yang ditaip oleh pengguna dan mengemas kini array memori sebelum kotak ditambah/dibuang
+        arraySubjekTahap1.forEach((s, idx) => {
+           let inputNama = document.getElementById(`nama-t1-${idx}`);
+           let inputWaktu = document.getElementById(`waktu-t1-${idx}`);
+           if(inputNama) s.nama = inputNama.value.toUpperCase();
+           if(inputWaktu) s.waktu = parseInt(inputWaktu.value) || 0;
+        });
+        arraySubjekTahap2.forEach((s, idx) => {
+           let inputNama = document.getElementById(`nama-t2-${idx}`);
+           let inputWaktu = document.getElementById(`waktu-t2-${idx}`);
+           if(inputNama) s.nama = inputNama.value.toUpperCase();
+           if(inputWaktu) s.waktu = parseInt(inputWaktu.value) || 0;
+        });
+        arraySubjekTahap3.forEach((s, idx) => {
+           let inputNama = document.getElementById(`nama-t3-${idx}`);
+           let inputWaktu = document.getElementById(`waktu-t3-${idx}`);
+           if(inputNama) s.nama = inputNama.value.toUpperCase();
+           if(inputWaktu) s.waktu = parseInt(inputWaktu.value) || 0;
+        });
+    }
+
     window.tambahSubjekBaru = function(tahap) {
+        simpanInputSubjekSeketika(); // Kunci memori sebelum tambah
         if (tahap === '1') arraySubjekTahap1.push({ nama: 'SUBJEK BARU', waktu: 1 });
         else if (tahap === '2') arraySubjekTahap2.push({ nama: 'SUBJEK BARU', waktu: 1 });
         else arraySubjekTahap3.push({ nama: 'SUBJEK BARU', waktu: 1 });
         renderSubjekFasa1();
     }
+    
     window.buangSubjek = function(tahap, idx) {
+        simpanInputSubjekSeketika(); // Kunci memori sebelum buang
         if (tahap === '1') arraySubjekTahap1.splice(idx, 1);
         else if (tahap === '2') arraySubjekTahap2.splice(idx, 1);
         else arraySubjekTahap3.splice(idx, 1);
