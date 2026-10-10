@@ -367,14 +367,15 @@
                   <span class="text-gray-200/50 font-black text-9xl uppercase tracking-widest transform -rotate-12 select-none" id="tv-watermark-hari">ISNIN</span>
                </div>
                
-               <div class="w-full h-full relative z-10 p-2 md:p-6 overflow-hidden flex flex-col">
-                   <table class="w-full h-full text-center border-collapse table-fixed flex flex-col shadow-xl border-4 border-gray-800 rounded-xl overflow-hidden bg-white" id="tv-table-harian">
-                       <!-- Jadual harian akan dijana 100% oleh JavaScript supaya Super Full Screen -->
-                       <thead class="bg-indigo-900 text-white shrink-0 w-full flex">
-                           <tr id="tv-thead-harian" class="flex w-full"></tr>
+               <!-- KOD BAHARU: Flex dibuang pada wrapper supaya jadual berkelakuan seperti Fasa 2 mutlak -->
+               <div class="w-full h-full relative z-10 p-2 md:p-4 overflow-auto" style="scrollbar-width: thin;">
+                   <!-- KOD BAHARU: Ditambah table-fixed dan min-w-[1200px] supaya lajur dikunci selaras -->
+                   <table class="w-full text-center border-collapse table-fixed min-w-[1200px] shadow-xl border-4 border-gray-800 rounded-xl bg-white" id="tv-table-harian">
+                       <thead class="bg-indigo-900 text-white border-b-4 border-gray-800">
+                           <tr id="tv-thead-harian"></tr>
                        </thead>
-                       <tbody id="tv-tbody-harian" class="flex-1 flex flex-col w-full text-gray-800">
-                           <tr class="flex-1 flex items-center justify-center w-full"><td class="text-center font-black text-gray-400 text-3xl animate-pulse">Sila Jana Jadual Induk Di Fasa 2 Dahulu...</td></tr>
+                       <tbody id="tv-tbody-harian" class="text-gray-800 bg-white">
+                           <tr><td class="text-center font-black text-gray-400 text-3xl animate-pulse py-20 w-full" colspan="100%">Sila Jana Jadual Induk Di Fasa 2 Dahulu...</td></tr>
                        </tbody>
                    </table>
                </div>
@@ -2915,9 +2916,25 @@
             slaidInduk.classList.replace('opacity-0', 'opacity-100');
             slaidInduk.classList.replace('z-0', 'z-20');
             
-            // Enjin Pelukis Jadual Harian Dinamik (Bina dari kosong)
+            // Enjin Pelukis Jadual Harian Dinamik (Klon Mutlak Dari Fasa 2)
             if (f2_senaraiKelasUnik.length > 0 && Object.keys(f2_jadualSediaAda).length > 0) {
-                // 1. Tentukan Had Maksimum Lajur Masa untuk Hari ini sahaja
+                
+                // 1. Ambil Masa & Format Sama Tepat Seperti Fasa 2
+                const waktuMula = document.getElementById('waktu-mula-sekolah') ? document.getElementById('waktu-mula-sekolah').value : '07:30';
+                const waktuPerhimpunanTamat = document.getElementById('waktu-perhimpunan-tamat') ? document.getElementById('waktu-perhimpunan-tamat').value : '08:00';
+                const waktuRehatMula = document.getElementById('waktu-rehat-mula') ? document.getElementById('waktu-rehat-mula').value : '10:00';
+                const waktuRehatTamat = document.getElementById('waktu-rehat-tamat') ? document.getElementById('waktu-rehat-tamat').value : '10:15';
+                const waktuRehatJumMula = document.getElementById('waktu-rehat-jum-mula') ? document.getElementById('waktu-rehat-jum-mula').value : '10:00';
+                const waktuRehatJumTamat = document.getElementById('waktu-rehat-jum-tamat') ? document.getElementById('waktu-rehat-jum-tamat').value : '10:30';
+
+                let rehatIndex = window.rehatIndexGlobal || 5;
+
+                const addMinutes = (timeStr, mins) => {
+                    let [h, m] = timeStr.split(':').map(Number);
+                    m += mins; h += Math.floor(m / 60); m = m % 60;
+                    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                };
+
                 const hariAdaRehat = {
                    'ISNIN': document.getElementById('rehat-isnin') ? document.getElementById('rehat-isnin').checked : true,
                    'SELASA': document.getElementById('rehat-selasa') ? document.getElementById('rehat-selasa').checked : true,
@@ -2925,6 +2942,7 @@
                    'KHAMIS': document.getElementById('rehat-khamis') ? document.getElementById('rehat-khamis').checked : true,
                    'JUMAAT': document.getElementById('rehat-jumaat') ? document.getElementById('rehat-jumaat').checked : false
                 };
+
                 const getLimit = (kelas, hariStr) => {
                    let t = 't1';
                    if (kelas.includes('1 ')) t = 't1'; else if (kelas.includes('2 ')) t = 't2'; else if (kelas.includes('3 ')) t = 't3'; else if (kelas.includes('4 ')) t = 't4'; else if (kelas.includes('5 ')) t = 't5'; else if (kelas.includes('6 ')) t = 't6';
@@ -2942,56 +2960,79 @@
                     if (limit + (adaTasmik?2:0) > maxSlotHariIni) maxSlotHariIni = limit + (adaTasmik?2:0);
                 });
 
-                // FailSafe & Variable Rehat
-                let rehatIndex = window.rehatIndexGlobal || 5;
                 if (maxSlotHariIni < rehatIndex + 1) maxSlotHariIni = rehatIndex + 1;
-                
-                let elemenPerhimpunan = document.getElementById('tetapan-perhimpunan');
-                let isHariPerhimpunan = (elemenPerhimpunan ? elemenPerhimpunan.value : 'RABU') === namaHariPilihan;
 
-                // Fungsi carian warna cikgu (Super Copy)
+                // Fungsi Carian Warna (Klon Fasa 2)
                 const cariWarnaCikguHarian = (kodGuruRaw) => {
                     let jumpa = f2_senaraiGuruPenuh.find(g => g.kod === kodGuruRaw || g.nama === kodGuruRaw);
                     return jumpa ? (jumpa.warna || '#f3f4f6') : '#f3f4f6';
                 };
 
-                // Lukis Papan Kepala (Header Masa tanpa Label Waktu bagi kebersihan visual yang besar)
-                let widthPct = 100 / (maxSlotHariIni + 1); // +1 untuk label kelas
-                let theadHarian = `<th class="py-2 px-1 border-r-4 border-gray-800 bg-gray-900 text-white font-black text-xl md:text-3xl w-[8%] tracking-widest text-center" style="width: 10%;">KELAS</th>`;
+                // KOD BAHARU: Membina Papan Kepala Jadual (Masa Mutlak Seperti Fasa 2)
+                let thHtmlMasa = `<th class="border-r-[3px] border-gray-800 p-2 md:p-3 text-white bg-gray-900 font-black text-xl tracking-widest text-center align-middle" style="width: 12%;">KELAS</th>`;
+                let currentMasa = document.getElementById('waktu-mula-sekolah') ? document.getElementById('waktu-mula-sekolah').value : '07:30'; 
+                let isHariRehat = hariAdaRehat[namaHariPilihan];
                 
-                let currentSlot = 1;
-                for(let i=0; i<maxSlotHariIni; i++) {
-                    if (i === rehatIndex && hariAdaRehat[namaHariPilihan]) {
-                         theadHarian += `<th class="py-2 px-1 border-r-4 border-gray-800 bg-amber-400 text-gray-900 font-black text-lg md:text-2xl text-center shadow-inner tracking-widest border-b-4 border-b-amber-500" style="width: ${widthPct}%;">REHAT</th>`;
-                    } else {
-                         theadHarian += `<th class="py-2 px-1 border-r border-indigo-700/50 bg-indigo-900 font-black text-xl md:text-3xl text-center text-indigo-100 shadow-inner" style="width: ${widthPct}%;">${currentSlot}</th>`;
-                         currentSlot++;
+                // Pagi
+                for(let i = 0; i < rehatIndex; i++) {
+                    let nextMasa = addMinutes(currentMasa, 30);
+                    if (i===0 && (document.getElementById('tetapan-perhimpunan') ? document.getElementById('tetapan-perhimpunan').value : 'RABU') === namaHariPilihan) {
+                        nextMasa = document.getElementById('waktu-perhimpunan-tamat') ? document.getElementById('waktu-perhimpunan-tamat').value : '08:00';
+                    } else if (namaHariPilihan === 'JUMAAT') {
+                         nextMasa = addMinutes(currentMasa, 30); // Jumaat fix 30 minit jika bukan perhimpunan
                     }
+                    thHtmlMasa += `<th class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center min-w-[80px] leading-tight text-lg shadow-inner py-2 align-middle">${currentMasa}<br>${nextMasa}</th>`;
+                    currentMasa = nextMasa;
                 }
-                document.getElementById('tv-thead-harian').innerHTML = theadHarian;
+                
+                // Rehat
+                let wRehatM = document.getElementById('waktu-rehat-mula') ? document.getElementById('waktu-rehat-mula').value : '10:00';
+                let wRehatT = document.getElementById('waktu-rehat-tamat') ? document.getElementById('waktu-rehat-tamat').value : '10:15';
+                let wJRehatM = document.getElementById('waktu-rehat-jum-mula') ? document.getElementById('waktu-rehat-jum-mula').value : '10:00';
+                let wJRehatT = document.getElementById('waktu-rehat-jum-tamat') ? document.getElementById('waktu-rehat-jum-tamat').value : '10:30';
+                let teksRehatHarian = isHariRehat ? (namaHariPilihan === 'JUMAAT' ? `${wJRehatM}<br>${wJRehatT}` : `${wRehatM}<br>${wRehatT}`) : '';
+                
+                if (isHariRehat) {
+                     thHtmlMasa += `<th class="border-r-[3px] border-l-[3px] border-gray-800 bg-amber-400 text-gray-900 font-black text-center min-w-[80px] leading-tight text-lg shadow-inner py-2 align-middle">${teksRehatHarian}</th>`;
+                     currentMasa = namaHariPilihan === 'JUMAAT' ? wJRehatT : wRehatT;
+                }
+                
+                // Selepas Rehat
+                let maxPetang = isHariRehat ? maxSlotHariIni : maxSlotHariIni + 1; 
+                for(let i = rehatIndex; i < maxPetang; i++) {
+                    let nextMasa = addMinutes(currentMasa, 30);
+                    thHtmlMasa += `<th class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center min-w-[80px] leading-tight text-lg shadow-inner py-2 align-middle">${currentMasa}<br>${nextMasa}</th>`;
+                    currentMasa = nextMasa;
+                }
+                document.getElementById('tv-thead-harian').innerHTML = thHtmlMasa;
 
-                // Lukis Badan Jadual Harian Pintar (Flex-1 memastikan ia meregang penuh ke bawah skrin)
+                // KOD BAHARU: Membina Badan Jadual (Tbody) Selaras Dengan HTML Standard (Bukan Flexbox)
                 let tbodyHarian = '';
+                let elemenPerhimpunan = document.getElementById('tetapan-perhimpunan');
+                let isHariPerhimpunan = (elemenPerhimpunan ? elemenPerhimpunan.value : 'RABU') === namaHariPilihan;
+
                 f2_senaraiKelasUnik.forEach((kelas, kIndex) => {
                     let sCikguHariIni = f2_jadualSediaAda[kelas][namaHariPilihan];
                     let limitKelas = getLimit(kelas, namaHariPilihan);
-                    let adaRehat = hariAdaRehat[namaHariPilihan];
+                    let isRowEnd = (kIndex === f2_senaraiKelasUnik.length - 1);
+                    let exBorder = isRowEnd ? "" : " border-b-[2px] border-b-gray-400/50";
                     
-                    let trHarian = `<tr class="flex w-full flex-1 border-b-2 border-gray-300 last:border-b-0 hover:bg-gray-50 transition-colors group">`;
-                    trHarian += `<td class="font-black text-xl md:text-3xl flex items-center justify-center border-r-4 border-gray-800 bg-gray-100 group-hover:bg-indigo-50 transition-colors shadow-inner" style="width: 10%; color: #111827;">${kelas}</td>`;
+                    let trHarian = `<tr class="hover:bg-gray-100 transition-colors h-full">`;
+                    trHarian += `<td class="border-r-[3px] border-gray-800 p-2 md:p-3 font-black bg-gray-200 text-gray-900 text-xl md:text-3xl text-center shadow-inner align-middle${exBorder}">${kelas}</td>`;
                     
-                    let bakiLompong = adaRehat ? (maxSlotHariIni - rehatIndex) : (maxSlotHariIni - rehatIndex - 1);
+                    let bakiLompong = isHariRehat ? (maxSlotHariIni - rehatIndex) : (maxSlotHariIni - rehatIndex - 1);
                     
                     for(let i=0; i<maxSlotHariIni; i++) {
+                        
                         // REHAT PETAK
-                        if (i === rehatIndex && adaRehat) {
-                            trHarian += `<td class="flex items-center justify-center border-r-4 border-gray-800 bg-amber-100/80 shadow-inner border-b-2 border-b-amber-200" style="width: ${widthPct}%;"></td>`;
+                        if (i === rehatIndex && isHariRehat) {
+                            trHarian += `<td class="border-r-[3px] border-l-[3px] border-gray-800 p-2 md:p-3 bg-amber-100/50 shadow-inner align-middle${exBorder}"></td>`;
                             continue;
                         }
 
                         // PERHIMPUNAN PETAK
                         if (isHariPerhimpunan && i === 0) {
-                            trHarian += `<td class="flex items-center justify-center border-r-2 border-gray-300 bg-indigo-50 shadow-inner font-black text-indigo-900 tracking-widest text-lg md:text-2xl overflow-hidden" style="width: ${widthPct}%;">PERHIMPUNAN</td>`;
+                            trHarian += `<td class="border-r border-gray-300 p-2 md:p-3 bg-indigo-50 font-black text-indigo-900 tracking-widest text-center uppercase text-xl md:text-2xl shadow-inner align-middle${exBorder}">PERHIMPUNAN</td>`;
                             continue;
                         }
 
@@ -3010,27 +3051,49 @@
                                 bgColorStyle = `background-color: ${cariWarnaCikguHarian(selObj.kodGuru)};`;
                             }
                             
-                            trHarian += `<td class="flex flex-col items-center justify-center border-r border-gray-300 border-b border-b-gray-400/30 relative overflow-hidden shadow-sm" style="width: ${widthPct}%; ${bgColorStyle}">
+                            trHarian += `<td class="border-r border-gray-300 p-1 relative overflow-hidden shadow-sm text-center align-middle${exBorder}" style="${bgColorStyle}">
                                             <div class="absolute inset-0 bg-white opacity-20"></div>
-                                            <div class="relative z-10 flex flex-col items-center justify-center h-full w-full">
+                                            <div class="relative z-10 flex flex-col items-center justify-center h-full w-full py-2">
                                                 <span class="font-black text-black/80 text-xl md:text-3xl lg:text-4xl drop-shadow-sm leading-none text-center px-1">${selObj.subjek}</span>
                                                 <span class="font-extrabold text-black/60 text-[10px] md:text-sm lg:text-base uppercase tracking-wider mt-1 md:mt-2 text-center truncate w-full px-2">${selObj.kodGuru}</span>
                                             </div>
                                          </td>`;
+                            if (i >= rehatIndex) bakiLompong--;
                         } else {
                             // Petak Kosong / Tamat Awal
-                            trHarian += `<td class="flex items-center justify-center border-r border-gray-200 bg-gray-200/50 relative overflow-hidden shadow-inner" style="width: ${widthPct}%;">
+                            trHarian += `<td class="border-r border-gray-200 bg-gray-100/50 relative overflow-hidden shadow-inner align-middle${exBorder}">
                                             <div class="w-full h-[2px] bg-gray-300/50 absolute top-1/2 left-0 transform -translate-y-1/2"></div>
                                          </td>`;
+                            if (i >= rehatIndex) bakiLompong--;
                         }
                     }
+                    
+                    if (bakiLompong > 0) trHarian += `<td class="border-r border-gray-300 bg-gray-100/50 align-middle font-bold text-gray-400 text-center tracking-widest${exBorder}" colspan="${bakiLompong}">TAMAT</td>`;
+                    
                     trHarian += `</tr>`;
                     tbodyHarian += trHarian;
                 });
                 
                 document.getElementById('tv-tbody-harian').innerHTML = tbodyHarian;
+
+                // Suntik CSS untuk pembesaran tulisan TV Live (Fokus Skala Mutlak Tanpa Flex)
+                const tableHarian = document.getElementById('tv-table-harian');
+                tableHarian.classList.add('tv-scale-up');
+                if (!document.getElementById('tv-custom-scale-css')) {
+                    const style = document.createElement('style');
+                    style.id = 'tv-custom-scale-css';
+                    style.innerHTML = `
+                        .tv-scale-up td { padding: 12px 6px !important; font-size: 1.15rem !important; }
+                        .tv-scale-up td div.font-black { font-size: 1.35rem !important; font-weight: 900 !important; }
+                        .tv-scale-up td div.font-extrabold { font-size: 0.95rem !important; font-weight: 800 !important; }
+                        .tv-scale-up th { padding: 12px 6px !important; font-size: 1.1rem !important; }
+                        .tv-scale-up td.bg-gray-200 { font-size: 1.25rem !important; }
+                    `;
+                    document.head.appendChild(style);
+                }
+
             } else {
-                document.getElementById('tv-tbody-harian').innerHTML = `<tr class="flex-1 flex items-center justify-center w-full"><td class="text-center font-black text-gray-400 text-3xl animate-pulse">Sila Jana Jadual Induk Di Fasa 2 Dahulu...</td></tr>`;
+                document.getElementById('tv-tbody-harian').innerHTML = `<tr><td class="text-center font-black text-gray-400 text-3xl animate-pulse py-20 w-full" colspan="100%">Sila Jana Jadual Induk Di Fasa 2 Dahulu...</td></tr>`;
             }
             
         } else {
