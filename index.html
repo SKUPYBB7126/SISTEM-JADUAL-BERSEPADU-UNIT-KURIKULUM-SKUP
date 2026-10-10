@@ -2108,7 +2108,8 @@
     }
 
     async function initApp() {
-      showLoading('Memuatkan sistem...');
+      // KOD BAHARU: Pemanggil skrin gelap ditutup untuk membenarkan Pemuatan Senyap (Silent Load)
+      // showLoading('Memuatkan sistem...');
       
       if (window.elementSdk) {
         window.elementSdk.init({
@@ -2177,7 +2178,8 @@
       
       await Promise.all([loadJadualInduk(), loadGuruSebab(), loadSignatureData()]);
       
-      hideLoading();
+      // KOD BAHARU: Penutup skrin gelap dibuang selaras dengan fungsi Pemuatan Senyap di atas
+      // hideLoading();
     }
 
     function setupDateInput() {
