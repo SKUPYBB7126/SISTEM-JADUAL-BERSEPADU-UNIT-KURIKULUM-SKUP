@@ -3935,7 +3935,7 @@
         showToast('Mod Kemaskini Aktif: Sila edit dan tekan Simpan.');
     }
 
-   // KOD BAHARU: Fungsi Kunci Masa Rehat Jika Hari Dibuang
+   // KOD BAHARU: Fungsi Kunci Masa Rehat Jika Hari Dibuang & Pencetus (Trigger) Kalkulator Kapasiti Live
     function kawalInputRehat() {
         const jumCheck = document.getElementById('rehat-jumaat');
         const jumMula = document.getElementById('waktu-rehat-jum-mula');
@@ -3967,6 +3967,9 @@
                 biasaTamat.classList.remove('opacity-50', 'bg-gray-100', 'cursor-not-allowed');
             }
         }
+        
+        // Arahan paksa pengiraan kapasiti sebaik sahaja butang rehat ditekan
+        if(typeof kemaskiniKapasitiLive === 'function') kemaskiniKapasitiLive();
     }
     setTimeout(kawalInputRehat, 500);
 
