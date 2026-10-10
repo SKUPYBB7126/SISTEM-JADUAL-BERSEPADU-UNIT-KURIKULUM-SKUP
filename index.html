@@ -470,7 +470,8 @@
                <h3 class="text-sm font-extrabold text-blue-900 uppercase tracking-wide flex items-center gap-2"><i class="fa-regular fa-calendar-days text-blue-500"></i> Jadual Matriks (Tahun 1 hingga Tahun 3)</h3>
                <div class="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-blue-200">
                    <span class="text-xs text-blue-800 font-black uppercase tracking-widest">Waktu Mula Sekolah:</span>
-                   <input type="time" id="waktu-mula-sekolah" value="07:30" onchange="kemaskiniKapasitiLive()" class="border-b-2 border-blue-400 bg-transparent text-sm font-black text-blue-700 outline-none focus:ring-0 px-1 py-0.5 cursor-pointer">
+                   <!-- KOD BAHARU: Memori dataset 'onfocus' membolehkan perbezaan masa dikira secara matematik -->
+                   <input type="time" id="waktu-mula-sekolah" value="07:30" onfocus="this.dataset.old = this.value" onchange="anjakMasaPukal(this)" class="border-b-2 border-blue-400 bg-transparent text-sm font-black text-blue-700 outline-none focus:ring-0 px-1 py-0.5 cursor-pointer">
                </div>
            </div>
            
@@ -3277,6 +3278,61 @@
         renderSubjekFasa1(); 
         if(typeof kawalInputRehat === 'function') kawalInputRehat();
     }
+
+   // KOD BAHARU: Enjin Anjakan Masa Pukal (Auto-Shift Time)
+    window.anjakMasaPukal = function(el) {
+        let oldVal = el.dataset.old;
+        let newVal = el.value;
+        
+        // Failsafe jika tiada memori (Pengguna tidak tekan tetapi sistem trigger value)
+        if (!oldVal) oldVal = "07:30"; 
+        if (!newVal || oldVal === newVal) return;
+
+        // KOD BAHARU: Parser masa mutlak khusus membelah HH:mm dengan sempurna 
+        const parseHM = (timeStr) => {
+            if (!timeStr) return 0;
+            let parts = timeStr.split(':');
+            if (parts.length !== 2) return 0;
+            return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        };
+
+        // Kiraan beza masa (Delta) menggunakan minit tepat
+        let diff = parseHM(newVal) - parseHM(oldVal);
+        if (diff === 0 || isNaN(diff)) return;
+
+        // Sasaran kesemua 36 kotak masa dalam Fasa 1 untuk dianjak secara serentak
+        const targetIds = [
+            'waktu-perhimpunan-tamat',
+            'waktu-rehat-mula', 'waktu-rehat-tamat',
+            'waktu-rehat-jum-mula', 'waktu-rehat-jum-tamat',
+            'waktu-isn-t1', 'waktu-isn-t2', 'waktu-isn-t3', 'waktu-isn-t4', 'waktu-isn-t5', 'waktu-isn-t6',
+            'waktu-sel-t1', 'waktu-sel-t2', 'waktu-sel-t3', 'waktu-sel-t4', 'waktu-sel-t5', 'waktu-sel-t6',
+            'waktu-rab-t1', 'waktu-rab-t2', 'waktu-rab-t3', 'waktu-rab-t4', 'waktu-rab-t5', 'waktu-rab-t6',
+            'waktu-kha-t1', 'waktu-kha-t2', 'waktu-kha-t3', 'waktu-kha-t4', 'waktu-kha-t5', 'waktu-kha-t6',
+            'waktu-jum-t1', 'waktu-jum-t2', 'waktu-jum-t3', 'waktu-jum-t4', 'waktu-jum-t5', 'waktu-jum-t6'
+        ];
+
+        targetIds.forEach(id => {
+            let input = document.getElementById(id);
+            if (input && input.value) {
+                let totalMins = parseHM(input.value) + diff;
+                // Matematik Modulo memutar kitaran 24 Jam dengan kebal ralat (Termasuk peralihan AM ke PM)
+                totalMins = (totalMins + 1440) % 1440; 
+                let h = Math.floor(totalMins / 60);
+                let m = totalMins % 60;
+                // HTML Input menuntut format Standard 24H HH:mm
+                input.value = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+            }
+        });
+
+        // Simpan titik memori baharu dan lancarkan bacaan Live Kapasiti
+        el.dataset.old = newVal; 
+        kemaskiniKapasitiLive(); 
+        
+        let teksArah = diff > 0 ? 'dilewatkan' : 'diawalkan';
+        let teksMinit = Math.abs(diff);
+        showToast('Auto-Anjak Berjaya: Seluruh jadual ' + teksArah + ' sebanyak ' + teksMinit + ' minit.', 'success');
+    };
 
     // KOD BAHARU: Pengawal Validasi (Gatekeeper) & Live Kalkulator Kapasiti Fasa 1 (Matriks 6 Tahun)
     function kemaskiniKapasitiLive() {
