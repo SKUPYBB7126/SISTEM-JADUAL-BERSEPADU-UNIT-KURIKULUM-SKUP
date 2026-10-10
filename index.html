@@ -331,7 +331,7 @@
      </div>
     </section>
     
-    <!-- KOD BAHARU: TAB 3 - Paparan TV Live (Sistem Slide Show Pintar) -->
+    <!-- KOD BAHARU: TAB 3 - Paparan TV Live (Sistem Slide Show Pintar & Pilihan Tarikh Manual) -->
     <section id="tab3" class="p-2 md:p-4 fade-in hidden h-[85vh]">
      <div id="tv-container" class="bg-gray-900 rounded-2xl shadow-2xl p-4 md:p-8 flex flex-col h-full relative overflow-hidden">
       
@@ -341,46 +341,60 @@
            <h2 id="tv-tajuk-utama" class="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300 flex items-center gap-4 uppercase tracking-widest">
             <i class="fa-solid fa-tv text-cyan-400 text-3xl md:text-5xl"></i> PAPARAN JADUAL KESELURUHAN
            </h2>
-           <p id="tv-tarikh-live" class="text-gray-400 font-bold tracking-widest uppercase mt-2 text-sm ml-[4.5rem]">Memuatkan Tarikh...</p>
        </div>
        <div class="flex items-center gap-4">
-        <!-- Petunjuk Slide Berfungsi -->
-        <div class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-full border border-gray-700">
-           <div class="w-3 h-3 rounded-full bg-rose-500 animate-pulse"></div>
-           <span class="text-xs font-bold text-gray-300 tracking-widest uppercase">LIVE LOOP</span>
+        <!-- Pemilih Tarikh Manual (Kembali) -->
+        <div class="flex items-center gap-3 bg-gray-800 p-2 rounded-xl border border-gray-600">
+           <label class="text-gray-400 font-bold text-xs tracking-widest uppercase hidden md:block pl-2">Tarikh:</label>
+           <input type="date" id="tv-date-manual" onchange="restartTVSystemManual()" class="px-4 py-2 bg-gray-700 border border-gray-500 rounded-lg text-white font-black text-sm focus:ring-2 focus:ring-cyan-500 outline-none cursor-pointer">
         </div>
-        <button onclick="toggleFullscreenTV()" class="bg-gray-800 hover:bg-gray-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 border border-gray-600">
+        
+        <!-- Petunjuk Slide Berfungsi -->
+        <div class="flex items-center gap-2 bg-gray-800 px-4 py-3 rounded-xl border border-gray-700">
+           <div class="w-3 h-3 rounded-full bg-rose-500 animate-pulse"></div>
+           <span class="text-[10px] font-black text-gray-300 tracking-widest uppercase">LIVE LOOP</span>
+        </div>
+        <button onclick="toggleFullscreenTV()" class="bg-gray-800 hover:bg-gray-700 text-white px-5 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 border border-gray-600">
          <i class="fa-solid fa-expand text-lg"></i> <span class="hidden md:inline uppercase tracking-widest text-xs">Skrin Penuh</span>
         </button>
        </div>
       </div>
       
-      <!-- KONTENA SLAID 1: JADUAL INDUK (FULL SCREEN) -->
+      <!-- KONTENA SLAID 1: JADUAL INDUK (FULL SCREEN HARIAN) -->
       <div id="tv-slide-induk" class="flex-1 w-full h-full relative z-10 transition-opacity duration-1000 ease-in-out opacity-100 flex flex-col">
-           <div class="flex-1 overflow-hidden bg-white rounded-xl border-4 border-indigo-500 shadow-[0_0_30px_rgba(99,102,241,0.3)] p-2">
-               <!-- Meminjam Jadual Induk dari Fasa 2 tetapi dibesarkan dengan CSS Fit-to-screen -->
-               <div id="tv-clone-induk" class="w-full h-full flex items-center justify-center">
-                   <div class="text-center text-gray-400 text-2xl font-bold animate-pulse mt-20">Sila Jana Jadual Induk Di Fasa 2 Dahulu...</div>
+           <div class="flex-1 overflow-hidden bg-white rounded-xl border-4 border-indigo-500 shadow-[0_0_30px_rgba(99,102,241,0.3)] p-2 relative">
+               <div class="absolute inset-0 bg-gray-50 flex items-center justify-center z-0">
+                  <span class="text-gray-200/50 font-black text-9xl uppercase tracking-widest transform -rotate-12 select-none" id="tv-watermark-hari">ISNIN</span>
+               </div>
+               
+               <div class="w-full h-full relative z-10 p-2 md:p-6 overflow-hidden flex flex-col">
+                   <table class="w-full h-full text-center border-collapse table-fixed flex flex-col shadow-xl border-4 border-gray-800 rounded-xl overflow-hidden bg-white" id="tv-table-harian">
+                       <!-- Jadual harian akan dijana 100% oleh JavaScript supaya Super Full Screen -->
+                       <thead class="bg-indigo-900 text-white shrink-0 w-full flex">
+                           <tr id="tv-thead-harian" class="flex w-full"></tr>
+                       </thead>
+                       <tbody id="tv-tbody-harian" class="flex-1 flex flex-col w-full text-gray-800">
+                           <tr class="flex-1 flex items-center justify-center w-full"><td class="text-center font-black text-gray-400 text-3xl animate-pulse">Sila Jana Jadual Induk Di Fasa 2 Dahulu...</td></tr>
+                       </tbody>
+                   </table>
                </div>
            </div>
       </div>
 
       <!-- KONTENA SLAID 2: JADUAL GURU GANTI (FIT-TO-SCREEN) -->
       <div id="tv-slide-ganti" class="flex-1 w-full h-full absolute top-0 left-0 pt-28 px-4 md:px-8 pb-10 z-0 transition-opacity duration-1000 ease-in-out opacity-0 pointer-events-none flex flex-col">
-           <div class="flex-1 rounded-xl border border-gray-700 bg-gray-800/50 shadow-2xl flex flex-col overflow-hidden">
-               <!-- Table Fit-to-Screen (Paksi Y & X membesar/mengecil automatik) -->
+           <div class="flex-1 rounded-xl border border-gray-700 bg-gray-800/90 backdrop-blur-sm shadow-2xl flex flex-col overflow-hidden">
                <table class="w-full h-full text-left border-collapse table-fixed flex flex-col">
-                 <thead class="bg-gray-800 text-cyan-300 shadow-md shrink-0 w-full flex">
-                  <tr class="flex w-full">
-                   <th class="py-4 px-4 font-black border-b-4 border-cyan-500/50 w-[15%] text-center uppercase tracking-widest text-lg md:text-2xl">MASA</th>
-                   <th class="py-4 px-4 font-black border-b-4 border-cyan-500/50 w-[20%] text-center uppercase tracking-widest text-lg md:text-2xl">KELAS</th>
-                   <th class="py-4 px-4 font-black border-b-4 border-cyan-500/50 w-[30%] uppercase tracking-widest text-red-400 text-lg md:text-2xl">GURU ASAL</th>
-                   <th class="py-4 px-4 font-black border-b-4 border-cyan-500/50 w-[20%] uppercase tracking-widest text-emerald-400 text-lg md:text-2xl">GANTI</th>
-                   <th class="py-4 px-4 font-black border-b-4 border-cyan-500/50 w-[15%] uppercase tracking-widest text-lg md:text-2xl">SUBJEK</th>
+                 <thead class="bg-gray-900 text-cyan-300 shadow-md shrink-0 w-full flex">
+                  <tr class="flex w-full border-b-4 border-cyan-500/50">
+                   <th class="py-4 px-4 font-black w-[15%] text-center uppercase tracking-widest text-lg md:text-2xl">MASA</th>
+                   <th class="py-4 px-4 font-black w-[20%] text-center uppercase tracking-widest text-lg md:text-2xl">KELAS</th>
+                   <th class="py-4 px-4 font-black w-[30%] uppercase tracking-widest text-rose-400 text-lg md:text-2xl">GURU ASAL</th>
+                   <th class="py-4 px-4 font-black w-[20%] uppercase tracking-widest text-emerald-400 text-lg md:text-2xl">GANTI</th>
+                   <th class="py-4 px-4 font-black w-[15%] uppercase tracking-widest text-lg md:text-2xl text-center">SUBJEK</th>
                   </tr>
                  </thead>
-                 <!-- Flex-1 membolehkan baris didalamnya membesar sama rata mengikut ruang -->
-                 <tbody id="tv-tbody-ganti" class="flex-1 flex flex-col divide-y divide-gray-700/50 w-full overflow-hidden">
+                 <tbody id="tv-tbody-ganti" class="flex-1 flex flex-col divide-y divide-gray-700/50 w-full overflow-hidden bg-gray-800/50">
                   <tr class="flex-1 flex items-center justify-center w-full"><td class="text-center text-gray-500 italic text-2xl animate-pulse">Menyemak Pangkalan Data...</td></tr>
                  </tbody>
                </table>
@@ -388,7 +402,7 @@
       </div>
 
       <!-- Hiasan Bawah -->
-      <div class="mt-4 text-center text-gray-500 text-xs font-bold tracking-[0.2em] uppercase shrink-0 z-20 relative">
+      <div class="mt-4 text-center text-gray-500 text-[10px] md:text-xs font-black tracking-[0.2em] uppercase shrink-0 z-20 relative">
         Sistem Pengurusan Jadual Bersepadu | SK Ulu Pelagus
       </div>
      </div>
@@ -2792,7 +2806,7 @@
       if (btn4) btn4.className = inactiveClass; 
       if (btn5) btn5.className = inactiveClass; // KOD BAHARU
 
-     // Paparkan tab yang ditekan
+    // Paparkan tab yang ditekan
       if (tab === 1) {
         tab1.classList.remove('hidden');
         btn1.className = activeClass;
@@ -2804,8 +2818,23 @@
         if (tab3) tab3.classList.remove('hidden');
         if (btn3) btn3.className = activeClass;
         
-        // KOD BAHARU: Sisa panggilan tv-date dibuang sepenuhnya. Skrin TV kini membaca tarikh "Real-Time" dari enjin updateTVScreen()
-        initTVLoop();
+        // Tetapkan tarikh "Hari Ini" jika TV baru dibuka pertama kali
+        const tvDateInput = document.getElementById('tv-date-manual');
+        if (!tvDateInput.value) {
+          const today = new Date();
+          let useDate = today;
+          // Pintasan Pantas: Jika Sabtu/Ahad buka TV, loncat ke hari Isnin depan
+          if(today.getDay() === 6) useDate = new Date(today.getTime() + (2 * 24 * 60 * 60 * 1000));
+          if(today.getDay() === 0) useDate = new Date(today.getTime() + (1 * 24 * 60 * 60 * 1000));
+          
+          const yyyy = useDate.getFullYear();
+          const mm = String(useDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(useDate.getDate()).padStart(2, '0');
+          tvDateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+        
+        // Mula putaran sistem Slaid Pintar
+        restartTVSystemManual();
       } else if (tab === 4) { 
         if (tab4) tab4.classList.remove('hidden');
         if (btn4) btn4.className = activeClass;
@@ -2819,43 +2848,65 @@
       }
     }
 
-     // ==========================================
+    // ==========================================
     // KOD BAHARU: LOGIK PAPARAN TV LIVE (SLIDE SHOW PINTAR)
     // ==========================================
     let tvLoopInterval;
     let tvCurrentSlide = 1; // 1 = Induk, 2 = Ganti
+    let adaSlaidGanti = true; // Penanda rahsia untuk sembunyikan Slaid 2 jika kosong
 
-    function initTVLoop() {
+    function restartTVSystemManual() {
+        const dateInput = document.getElementById('tv-date-manual');
+        if (!dateInput || !dateInput.value) return;
+        
+        // Pengawal Hari Persekolahan: Halang Sabtu dan Ahad
+        const chosenDate = new Date(dateInput.value);
+        const dayIndex = chosenDate.getDay();
+        if (dayIndex === 0 || dayIndex === 6) {
+             showToast('AMARAN: Sekolah ditutup pada hujung minggu. Sila pilih hari Isnin-Jumaat.', 'error');
+             dateInput.value = ''; // Kosongkan supaya cikgu pilih lain
+             return;
+        }
+
         clearInterval(tvLoopInterval);
-        tvCurrentSlide = 1;
-        updateTVScreen(); // Papar skrin pertama terus
+        tvCurrentSlide = 1; // Mula dari Slaid 1
+        updateTVScreen(); // Lukiskan
         
         // Pemasa Slaid 30 Saat
         tvLoopInterval = setInterval(() => {
-            tvCurrentSlide = tvCurrentSlide === 1 ? 2 : 1;
+            // Jika ada ganti, tukar ke slaid 2. Jika tiada ganti, lekat di slaid 1!
+            if (adaSlaidGanti) {
+                tvCurrentSlide = tvCurrentSlide === 1 ? 2 : 1;
+            } else {
+                tvCurrentSlide = 1; 
+            }
             updateTVScreen();
         }, 30000); 
     }
 
     function updateTVScreen() {
         const tajukUtama = document.getElementById('tv-tajuk-utama');
-        const tarikhLabel = document.getElementById('tv-tarikh-live');
         const slaidInduk = document.getElementById('tv-slide-induk');
         const slaidGanti = document.getElementById('tv-slide-ganti');
+        const dateInput = document.getElementById('tv-date-manual').value;
         
-        // 1. Kemaskini Waktu Nyata (Real-Time Hari Ini)
-        const today = new Date();
-        const dStr = String(today.getDate()).padStart(2, '0');
-        const mStr = String(today.getMonth() + 1).padStart(2, '0');
-        const yStr = today.getFullYear();
-        const tarikhHariIniCari = `${dStr}/${mStr}/${yStr}`;
-        const namaHari = hariMap[today.getDay()] || '';
+        const chosenDate = new Date(dateInput);
+        const dStr = String(chosenDate.getDate()).padStart(2, '0');
+        const mStr = String(chosenDate.getMonth() + 1).padStart(2, '0');
+        const yStr = chosenDate.getFullYear();
+        const tarikhTVCari = `${dStr}/${mStr}/${yStr}`;
+        const namaHariPilihan = hariMap[chosenDate.getDay()] || 'ISNIN';
         
-        tarikhLabel.innerHTML = `<i class="fa-regular fa-calendar-days mr-2"></i> ${namaHari}, ${tarikhHariIniCari}`;
+        // Semak pangkalan data ganti DULU sebelum lukis slaid
+        const tvRecords = savedRecords.filter(r => r.tarikh === tarikhTVCari);
+        adaSlaidGanti = tvRecords.length > 0; // Kunci Slaid 2 jika kosong
 
         if (tvCurrentSlide === 1) {
-            // Slaid 1: JADUAL INDUK
-            tajukUtama.innerHTML = `<i class="fa-solid fa-table text-cyan-400 text-3xl md:text-5xl"></i> JADUAL INDUK WAKTU PERSEKOLAHAN`;
+            // ============================================
+            // SLAID 1: JADUAL INDUK BERFOKUS HARIAN (SUPER FULL SCREEN)
+            // ============================================
+            tajukUtama.innerHTML = `<i class="fa-solid fa-table text-cyan-400 text-3xl md:text-5xl"></i> JADUAL INDUK - HARI <span class="text-white bg-indigo-600 px-3 py-1 rounded-xl ml-2">${namaHariPilihan}</span>`;
+            document.getElementById('tv-watermark-hari').innerText = namaHariPilihan;
             
             slaidGanti.classList.replace('opacity-100', 'opacity-0');
             slaidGanti.classList.replace('z-20', 'z-0');
@@ -2864,35 +2915,128 @@
             slaidInduk.classList.replace('opacity-0', 'opacity-100');
             slaidInduk.classList.replace('z-0', 'z-20');
             
-            // Klon (Tiru) Jadual Induk dari Fasa 2 dan tegangkan ia dengan CSS Fit
-            const tapakIndukFasa2 = document.getElementById('paparan-induk');
-            const cloneTujuan = document.getElementById('tv-clone-induk');
-            if (tapakIndukFasa2 && tapakIndukFasa2.innerHTML.trim() !== '') {
-                cloneTujuan.innerHTML = tapakIndukFasa2.innerHTML;
-                // Paksa jadual membesar sepenuhnya menutupi ruang kontena
-                const tableDalam = cloneTujuan.querySelector('table');
-                if(tableDalam) {
-                    tableDalam.style.width = '100%';
-                    tableDalam.style.height = '100%';
-                    tableDalam.style.borderCollapse = 'collapse';
-                    // Suntik CSS khusus untuk membesarkan tulisan dan petak di dalam TV
-                    tableDalam.classList.add('tv-master-table');
-                    if (!document.getElementById('tv-custom-css')) {
-                        const style = document.createElement('style');
-                        style.id = 'tv-custom-css';
-                        style.innerHTML = `
-                            .tv-master-table th { font-size: 1.2rem !important; padding: 10px !important; border: 2px solid #cbd5e1 !important; }
-                            .tv-master-table td { font-size: 1.1rem !important; padding: 6px !important; border: 2px solid #cbd5e1 !important; }
-                            .tv-master-table td div.font-black { font-size: 1.4rem !important; font-weight: 900 !important; }
-                            .tv-master-table td div.text-\\[9px\\] { font-size: 1rem !important; font-weight: 700 !important; }
-                        `;
-                        document.head.appendChild(style);
+            // Enjin Pelukis Jadual Harian Dinamik (Bina dari kosong)
+            if (f2_senaraiKelasUnik.length > 0 && Object.keys(f2_jadualSediaAda).length > 0) {
+                // 1. Tentukan Had Maksimum Lajur Masa untuk Hari ini sahaja
+                const hariAdaRehat = {
+                   'ISNIN': document.getElementById('rehat-isnin') ? document.getElementById('rehat-isnin').checked : true,
+                   'SELASA': document.getElementById('rehat-selasa') ? document.getElementById('rehat-selasa').checked : true,
+                   'RABU': document.getElementById('rehat-rabu') ? document.getElementById('rehat-rabu').checked : true,
+                   'KHAMIS': document.getElementById('rehat-khamis') ? document.getElementById('rehat-khamis').checked : true,
+                   'JUMAAT': document.getElementById('rehat-jumaat') ? document.getElementById('rehat-jumaat').checked : false
+                };
+                const getLimit = (kelas, hariStr) => {
+                   let t = 't1';
+                   if (kelas.includes('1 ')) t = 't1'; else if (kelas.includes('2 ')) t = 't2'; else if (kelas.includes('3 ')) t = 't3'; else if (kelas.includes('4 ')) t = 't4'; else if (kelas.includes('5 ')) t = 't5'; else if (kelas.includes('6 ')) t = 't6';
+                   return kiraMaxSlotDinamik(`waktu-${hariStr === 'ISNIN' ? 'isn' : (hariStr === 'SELASA' ? 'sel' : (hariStr === 'RABU' ? 'rab' : (hariStr === 'KHAMIS' ? 'kha' : 'jum')))}-${t}`, hariAdaRehat[hariStr], hariStr === 'JUMAAT');
+                };
+
+                let maxSlotHariIni = 0;
+                f2_senaraiKelasUnik.forEach(k => {
+                    let limit = getLimit(k, namaHariPilihan);
+                    let adaTasmik = false;
+                    if (f2_jadualSediaAda[k] && f2_jadualSediaAda[k][namaHariPilihan]) {
+                        if (f2_jadualSediaAda[k][namaHariPilihan][limit] && f2_jadualSediaAda[k][namaHariPilihan][limit].subjek === 'TSMK') adaTasmik = true;
+                        if (f2_jadualSediaAda[k][namaHariPilihan][limit+1] && f2_jadualSediaAda[k][namaHariPilihan][limit+1].subjek === 'TSMK') adaTasmik = true;
+                    }
+                    if (limit + (adaTasmik?2:0) > maxSlotHariIni) maxSlotHariIni = limit + (adaTasmik?2:0);
+                });
+
+                // FailSafe & Variable Rehat
+                let rehatIndex = window.rehatIndexGlobal || 5;
+                if (maxSlotHariIni < rehatIndex + 1) maxSlotHariIni = rehatIndex + 1;
+                
+                let elemenPerhimpunan = document.getElementById('tetapan-perhimpunan');
+                let isHariPerhimpunan = (elemenPerhimpunan ? elemenPerhimpunan.value : 'RABU') === namaHariPilihan;
+
+                // Fungsi carian warna cikgu (Super Copy)
+                const cariWarnaCikguHarian = (kodGuruRaw) => {
+                    let jumpa = f2_senaraiGuruPenuh.find(g => g.kod === kodGuruRaw || g.nama === kodGuruRaw);
+                    return jumpa ? (jumpa.warna || '#f3f4f6') : '#f3f4f6';
+                };
+
+                // Lukis Papan Kepala (Header Masa tanpa Label Waktu bagi kebersihan visual yang besar)
+                let widthPct = 100 / (maxSlotHariIni + 1); // +1 untuk label kelas
+                let theadHarian = `<th class="py-2 px-1 border-r-4 border-gray-800 bg-gray-900 text-white font-black text-xl md:text-3xl w-[8%] tracking-widest text-center" style="width: 10%;">KELAS</th>`;
+                
+                let currentSlot = 1;
+                for(let i=0; i<maxSlotHariIni; i++) {
+                    if (i === rehatIndex && hariAdaRehat[namaHariPilihan]) {
+                         theadHarian += `<th class="py-2 px-1 border-r-4 border-gray-800 bg-amber-400 text-gray-900 font-black text-lg md:text-2xl text-center shadow-inner tracking-widest border-b-4 border-b-amber-500" style="width: ${widthPct}%;">REHAT</th>`;
+                    } else {
+                         theadHarian += `<th class="py-2 px-1 border-r border-indigo-700/50 bg-indigo-900 font-black text-xl md:text-3xl text-center text-indigo-100 shadow-inner" style="width: ${widthPct}%;">${currentSlot}</th>`;
+                         currentSlot++;
                     }
                 }
+                document.getElementById('tv-thead-harian').innerHTML = theadHarian;
+
+                // Lukis Badan Jadual Harian Pintar (Flex-1 memastikan ia meregang penuh ke bawah skrin)
+                let tbodyHarian = '';
+                f2_senaraiKelasUnik.forEach((kelas, kIndex) => {
+                    let sCikguHariIni = f2_jadualSediaAda[kelas][namaHariPilihan];
+                    let limitKelas = getLimit(kelas, namaHariPilihan);
+                    let adaRehat = hariAdaRehat[namaHariPilihan];
+                    
+                    let trHarian = `<tr class="flex w-full flex-1 border-b-2 border-gray-300 last:border-b-0 hover:bg-gray-50 transition-colors group">`;
+                    trHarian += `<td class="font-black text-xl md:text-3xl flex items-center justify-center border-r-4 border-gray-800 bg-gray-100 group-hover:bg-indigo-50 transition-colors shadow-inner" style="width: 10%; color: #111827;">${kelas}</td>`;
+                    
+                    let bakiLompong = adaRehat ? (maxSlotHariIni - rehatIndex) : (maxSlotHariIni - rehatIndex - 1);
+                    
+                    for(let i=0; i<maxSlotHariIni; i++) {
+                        // REHAT PETAK
+                        if (i === rehatIndex && adaRehat) {
+                            trHarian += `<td class="flex items-center justify-center border-r-4 border-gray-800 bg-amber-100/80 shadow-inner border-b-2 border-b-amber-200" style="width: ${widthPct}%;"></td>`;
+                            continue;
+                        }
+
+                        // PERHIMPUNAN PETAK
+                        if (isHariPerhimpunan && i === 0) {
+                            trHarian += `<td class="flex items-center justify-center border-r-2 border-gray-300 bg-indigo-50 shadow-inner font-black text-indigo-900 tracking-widest text-lg md:text-2xl overflow-hidden" style="width: ${widthPct}%;">PERHIMPUNAN</td>`;
+                            continue;
+                        }
+
+                        // JADUAL SEBENAR
+                        let selObj = null;
+                        if (i < limitKelas) selObj = sCikguHariIni[i];
+                        else if (i === limitKelas && sCikguHariIni[limitKelas]) selObj = sCikguHariIni[limitKelas]; // Tasmik 1
+                        else if (i === limitKelas+1 && sCikguHariIni[limitKelas+1]) selObj = sCikguHariIni[limitKelas+1]; // Tasmik 2
+                        
+                        if (selObj) {
+                            let bgColorStyle = '';
+                            if (selObj.kodGuru.includes(' / ')) {
+                                let gurus = selObj.kodGuru.split(' / ');
+                                bgColorStyle = `background: linear-gradient(135deg, ${cariWarnaCikguHarian(gurus[0].trim())} 50%, ${cariWarnaCikguHarian(gurus[1].trim())} 50%);`;
+                            } else {
+                                bgColorStyle = `background-color: ${cariWarnaCikguHarian(selObj.kodGuru)};`;
+                            }
+                            
+                            trHarian += `<td class="flex flex-col items-center justify-center border-r border-gray-300 border-b border-b-gray-400/30 relative overflow-hidden shadow-sm" style="width: ${widthPct}%; ${bgColorStyle}">
+                                            <div class="absolute inset-0 bg-white opacity-20"></div>
+                                            <div class="relative z-10 flex flex-col items-center justify-center h-full w-full">
+                                                <span class="font-black text-black/80 text-xl md:text-3xl lg:text-4xl drop-shadow-sm leading-none text-center px-1">${selObj.subjek}</span>
+                                                <span class="font-extrabold text-black/60 text-[10px] md:text-sm lg:text-base uppercase tracking-wider mt-1 md:mt-2 text-center truncate w-full px-2">${selObj.kodGuru}</span>
+                                            </div>
+                                         </td>`;
+                        } else {
+                            // Petak Kosong / Tamat Awal
+                            trHarian += `<td class="flex items-center justify-center border-r border-gray-200 bg-gray-200/50 relative overflow-hidden shadow-inner" style="width: ${widthPct}%;">
+                                            <div class="w-full h-[2px] bg-gray-300/50 absolute top-1/2 left-0 transform -translate-y-1/2"></div>
+                                         </td>`;
+                        }
+                    }
+                    trHarian += `</tr>`;
+                    tbodyHarian += trHarian;
+                });
+                
+                document.getElementById('tv-tbody-harian').innerHTML = tbodyHarian;
+            } else {
+                document.getElementById('tv-tbody-harian').innerHTML = `<tr class="flex-1 flex items-center justify-center w-full"><td class="text-center font-black text-gray-400 text-3xl animate-pulse">Sila Jana Jadual Induk Di Fasa 2 Dahulu...</td></tr>`;
             }
             
         } else {
-            // Slaid 2: JADUAL GURU GANTI
+            // ============================================
+            // SLAID 2: JADUAL GURU GANTI BERFOKUS (Hanya muncul jika ada rekod)
+            // ============================================
             tajukUtama.innerHTML = `<i class="fa-solid fa-users-viewfinder text-rose-400 text-3xl md:text-5xl"></i> JADUAL GURU GANTI (LIVE)`;
             
             slaidInduk.classList.replace('opacity-100', 'opacity-0');
@@ -2903,39 +3047,32 @@
             slaidGanti.style.pointerEvents = 'auto';
             
             const tbodyGanti = document.getElementById('tv-tbody-ganti');
-            const tvRecords = savedRecords.filter(r => r.tarikh === tarikhHariIniCari);
             tvRecords.sort((a, b) => timeToMinutes(a.masa) - timeToMinutes(b.masa));
 
-            if (tvRecords.length === 0) {
-                // Tiada guru ganti hari ini
-                tbodyGanti.innerHTML = `<tr class="flex-1 flex items-center justify-center w-full"><td class="text-center w-full"><div class="text-emerald-400 text-5xl md:text-6xl font-black uppercase tracking-[0.2em] drop-shadow-lg mb-4"><i class="fa-solid fa-circle-check mb-6 text-7xl block"></i>TIADA JADUAL GURU GANTI HARI INI</div><div class="text-gray-400 text-2xl font-bold tracking-widest mt-2 uppercase">Semua guru hadir berkhidmat</div></td></tr>`;
-            } else {
-                // Ada jadual ganti (Sistem Flexbox akan auto-resize font dan ketinggian row!)
-                tbodyGanti.innerHTML = tvRecords.map(r => `
-                    <tr class="flex w-full flex-1 hover:bg-gray-700/80 transition-colors group border-b border-gray-700/50 last:border-0">
-                      <td class="py-2 px-4 w-[15%] flex items-center justify-center border-r border-gray-700/30">
-                        <span class="text-yellow-400 font-black drop-shadow-md lg:text-[2vw] text-2xl leading-none text-center">${r.masa}</span>
-                      </td>
-                      <td class="py-2 px-4 w-[20%] flex items-center justify-center border-r border-gray-700/30">
-                        <span class="bg-indigo-600/80 group-hover:bg-indigo-500 border border-indigo-400 text-white font-extrabold lg:text-[2vw] text-2xl px-6 py-2 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.5)] block transition-colors leading-none text-center">${r.kelas}</span>
-                      </td>
-                      <td class="py-2 px-4 w-[30%] flex items-center justify-start border-r border-gray-700/30 pl-8">
-                        <span class="text-red-400 font-bold lg:text-[2.2vw] text-3xl line-through decoration-red-500/50 opacity-90 leading-tight">${r.guru_asal}</span>
-                      </td>
-                      <td class="py-2 px-4 w-[20%] flex items-center justify-center border-r border-gray-700/30">
-                        <span class="text-emerald-400 font-extrabold lg:text-[2.2vw] text-3xl uppercase drop-shadow-md leading-tight text-center">${r.guru_ganti}</span>
-                      </td>
-                      <td class="py-2 px-4 w-[15%] flex items-center justify-center">
-                        <span class="text-gray-200 font-black lg:text-[2vw] text-2xl leading-tight text-center bg-gray-700/50 px-4 py-2 rounded-lg border border-gray-600">${r.subjek}</span>
-                      </td>
-                    </tr>
-                `).join('');
-            }
+            // Kita sudah semak kekosongan di awal fungsi, jadi blok ini pasti akan melukis jadual dengan data.
+            tbodyGanti.innerHTML = tvRecords.map(r => `
+                <tr class="flex w-full flex-1 hover:bg-gray-700/80 transition-colors group border-b border-gray-700/50 last:border-0">
+                  <td class="py-2 px-4 w-[15%] flex items-center justify-center border-r border-gray-700/30">
+                    <span class="text-yellow-400 font-black drop-shadow-md lg:text-[2vw] text-2xl leading-none text-center">${r.masa}</span>
+                  </td>
+                  <td class="py-2 px-4 w-[20%] flex items-center justify-center border-r border-gray-700/30">
+                    <span class="bg-indigo-600/80 group-hover:bg-indigo-500 border border-indigo-400 text-white font-extrabold lg:text-[2vw] text-2xl px-6 py-2 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.5)] block transition-colors leading-none text-center">${r.kelas}</span>
+                  </td>
+                  <td class="py-2 px-4 w-[30%] flex items-center justify-start border-r border-gray-700/30 pl-8">
+                    <span class="text-red-400 font-bold lg:text-[2.2vw] text-3xl line-through decoration-red-500/50 opacity-90 leading-tight">${r.guru_asal}</span>
+                  </td>
+                  <td class="py-2 px-4 w-[20%] flex items-center justify-center border-r border-gray-700/30">
+                    <span class="text-emerald-400 font-extrabold lg:text-[2.2vw] text-3xl uppercase drop-shadow-md leading-tight text-center">${r.guru_ganti}</span>
+                  </td>
+                  <td class="py-2 px-4 w-[15%] flex items-center justify-center">
+                    <span class="text-gray-200 font-black lg:text-[2vw] text-2xl leading-tight text-center bg-gray-700/50 px-4 py-2 rounded-lg border border-gray-600">${r.subjek}</span>
+                  </td>
+                </tr>
+            `).join('');
         }
     }
 
-    // Panggil initTVLoop apabila tab TV ditekan, dan henti jika keluar dari tab TV
-    // (Akan disemat ke dalam fungsi switchTab)
+    // Fungsi jadikan skrin penuh tanpa sempadan putih
 
     // Fungsi jadikan skrin penuh tanpa sempadan putih
     function toggleFullscreenTV() {
