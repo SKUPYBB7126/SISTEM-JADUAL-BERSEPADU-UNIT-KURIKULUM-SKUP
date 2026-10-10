@@ -3488,7 +3488,7 @@
       kiraTotalWaktu();
     }
 
-    // Fungsi 2: Tambah Barisan Kelas
+   // Fungsi 2: Tambah Barisan Kelas
     function tambahBarisKelas() {
       f2_currentRows++;
       const rowId = f2_currentRows;
@@ -3999,12 +3999,16 @@
            'JUMAAT': document.getElementById('rehat-jumaat') ? document.getElementById('rehat-jumaat').checked : false
        };
 
-       // KOD BAHARU: Sistem "Pemanggil Had Masa Dinamik" untuk setiap kelas/hari
+      // KOD BAHARU: Sistem "Pemanggil Had Masa Dinamik" untuk setiap kelas/hari (6 Tahun Asing)
        const getLimit = (kelas, hariStr) => {
-           let isT1 = kelas.includes('1 ') || kelas.includes('2 ');
-           let isT2 = kelas.includes('3 ') || kelas.includes('4 ');
-           let isT3 = kelas.includes('5 ') || kelas.includes('6 ');
-           let t = isT1 ? 't1' : (isT2 ? 't2' : 't3');
+           let t = 't1';
+           if (kelas.includes('1 ')) t = 't1';
+           else if (kelas.includes('2 ')) t = 't2';
+           else if (kelas.includes('3 ')) t = 't3';
+           else if (kelas.includes('4 ')) t = 't4';
+           else if (kelas.includes('5 ')) t = 't5';
+           else if (kelas.includes('6 ')) t = 't6';
+           
            let h = hariStr === 'ISNIN' ? 'isn' : (hariStr === 'SELASA' ? 'sel' : (hariStr === 'RABU' ? 'rab' : (hariStr === 'KHAMIS' ? 'kha' : 'jum')));
            return kiraMaxSlotDinamik(`waktu-${h}-${t}`, hariAdaRehat[hariStr], hariStr === 'JUMAAT');
        };
@@ -4101,8 +4105,11 @@
                let senaraiTertinggal = [];
                
                let arrRujukan = arraySubjekTahap1;
-               if (kelas.includes('3 ') || kelas.includes('4 ')) arrRujukan = arraySubjekTahap2;
-               else if (kelas.includes('5 ') || kelas.includes('6 ')) arrRujukan = arraySubjekTahap3;
+               if (kelas.includes('2 ')) arrRujukan = arraySubjekTahap2;
+               else if (kelas.includes('3 ')) arrRujukan = arraySubjekTahap3;
+               else if (kelas.includes('4 ')) arrRujukan = arraySubjekTahap4;
+               else if (kelas.includes('5 ')) arrRujukan = arraySubjekTahap5;
+               else if (kelas.includes('6 ')) arrRujukan = arraySubjekTahap6;
 
                let kurangPI = false; let kurangPM = false;
 
@@ -4463,10 +4470,15 @@
            'JUMAAT': document.getElementById('rehat-jumaat') ? document.getElementById('rehat-jumaat').checked : false
         };
 
-        const getLimit = (kelas, hariStr) => {
-           let isT1 = kelas.includes('1 ') || kelas.includes('2 ');
-           let isT2 = kelas.includes('3 ') || kelas.includes('4 ');
-           let t = isT1 ? 't1' : (isT2 ? 't2' : 't3');
+       const getLimit = (kelas, hariStr) => {
+           let t = 't1';
+           if (kelas.includes('1 ')) t = 't1';
+           else if (kelas.includes('2 ')) t = 't2';
+           else if (kelas.includes('3 ')) t = 't3';
+           else if (kelas.includes('4 ')) t = 't4';
+           else if (kelas.includes('5 ')) t = 't5';
+           else if (kelas.includes('6 ')) t = 't6';
+           
            let h = hariStr === 'ISNIN' ? 'isn' : (hariStr === 'SELASA' ? 'sel' : (hariStr === 'RABU' ? 'rab' : (hariStr === 'KHAMIS' ? 'kha' : 'jum')));
            return kiraMaxSlotDinamik(`waktu-${h}-${t}`, hariAdaRehat[hariStr], hariStr === 'JUMAAT');
         };
