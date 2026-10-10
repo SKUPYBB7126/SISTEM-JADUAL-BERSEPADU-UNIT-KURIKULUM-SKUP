@@ -69,6 +69,27 @@
     .modern-table td { padding: 12px 16px; border: none; }
     .modern-table td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
     .modern-table td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+    
+    /* KOD BAHARU: Animasi Latar Belakang Hidup ala Apple / Stripe / Canva */
+    .aurora-bg { background-color: #f8fafc; }
+    .aurora-blob { 
+        position: absolute; 
+        filter: blur(100px); 
+        z-index: 0; 
+        opacity: 0.65; 
+        border-radius: 50%;
+        animation: float-blob 15s infinite ease-in-out alternate; 
+        pointer-events: none; /* Memastikan latar belakang tidak mengganggu klik sistem */
+    }
+    .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #ff9a9e; animation-delay: 0s; }
+    .blob-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: #a1c4fd; animation-delay: -5s; }
+    .blob-3 { top: 20%; left: 30%; width: 45vw; height: 45vw; background: #fbc2eb; animation-delay: -10s; }
+    
+    @keyframes float-blob {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(5%, 15%) scale(1.1); }
+        100% { transform: translate(-10%, 5%) scale(0.9); }
+    }
   </style>
  </head>
  <body class="h-full text-gray-800 aurora-bg overflow-hidden relative">
