@@ -3063,7 +3063,8 @@
                         
                         // REHAT PETAK
                         if (i === rehatIndex && isHariRehat) {
-                            trHarian += `<td class="border-r-[3px] border-l-[3px] border-gray-800 p-2 md:p-3 bg-amber-100/50 shadow-inner align-middle${exBorder}"></td>`;
+                            // KOD BAHARU: Tambah perkataan REHAT dan kemaskini warna gaya agar sama seperti Fasa 2
+                            trHarian += `<td class="border-r-[3px] border-l-[3px] border-gray-800 p-2 md:p-3 bg-amber-50 font-black text-amber-600 tracking-widest text-center uppercase text-xl md:text-2xl shadow-inner align-middle${exBorder}">REHAT</td>`;
                             continue;
                         }
 
