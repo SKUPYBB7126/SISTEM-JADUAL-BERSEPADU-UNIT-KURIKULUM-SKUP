@@ -4645,7 +4645,7 @@
             let tasmikSlot1 = arrSlots[maxSlot]; let tasmikSlot2 = arrSlots[maxSlot + 1]; 
             let adaRehat = hariAdaRehat[hari];
 
-            // Bahagian Pagi
+           // Bahagian Pagi
             for(let i=0; i < rehatIndex; i++) {
                 if (hari === hariPerhimpunan && i === 0 && viewMode !== 'guru') {
                     // KOD BAHARU: Tetapkan warna PERHIMPUNAN seragam (bg-indigo-50) untuk semua jadual
@@ -4655,6 +4655,8 @@
                      tr += `<td class="border border-gray-300 p-2 bg-indigo-50 font-black text-indigo-900 tracking-widest uppercase align-middle${exBorder}">PERH</td>`;
                 } else {
                     if (i < maxSlot) tr += renderSlotObj(arrSlots[i], viewMode, isRowEnd);
+                    else if (i === maxSlot && tasmikSlot1) tr += renderSlotObj(arrSlots[i], viewMode, isRowEnd);
+                    else if (i === maxSlot + 1 && tasmikSlot2) tr += renderSlotObj(arrSlots[i], viewMode, isRowEnd);
                     else tr += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px]${exBorder}">TAMAT</td>`;
                 }
             }
@@ -4664,10 +4666,12 @@
                 if (isRowStart) tr += `<td class="border border-gray-300 p-2 bg-amber-50 font-black text-amber-600 tracking-widest align-middle${exBorder}" rowspan="${rowspan}">REHAT</td>`;
             } else {
                 if (rehatIndex < maxSlot) tr += renderSlotObj(arrSlots[rehatIndex], viewMode, isRowEnd);
+                else if (rehatIndex === maxSlot && tasmikSlot1) tr += renderSlotObj(arrSlots[rehatIndex], viewMode, isRowEnd);
+                else if (rehatIndex === maxSlot + 1 && tasmikSlot2) tr += renderSlotObj(arrSlots[rehatIndex], viewMode, isRowEnd);
                 else tr += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px]${exBorder}">TAMAT</td>`;
             }
             
-           // Selepas Rehat
+            // Selepas Rehat
             let startPetak = adaRehat ? rehatIndex : rehatIndex + 1;
             let bakiLompong = adaRehat ? (maxTotalSlot - rehatIndex) : (maxTotalSlot - rehatIndex - 1);
             
