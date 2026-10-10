@@ -2849,40 +2849,51 @@
       }
     }
 
-    // ==========================================
-    // KOD BAHARU: LOGIK PAPARAN TV LIVE (SLIDE SHOW PINTAR)
+   // ==========================================
+    // KOD BAHARU: LOGIK PAPARAN TV LIVE (SLIDE SHOW PINTAR AUTO-PAGINATION)
     // ==========================================
     let tvLoopInterval;
-    let tvCurrentSlide = 1; // 1 = Induk, 2 = Ganti
-    let adaSlaidGanti = true; // Penanda rahsia untuk sembunyikan Slaid 2 jika kosong
+    let tvCurrentSlide = 1; 
+    let tvSubSlideGanti = 0; // KOD BAHARU: Penunjuk muka surat (page) bagi Jadual Ganti
+    let adaSlaidGanti = true; 
+    let totalMukasuratGanti = 0; // KOD BAHARU: Jumlah muka surat diperlukan
 
     function restartTVSystemManual() {
         const dateInput = document.getElementById('tv-date-manual');
         if (!dateInput || !dateInput.value) return;
         
-        // Pengawal Hari Persekolahan: Halang Sabtu dan Ahad
         const chosenDate = new Date(dateInput.value);
         const dayIndex = chosenDate.getDay();
         if (dayIndex === 0 || dayIndex === 6) {
-             showToast('AMARAN: Sekolah ditutup pada hujung minggu. Sila pilih hari Isnin-Jumaat.', 'error');
-             dateInput.value = ''; // Kosongkan supaya cikgu pilih lain
+             showToast('AMARAN: Sekolah ditutup pada hujung minggu.', 'error');
+             dateInput.value = ''; 
              return;
         }
 
         clearInterval(tvLoopInterval);
-        tvCurrentSlide = 1; // Mula dari Slaid 1
-        updateTVScreen(); // Lukiskan
+        tvCurrentSlide = 1; 
+        tvSubSlideGanti = 0; 
+        updateTVScreen(); 
         
-        // Pemasa Slaid 30 Saat
+        // Pemasa Slaid dipendekkan ke 20 Saat untuk tatalan muka surat pantas
         tvLoopInterval = setInterval(() => {
-            // Jika ada ganti, tukar ke slaid 2. Jika tiada ganti, lekat di slaid 1!
             if (adaSlaidGanti) {
-                tvCurrentSlide = tvCurrentSlide === 1 ? 2 : 1;
+                if (tvCurrentSlide === 1) {
+                    tvCurrentSlide = 2; // Pergi ke Jadual Ganti
+                    tvSubSlideGanti = 0; // Mula dari Muka Surat 1
+                } else if (tvCurrentSlide === 2) {
+                    // KOD BAHARU: Cek adakah ada muka surat seterusnya?
+                    tvSubSlideGanti++;
+                    if (tvSubSlideGanti >= totalMukasuratGanti) {
+                        tvCurrentSlide = 1; // Kembali ke Slaid 1 jika sudah habis
+                        tvSubSlideGanti = 0;
+                    }
+                }
             } else {
                 tvCurrentSlide = 1; 
             }
             updateTVScreen();
-        }, 30000); 
+        }, 20000); 
     }
 
     function updateTVScreen() {
@@ -2898,9 +2909,12 @@
         const tarikhTVCari = `${dStr}/${mStr}/${yStr}`;
         const namaHariPilihan = hariMap[chosenDate.getDay()] || 'ISNIN';
         
-        // Semak pangkalan data ganti DULU sebelum lukis slaid
         const tvRecords = savedRecords.filter(r => r.tarikh === tarikhTVCari);
-        adaSlaidGanti = tvRecords.length > 0; // Kunci Slaid 2 jika kosong
+        adaSlaidGanti = tvRecords.length > 0; 
+
+        // KOD BAHARU: Kira keperluan muka surat. (Contoh: 1 Muka Surat = 5 Baris Maksimum)
+        const limitSatuPage = 5;
+        totalMukasuratGanti = Math.ceil(tvRecords.length / limitSatuPage);
 
         if (tvCurrentSlide === 1) {
             // ============================================
@@ -3100,7 +3114,9 @@
             // ============================================
             // SLAID 2: JADUAL GURU GANTI BERFOKUS (Hanya muncul jika ada rekod)
             // ============================================
-            tajukUtama.innerHTML = `<i class="fa-solid fa-users-viewfinder text-rose-400 text-3xl md:text-5xl"></i> JADUAL GURU GANTI (LIVE)`;
+            // KOD BAHARU: Tambah nombor mukasurat pada tajuk utama jika perlu (M/S: 1/2)
+            let paparanMukaSurat = totalMukasuratGanti > 1 ? `<span class="ml-4 text-rose-300 text-xl font-bold bg-gray-800 px-3 py-1 rounded-lg border border-gray-600">(M/S: ${tvSubSlideGanti + 1}/${totalMukasuratGanti})</span>` : '';
+            tajukUtama.innerHTML = `<i class="fa-solid fa-users-viewfinder text-rose-400 text-3xl md:text-5xl"></i> JADUAL GURU GANTI (LIVE) ${paparanMukaSurat}`;
             
             slaidInduk.classList.replace('opacity-100', 'opacity-0');
             slaidInduk.classList.replace('z-20', 'z-0');
@@ -3112,8 +3128,12 @@
             const tbodyGanti = document.getElementById('tv-tbody-ganti');
             tvRecords.sort((a, b) => timeToMinutes(a.masa) - timeToMinutes(b.masa));
 
-            // Kita sudah semak kekosongan di awal fungsi, jadi blok ini pasti akan melukis jadual dengan data.
-            tbodyGanti.innerHTML = tvRecords.map(r => `
+            // KOD BAHARU: Kerat (Slice) data mengikut mukasurat (Pagination)
+            const limitSatuPage = 5;
+            let indeksMula = tvSubSlideGanti * limitSatuPage;
+            let rekodMukasuratIni = tvRecords.slice(indeksMula, indeksMula + limitSatuPage);
+
+            tbodyGanti.innerHTML = rekodMukasuratIni.map(r => `
                 <tr class="flex w-full flex-1 hover:bg-gray-700/80 transition-colors group border-b border-gray-700/50 last:border-0">
                   <td class="py-2 px-4 w-[15%] flex items-center justify-center border-r border-gray-700/30">
                     <span class="text-yellow-400 font-black drop-shadow-md lg:text-[2vw] text-2xl leading-none text-center">${r.masa}</span>
@@ -3132,6 +3152,12 @@
                   </td>
                 </tr>
             `).join('');
+            
+            // KOD BAHARU: Tambah "lompong" (empty rows) supaya tinggi jadual sentiasa kekal sama walaupun rekod tak cukup 5 pada mukasurat terakhir
+            let bakiLompong = limitSatuPage - rekodMukasuratIni.length;
+            for(let i=0; i<bakiLompong; i++) {
+                tbodyGanti.innerHTML += `<tr class="flex w-full flex-1 border-b border-gray-700/50 last:border-0 opacity-20"><td class="w-full"></td></tr>`;
+            }
         }
     }
 
