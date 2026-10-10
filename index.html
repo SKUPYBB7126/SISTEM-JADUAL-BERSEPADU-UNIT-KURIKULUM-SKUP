@@ -4500,13 +4500,33 @@
 
         let isRehatSama = (waktuRehatMula === waktuRehatJumMula && waktuRehatTamat === waktuRehatJumTamat && hariAdaRehat['ISNIN'] === hariAdaRehat['JUMAAT']);
         let jumAdaRehat = hariAdaRehat['JUMAAT'];
-        let tasmikJumaatBoleh = document.getElementById('tasmik-jumaat') ? document.getElementById('tasmik-jumaat').checked : false;
         
-        let maxJumT1 = kiraMaxSlotDinamik('waktu-jum-t1', hariAdaRehat['JUMAAT'], true);
-        let maxJumT2 = kiraMaxSlotDinamik('waktu-jum-t2', hariAdaRehat['JUMAAT'], true);
-        let maxJumT3 = kiraMaxSlotDinamik('waktu-jum-t3', hariAdaRehat['JUMAAT'], true);
-        let slotJumMaxGlobal = Math.max(maxJumT1, maxJumT2, maxJumT3);
-        let totalMaxJumSlot = slotJumMaxGlobal + (tasmikJumaatBoleh ? 2 : 0); 
+        // KOD BAHARU: Pemotong Masa Dinamik - Menghitung titik henti tepat tanpa petak kosong
+        let maxTotalSlot = 0;
+        let jumMaxSlot = 0;
+        const hariSemak = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'];
+        
+        if (f2_senaraiKelasUnik.length > 0) {
+            f2_senaraiKelasUnik.forEach(k => {
+                hariSemak.forEach(h => {
+                    let limit = getLimit(k, h);
+                    let adaTasmik = false;
+                    if (f2_jadualSediaAda[k] && f2_jadualSediaAda[k][h]) {
+                        if (f2_jadualSediaAda[k][h][limit] && f2_jadualSediaAda[k][h][limit].subjek === 'TSMK') adaTasmik = true;
+                        if (f2_jadualSediaAda[k][h][limit+1] && f2_jadualSediaAda[k][h][limit+1].subjek === 'TSMK') adaTasmik = true;
+                    }
+                    let currentMax = limit + (adaTasmik ? 2 : 0);
+                    if (currentMax > maxTotalSlot) maxTotalSlot = currentMax;
+                    if (h === 'JUMAAT' && currentMax > jumMaxSlot) jumMaxSlot = currentMax;
+                });
+            });
+        } else {
+            maxTotalSlot = 12; // Fallback keselamatan
+            jumMaxSlot = 12;
+        }
+        
+        if (maxTotalSlot < rehatIndex + 1) maxTotalSlot = rehatIndex + 1; // Failsafe
+        let totalMaxJumSlot = jumMaxSlot;
 
         let thHtmlMasa = ``;
         let currentMasa = waktuMula; let jumCurrentMasa = waktuMula; let jumSlotIndex = 0; 
@@ -4539,7 +4559,7 @@
         thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 bg-amber-100 text-amber-800 font-black text-center min-w-[55px] leading-tight break-words">${teksRehat}</th>`;
         currentMasa = waktuRehatTamat;
 
-        for(let i = rehatIndex; i < 15; i++) {
+        for(let i = rehatIndex; i < maxTotalSlot; i++) {
             let nextMasa = addMinutes(currentMasa, 30);
             let nextJum = addMinutes(jumCurrentMasa, 30);
             let showJumNote = (jumSlotIndex < totalMaxJumSlot) && (!isRehatSama) && (currentMasa !== jumCurrentMasa || nextMasa !== nextJum);
@@ -4647,11 +4667,11 @@
                 else tr += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px]${exBorder}">TAMAT</td>`;
             }
             
-            // Selepas Rehat
+           // Selepas Rehat
             let startPetak = adaRehat ? rehatIndex : rehatIndex + 1;
-            let bakiLompong = adaRehat ? (15 - rehatIndex) : (15 - rehatIndex - 1);
+            let bakiLompong = adaRehat ? (maxTotalSlot - rehatIndex) : (maxTotalSlot - rehatIndex - 1);
             
-            for(let i = startPetak; i < 15; i++) {
+            for(let i = startPetak; i < maxTotalSlot; i++) {
                 if (i < maxSlot) { tr += renderSlotObj(arrSlots[i], viewMode, isRowEnd); bakiLompong--; } 
                 else if (i === maxSlot && tasmikSlot1) { tr += renderSlotObj(arrSlots[i], viewMode, isRowEnd); bakiLompong--; } 
                 else if (i === maxSlot + 1 && tasmikSlot2) { tr += renderSlotObj(arrSlots[i], viewMode, isRowEnd); bakiLompong--; } 
@@ -4819,6 +4839,26 @@
         // TANGKAP SEMUA STYLES (TERMASUK TAILWIND) DARI PARENT WINDOW UNTUK ELAK JADUAL KOSONG/PUTIH
         const parentStyles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('\n');
 
+        let scaleCss = '';
+        if (activeTabId === 'paparan-induk') {
+            scaleCss = `
+                /* PAKSA MUAT 1 MUKA SURAT A4 (Shrink-to-fit) UNTUK JADUAL INDUK */
+                table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed; margin-bottom: 0 !important; }
+                th { font-size: 8px !important; padding: 3px !important; border: 1px solid #6b7280 !important; }
+                td { font-size: 8px !important; padding: 2px !important; border: 1px solid #6b7280 !important; height: auto !important; }
+                td div { font-size: 8px !important; margin: 0 !important; line-height: 1.1 !important; }
+            `;
+        } else {
+            scaleCss = `
+                /* SAIZ NORMAL UNTUK KELAS DAN GURU (Lebih Selesa Dibaca) */
+                table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 20px !important; }
+                th { font-size: 11px !important; padding: 6px !important; border: 1px solid #6b7280 !important; }
+                td { font-size: 11px !important; padding: 6px !important; border: 1px solid #6b7280 !important; }
+                td div { font-size: 11px !important; line-height: 1.3 !important; }
+                .page-break-inside-avoid { page-break-inside: avoid; margin-top: 20px; }
+            `;
+        }
+
         const printWindow = window.open('', '_blank');
         
         const htmlContent = `
@@ -4838,11 +4878,7 @@
                     div:has(> select), .bg-emerald-50.p-3, .bg-rose-50.p-3, label, select, button { display: none !important; }
                     .overflow-x-auto, .scroll-container { overflow: visible !important; max-height: none !important; }
                     
-                    /* PAKSA MUAT 1 MUKA SURAT A4 (Shrink-to-fit) */
-                    table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed; margin-bottom: 0 !important; }
-                    th { font-size: 8px !important; padding: 3px !important; border: 1px solid #6b7280 !important; }
-                    td { font-size: 8px !important; padding: 2px !important; border: 1px solid #6b7280 !important; height: auto !important; }
-                    td div { font-size: 8px !important; margin: 0 !important; line-height: 1.1 !important; }
+                    ${scaleCss}
                     
                     /* REKA LETAK HEADER - DIKECILKAN UNTUK JIMAT RUANG */
                     .header-cetak { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 5px; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px; }
@@ -4852,7 +4888,7 @@
                     .header-teks h2 { font-size: 10px; font-weight: 700; color: #e11d48; margin: 2px 0 0 0; }
 
                     /* PENGUKUHAN GARISAN PEMISAH HARI (TEBAL) */
-                    .border-b-\\[3px\\] { border-bottom: 2.5px solid #111827 !important; }
+                    .border-b-[3px] { border-bottom: 2.5px solid #111827 !important; }
                 </style>
             </head>
             <body class="bg-white text-gray-900">
