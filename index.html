@@ -800,9 +800,10 @@
          </div>
       </div>
 
-      <!-- Butang Jana Jadual Induk Keseluruhan -->
+     <!-- Butang Jana Jadual Induk Keseluruhan -->
       <div class="border-t-4 border-indigo-200 pt-8 text-center">
-         <button onclick="janaJadualIndukKeseluruhan()" class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black tracking-widest uppercase py-5 px-10 rounded-2xl shadow-[0_10px_20px_rgba(79,70,229,0.4)] transform hover:-translate-y-1 transition-all flex items-center justify-center gap-3 mx-auto text-lg">
+         <!-- KOD BAHARU: Butang ditukar fungsinya kepada semakSebelumJana() -->
+         <button onclick="semakSebelumJana()" class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black tracking-widest uppercase py-5 px-10 rounded-2xl shadow-[0_10px_20px_rgba(79,70,229,0.4)] transform hover:-translate-y-1 transition-all flex items-center justify-center gap-3 mx-auto text-lg">
             <i class="fa-solid fa-bolt text-2xl text-yellow-300"></i> JANA JADUAL INDUK KESELURUHAN
          </button>
          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-4">Sistem Enjin AI akan mengambil masa 10-30 saat untuk memproses bebas pertindihan.</p>
@@ -812,11 +813,15 @@
       <div id="f2-hasil-jadual" class="hidden mt-10 pt-10 border-t border-gray-200 fade-in">
           <div class="bg-white p-6 rounded-2xl shadow-inner border border-gray-200 relative">
             <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase shadow-md">Paparan Pratonton AI</div>
-            <div class="text-center mb-6 mt-2">
-                <h2 id="tajuk-jadual-utama" class="text-lg md:text-xl font-black text-indigo-900 uppercase tracking-widest">JADUAL INDUK WAKTU PERSEKOLAHAN SK ULU PELAGUS 2027</h2>
+            <div class="text-center mb-6 mt-2 relative group flex flex-col items-center justify-center">
+                <!-- KOD BAHARU: Pemisahan Tajuk Statik dan Tahun Dinamik (Canva-Vibe Berpusat) -->
+                <h2 id="tajuk-jadual-utama" class="text-lg md:text-xl font-black text-indigo-900 uppercase tracking-widest inline-flex items-center flex-wrap justify-center">
+                    <span id="tajuk-jadual-teks">JADUAL INDUK WAKTU PERSEKOLAHAN SK ULU PELAGUS &nbsp;</span>
+                    <span id="tahun-jadual-global" contenteditable="true" spellcheck="false" title="Klik untuk mengubah tahun" onblur="simpanTahunGlobal()" onkeydown="if(event.key === 'Enter'){event.preventDefault(); this.blur();}" class="cursor-text hover:bg-indigo-50 hover:scale-[1.05] px-2 py-1 rounded-lg border border-transparent hover:border-indigo-200 transition-all outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 inline-block text-indigo-700 bg-indigo-50/30">2027</span>
+                </h2>
+                <div class="absolute -top-4 right-1/2 transform translate-x-1/2 bg-gray-800 text-white text-[9px] px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-sm z-10">✏️ Klik tahun untuk edit</div>
                 <h3 id="subtajuk-jadual-guru" class="text-sm font-bold text-rose-600 uppercase tracking-widest mt-1 hidden">NAMA GURU</h3>
             </div>
-            
             <!-- 3 TAB NAVIGASI PINTAR -->
 
              <div class="flex flex-col md:flex-row gap-2 bg-gray-100 p-2 rounded-2xl mb-4 relative z-10 shadow-inner">
@@ -4335,13 +4340,64 @@
     }
     setTimeout(hadkanTasmik, 500); // Laksanakan semasa sistem dimuatkan
 
+    // KOD BAHARU: Memori Global Tahun Jadual & Pencetus Selaras (Sync Trigger)
+    let tahunJadualGlobal = "2027";
+
+    window.simpanTahunGlobal = function() {
+        const spanTahun = document.getElementById('tahun-jadual-global');
+        if (spanTahun) {
+            let teksBaru = spanTahun.innerText.trim();
+            if (teksBaru === "") teksBaru = "2027"; // Failsafe jika cikgu terpadam habis
+            tahunJadualGlobal = teksBaru;
+            spanTahun.innerText = tahunJadualGlobal; // Kemaskan format
+        }
+    };
+
   // Fungsi 8: Klimaks - Butang Jana Jadual Induk (Matriks Waktu)
     let f2_jadualSediaAda = {}; 
     let f2_senaraiKelasUnik = [];
 
-    function janaJadualIndukKeseluruhan() {
-       if (f2_senaraiGuruPenuh.length === 0) { showToast('Sila daftarkan sekurang-kurangnya 1 Guru dahulu!', 'error'); return; }
+    // KOD BAHARU: Sistem Amaran Penjanaan Semula (Smart Warning)
+    function semakSebelumJana() {
+        if (f2_senaraiGuruPenuh.length === 0) { 
+            showToast('Sila daftarkan sekurang-kurangnya 1 Guru dahulu!', 'error'); 
+            return; 
+        }
 
+        // Semak jika memori jadual di skrin sudah ada isinya (Jadual telah dijana sebelum ini)
+        if (f2_senaraiKelasUnik.length > 0) {
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] fade-in';
+            modalDiv.innerHTML = `
+              <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 border-t-8 border-amber-500 relative overflow-hidden">
+                <i class="fa-solid fa-triangle-exclamation absolute -right-6 -bottom-6 text-9xl text-amber-50 opacity-20"></i>
+                <div class="relative z-10">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0 shadow-inner">
+                      <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-black text-gray-800 uppercase tracking-tight">Pengesahan Penjanaan</h3>
+                  </div>
+                  <p class="text-sm font-semibold text-gray-600 mb-6 leading-relaxed">
+                    Sistem mendapati <strong class="text-amber-600">Jadual Induk telah pun dijana</strong>. Tindakan ini akan memadam dan menggantikan susunan sedia ada dengan susunan rawak AI yang baharu. Adakah anda pasti untuk memulakan semula?
+                  </p>
+                  <div class="flex gap-3 justify-end mt-4 border-t border-gray-100 pt-4">
+                    <button onclick="this.closest('.fixed').remove()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl font-bold text-xs transition-colors uppercase tracking-widest shadow-sm">Batal</button>
+                    <button onclick="this.closest('.fixed').remove(); janaJadualIndukKeseluruhan();" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl font-bold text-xs transition-all flex items-center gap-2 uppercase tracking-widest shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-rotate"></i> Ya, Jana Baharu
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+            document.body.appendChild(modalDiv);
+        } else {
+            // Jika memori kosong, terus panggil enjin AI secara automatik
+            janaJadualIndukKeseluruhan();
+        }
+    }
+
+    function janaJadualIndukKeseluruhan() {
        showLoading('Enjin AI Membaca Pangkalan Data & Menyusun Jadual...');
 
        let kelasSet = new Set();
@@ -4808,7 +4864,8 @@
         document.getElementById(`paparan-${jenis}`).classList.remove('hidden');
 
         if (jenis === 'induk') {
-            document.getElementById('tajuk-jadual-utama').innerText = `JADUAL INDUK WAKTU PERSEKOLAHAN SK ULU PELAGUS 2027`;
+            document.getElementById('tajuk-jadual-teks').innerHTML = `JADUAL INDUK WAKTU PERSEKOLAHAN SK ULU PELAGUS &nbsp;`;
+            document.getElementById('tahun-jadual-global').innerText = tahunJadualGlobal;
             document.getElementById('subtajuk-jadual-guru').classList.add('hidden');
         } else if (jenis === 'kelas') {
             renderPaparanKelas();
@@ -5067,7 +5124,8 @@
             if(!kPilih) return;
             
             if (!document.getElementById('paparan-kelas').classList.contains('hidden')) {
-                document.getElementById('tajuk-jadual-utama').innerText = `JADUAL WAKTU TAHUN ${kPilih.toUpperCase()} SK ULU PELAGUS 2027`;
+                document.getElementById('tajuk-jadual-teks').innerHTML = `JADUAL WAKTU TAHUN ${kPilih.toUpperCase()} SK ULU PELAGUS &nbsp;`;
+                document.getElementById('tahun-jadual-global').innerText = tahunJadualGlobal;
                 document.getElementById('subtajuk-jadual-guru').classList.add('hidden');
             }
 
@@ -5134,7 +5192,8 @@
             let kodGuruCarian = guruProfilLengkap.kod;
 
             if (!document.getElementById('paparan-guru').classList.contains('hidden')) {
-                document.getElementById('tajuk-jadual-utama').innerText = `JADUAL WAKTU GURU SK ULU PELAGUS 2027`;
+                document.getElementById('tajuk-jadual-teks').innerHTML = `JADUAL WAKTU GURU SK ULU PELAGUS &nbsp;`;
+                document.getElementById('tahun-jadual-global').innerText = tahunJadualGlobal;
                 document.getElementById('subtajuk-jadual-guru').innerText = `NAMA: ${guruProfilLengkap.nama.toUpperCase()}`;
                 document.getElementById('subtajuk-jadual-guru').classList.remove('hidden');
             }
