@@ -2599,8 +2599,8 @@
       updateButtonStates();
     }
 
-
-     async function simpanJadual() {
+// KOD BAHARU: Enjin Simpanan Pantas Belakang Tabir (Non-Blocking & Concurrent)
+    function simpanJadual() {
       const conflict = hasConflicts();
       const allSelected = allGantiSelected();
 
@@ -2613,84 +2613,83 @@
         return;
       }
 
-      showLoading('Menyimpan jadual...');
-      const btnSimpan = document.getElementById('btn-simpan');
-      btnSimpan.disabled = true;
+      // 1. NON-BLOCKING UI: Beritahu pengguna proses bermula di latar belakang
+      showToast('Menyimpan ' + cadanganGanti.length + ' rekod di belakang tabir...', 'success');
+      
+      // 2. Klon (Copy) data supaya jadual di skrin boleh dikosongkan serta-merta
+      const senaraiUntukDisimpan = [...cadanganGanti];
 
-      let successCount = 0;
-      let updateCount = 0;
-      let failCount = 0;
+      // 3. KOSONGKAN UI SERTA-MERTA (Pengguna boleh terus buat kerja lain!)
+      senaraiTidakHadir = [];
+      cadanganGanti = [];
+      renderSenarai();
+      document.getElementById('jadual-ganti-section').classList.add('hidden');
+      document.getElementById('input-tarikh').value = '';
+      document.getElementById('input-hari').value = '';
 
-      for (const c of cadanganGanti) {
-        const dateParts = c.tarikh.split('/');
-        const bulan = parseInt(dateParts[1]);
-        const tahun = parseInt(dateParts[2]);
+      // 4. PROSES BELAKANG TABIR & HANTARAN SERENTAK (Bulk Promise.all)
+      setTimeout(async () => {
+          let successCount = 0;
+          let updateCount = 0;
+          let failCount = 0;
 
-        const uniqueKey = generateUniqueKey(c.tarikh, c.masa, c.kelas);
-        const existingBackendId = recordMapByUniqueKey[uniqueKey];
+          // Himpunkan semua rekod ke dalam satu senarai peluru (requests)
+          const letupanRequests = senaraiUntukDisimpan.map(c => {
+              const dateParts = c.tarikh.split('/');
+              const bulan = parseInt(dateParts[1]);
+              const tahun = parseInt(dateParts[2]);
 
-        const record = {
-          tarikh: c.tarikh,
-          hari: c.hari,
-          masa: c.masa,
-          kelas: c.kelas,
-          subjek: c.subjek,
-          guru_asal: c.guruAsal,
-          sebab: c.sebab,
-          guru_ganti: c.guruGanti,
-          bulan: bulan,
-          tahun: tahun,
-          created_at: new Date().toISOString(),
-          record_key: uniqueKey
-        };
+              const uniqueKey = generateUniqueKey(c.tarikh, c.masa, c.kelas);
 
-         try {
-          const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            redirect: 'follow',
-            body: JSON.stringify({ action: 'save', ...record })
+              const record = {
+                  tarikh: c.tarikh,
+                  hari: c.hari,
+                  masa: c.masa,
+                  kelas: c.kelas,
+                  subjek: c.subjek,
+                  guru_asal: c.guruAsal,
+                  sebab: c.sebab,
+                  guru_ganti: c.guruGanti,
+                  bulan: bulan,
+                  tahun: tahun,
+                  created_at: new Date().toISOString(),
+                  record_key: uniqueKey
+              };
+
+              return fetch(SCRIPT_URL, {
+                  method: 'POST',
+                  redirect: 'follow',
+                  body: JSON.stringify({ action: 'save', ...record })
+              }).then(res => res.json())
+                .then(result => {
+                    if (result.status === "berjaya") {
+                        if (result.action === "update") updateCount++;
+                        else successCount++;
+                    } else {
+                        failCount++;
+                    }
+                }).catch(err => {
+                    failCount++;
+                    console.error("Ralat menyimpan ke Google Sheet:", err);
+                });
           });
-          const result = await response.json()
-          
-          if (result.status === "berjaya") {
-            if (result.action === "update") {
-              updateCount++;
-            } else {
-              successCount++;
-            }
-          } else {
-            failCount++;
+
+          // Tembak semua peluru data serentak ke Google Sheets! (Sangat laju)
+          await Promise.all(letupanRequests);
+
+          // 5. NOTIFIKASI KEPUTUSAN DI LENGAN BAWAH SKRIN
+          const totalMsg = successCount + updateCount;
+          if (totalMsg > 0) {
+              showToast(`${totalMsg} rekod Guru Ganti berjaya dimasukkan ke pangkalan data!`, 'success');
+              // Tarik data baru senyap-senyap untuk kemas kini Dashboard TV & Analisis
+              fetchDatabase(); 
+          } 
+          if (failCount > 0) {
+              showToast(`Terdapat ${failCount} rekod gagal disimpan. Sila semak sambungan internet.`, 'error');
           }
-        } catch (error) {
-          failCount++;
-          console.error("Ralat menyimpan ke Google Sheet:", error);
-        }
-      }
 
-      hideLoading();
-      btnSimpan.disabled = false;
-
-      const totalMsg = successCount + updateCount;
-      if (totalMsg > 0) {
-        let msg = `${totalMsg} rekod berjaya disimpan`;
-        if (successCount > 0 && updateCount > 0) {
-          msg = `${successCount} baru + ${updateCount} diperbarui`;
-        } else if (updateCount > 0) {
-          msg = `${updateCount} rekod diperbarui`;
-        }
-        showToast(msg);
-        senaraiTidakHadir = [];
-        cadanganGanti = [];
-        renderSenarai();
-        document.getElementById('jadual-ganti-section').classList.add('hidden');
-        document.getElementById('input-tarikh').value = '';
-        document.getElementById('input-hari').value = '';
-        fetchDatabase(); 
-      } else {
-        showToast(`Gagal menyimpan rekod (${failCount} ralat)`, 'error');
-      }
+      }, 150); // Lengah 150ms untuk beri laluan skrin dikosongkan dahulu
     }
-
     function deleteAllMonthlyRecords() {
       const bulan = parseInt(document.getElementById('delete-filter-bulan').value);
       const tahun = parseInt(document.getElementById('delete-filter-tahun').value);
