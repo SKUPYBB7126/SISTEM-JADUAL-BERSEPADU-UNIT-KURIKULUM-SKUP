@@ -4370,16 +4370,35 @@
         }
     };
 
+    // Fungsi Buka/Tutup (Collapsible) Senarai Rumusan Beban & Rentetan Guru
+    window.toggleRumusanKesihatanGuru = function() {
+        const panel = document.getElementById('panel-rumusan-guru-kesihatan');
+        const ikon = document.getElementById('ikon-rumusan-guru-kesihatan');
+        const teks = document.getElementById('teks-butang-rumusan-guru');
+        if (!panel) return;
+        if (panel.classList.contains('hidden')) {
+            panel.classList.remove('hidden');
+            if (ikon) ikon.classList.add('rotate-180');
+            if (teks) teks.innerText = 'Sembunyikan Rumusan Beban & Rentetan Guru';
+        } else {
+            panel.classList.add('hidden');
+            if (ikon) ikon.classList.remove('rotate-180');
+            if (teks) teks.innerText = 'Lihat Rumusan Beban & Rentetan Guru';
+        }
+    };
+
     // KOD BAHARU: Enjin Dasbod Kesihatan (Menganalisa Jadual Berdasarkan Pembolehubah f2_jadualSediaAda)
     window.jalankanHealthCheck = function(isVisual = true) {
         let markah = 100;
         let logUlasan = [];
+        const senaraiHari = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'];
+        const rehatIdx = (typeof window.rehatIndexGlobal === 'number') ? window.rehatIndexGlobal : 5;
         
         let pjPetang = false;
         let pjLebihPadang = false;
         
         // 1. Semakan PJ (Padang & Waktu Pagi)
-        ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hari => {
+        senaraiHari.forEach(hari => {
             let kelasPJHariIni = 0;
             f2_senaraiKelasUnik.forEach(kelas => {
                 let adaPJ = false;
@@ -4387,7 +4406,7 @@
                     f2_jadualSediaAda[kelas][hari].forEach((petak, idx) => {
                         if (petak && petak.subjek && petak.subjek.includes('PJ')) {
                             adaPJ = true;
-                            if (idx >= window.rehatIndexGlobal) pjPetang = true; // PJ tercampak ke petang!
+                            if (idx >= rehatIdx) pjPetang = true; // PJ tercampak ke petang!
                         }
                     });
                 }
@@ -4403,8 +4422,10 @@
             logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">PJ Sempurna: Waktu Pagi sahaja & tiada perebutan padang.</span></div>`);
         }
 
-       // 2. Semakan Waktu Hujung (Kognitif: BM/BI/MT/SN Tidak Boleh Berada Pada 30 Minit Terakhir Sebelum Balik)
+        // 2. Semakan Waktu Hujung (Kognitif: BM/BI/MT/SN Tidak Boleh Berada Pada 30 Minit Terakhir Sebelum Balik)
         let isuWaktuHujung = 0;
+        let bilSlotAkhirPengisi = 0;
+        let jumSlotAkhirKeseluruhan = 0;
         const hariAdaRehat = {
            'ISNIN': document.getElementById('rehat-isnin') ? document.getElementById('rehat-isnin').checked : true,
            'SELASA': document.getElementById('rehat-selasa') ? document.getElementById('rehat-selasa').checked : true,
@@ -4420,16 +4441,23 @@
         };
 
         f2_senaraiKelasUnik.forEach(kelas => {
-            ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hari => {
+            senaraiHari.forEach(hari => {
                 let limit = getLimitLocal(kelas, hari);
                 if(f2_jadualSediaAda[kelas] && f2_jadualSediaAda[kelas][hari]) {
-                    // Semak 1 slot (30 minit) terakhir sebelum tamat sekolah
+                    let petakAkhir = f2_jadualSediaAda[kelas][hari][limit - 1];
                     let checkSubjekHujung = (petak) => {
                         return petak && (petak.subjek.includes('MT') || petak.subjek.includes('SN') || petak.subjek.includes('BM') || petak.subjek.includes('BI'));
                     };
                     
-                    if (checkSubjekHujung(f2_jadualSediaAda[kelas][hari][limit - 1])) {
+                    if (checkSubjekHujung(petakAkhir)) {
                         isuWaktuHujung++;
+                    }
+                    if (petakAkhir) {
+                        jumSlotAkhirKeseluruhan++;
+                        let sAkhir = petakAkhir.subjek.toUpperCase();
+                        if (sAkhir.includes('PSV') || sAkhir.includes('PMZ') || sAkhir.includes('PK') || sAkhir.includes('PM') || sAkhir.includes('PI') || sAkhir.includes('RBT') || sAkhir.includes('SEJ') || sAkhir.includes('BIB')) {
+                            bilSlotAkhirPengisi++;
+                        }
                     }
                 }
             });
@@ -4442,31 +4470,88 @@
             logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">Waktu 30 minit sebelum balik bebas dari Subjek Teras (Sempurna).</span></div>`);
         }
 
-        // 3. Semakan Kepenatan Guru (> 4 waktu berturut-turut tanpa rehat)
+        // 3. Semakan Kepenatan Guru (> 4 waktu berturut-turut) + Pengumpulan Data Keseimbangan Harian (Tanpa Tasmik) & Rumusan Guru
         let isuGuruPenat = 0;
         let namaGuruPenat = new Set();
+        let senaraiGuruPadatHarian = [];
+        let dataRumusanGuru = [];
+
         f2_senaraiGuruPenuh.forEach(guru => {
-            ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hari => {
+            let maxBerturutMingguan = 0;
+            let bebanHarianTanpaTasmik = {};
+            let tasmikHarian = {};
+            let jumlahMingguanTanpaTasmik = 0;
+            let jumlahMingguanTasmik = 0;
+
+            senaraiHari.forEach(hari => {
                 let berterusan = 0;
+                let masaHariIni = 0;
+                let masaTasmikHariIni = 0;
+
                 for (let s = 0; s < 15; s++) {
                     // Reset kepenatan apabila melangkah masuk ke waktu selepas rehat (TANPA melangkau slot s tersebut)
-                    if (hariAdaRehat[hari] && s === window.rehatIndexGlobal) { berterusan = 0; }
+                    if (hariAdaRehat[hari] && s === rehatIdx) { berterusan = 0; }
                     
                     let ngajar = false;
+                    let adalahTasmik = false;
                     f2_senaraiKelasUnik.forEach(k => {
                         let slotData = f2_jadualSediaAda[k] && f2_jadualSediaAda[k][hari] ? f2_jadualSediaAda[k][hari][s] : null;
                         if (slotData && slotData.kodGuru) {
                             let senaraiKodSlot = slotData.kodGuru.split(' / ').map(x => x.trim());
-                            if (senaraiKodSlot.includes(guru.kod)) ngajar = true;
+                            if (senaraiKodSlot.includes(guru.kod)) {
+                                ngajar = true;
+                                if (slotData.subjek && slotData.subjek.toUpperCase().includes('TSMK')) {
+                                    adalahTasmik = true;
+                                }
+                            }
                         }
                     });
                     
-                    if (ngajar) berterusan++;
-                    else berterusan = 0;
+                    if (ngajar) {
+                        berterusan++;
+                        if (berterusan > maxBerturutMingguan) maxBerturutMingguan = berterusan;
+                        // PENGECUALIAN TASMIK: Subjek Tasmik (TSMK) tidak dikira sebagai tambahan beban masa harian
+                        if (adalahTasmik) {
+                            masaTasmikHariIni++;
+                            jumlahMingguanTasmik++;
+                        } else {
+                            masaHariIni++;
+                            jumlahMingguanTanpaTasmik++;
+                        }
+                    } else {
+                        berterusan = 0;
+                    }
 
                     // Maksimum 4 Masa dibenarkan! Jika menjadi 5, terus potong markah.
                     if (berterusan > 4) { isuGuruPenat++; namaGuruPenat.add(guru.nama); }
                 }
+
+                bebanHarianTanpaTasmik[hari] = masaHariIni;
+                tasmikHarian[hari] = masaTasmikHariIni;
+            });
+
+            let nilaiHarian = Object.values(bebanHarianTanpaTasmik);
+            let maxHarian = Math.max(...nilaiHarian);
+            let minHarian = Math.min(...nilaiHarian);
+
+            // Jika seorang guru mengajar lebih 8 masa sehari (tidak termasuk Tasmik), rekodkan untuk makluman keseimbangan
+            if (maxHarian > 8) {
+                senaraiGuruPadatHarian.push(`${guru.kod} (${maxHarian} masa)`);
+            }
+
+            dataRumusanGuru.push({
+                nama: guru.nama,
+                kod: guru.kod,
+                jawatan: guru.jawatan,
+                warna: guru.warna || '#e0e7ff',
+                maxWaktu: guru.maxWaktu,
+                bebanHarian: bebanHarianTanpaTasmik,
+                tasmikHarian: tasmikHarian,
+                jumlahBiasa: jumlahMingguanTanpaTasmik,
+                jumlahTasmik: jumlahMingguanTasmik,
+                maxBerturut: maxBerturutMingguan,
+                maxSehari: maxHarian,
+                minSehari: minHarian
             });
         });
 
@@ -4478,18 +4563,114 @@
             logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">Kesejahteraan guru sempurna (Maksimum 4 masa berturut-turut).</span></div>`);
         }
 
+        // 4. Penunjuk Pengesahan Blok Subjek Teras (>=2 Masa Serentak) & Sapuan Pengisi Hujung
+        let isuBlokTeras = 0;
+        f2_senaraiKelasUnik.forEach(kSemak => {
+            ["BM", "BI", "MT", "SN"].forEach(subTeras => {
+                let jumlahMingguan = 0;
+                let bilHariSatuMasa = 0;
+                senaraiHari.forEach(hSemak => {
+                    let limitH = getLimitLocal(kSemak, hSemak);
+                    let slotsH = f2_jadualSediaAda[kSemak] && f2_jadualSediaAda[kSemak][hSemak] ? f2_jadualSediaAda[kSemak][hSemak] : [];
+                    let indeksTeras = [];
+                    for (let idx = 0; idx < limitH; idx++) {
+                        if (slotsH[idx] && slotsH[idx].subjek === subTeras) {
+                            indeksTeras.push(idx);
+                            jumlahMingguan++;
+                        }
+                    }
+                    if (indeksTeras.length > 0) {
+                        for (let m = 1; m < indeksTeras.length; m++) {
+                            if (indeksTeras[m] !== indeksTeras[m - 1] + 1) isuBlokTeras++;
+                            if (hariAdaRehat[hSemak] && indeksTeras[m - 1] < rehatIdx && indeksTeras[m] >= rehatIdx) isuBlokTeras++;
+                        }
+                        if (indeksTeras.length === 1) bilHariSatuMasa++;
+                    }
+                });
+                if (jumlahMingguan === 3 && bilHariSatuMasa > 1) isuBlokTeras++;
+                else if (jumlahMingguan >= 4 && bilHariSatuMasa > 0) isuBlokTeras++;
+            });
+        });
+
+        let peratusPengisi = jumSlotAkhirKeseluruhan > 0 ? Math.round((bilSlotAkhirPengisi / jumSlotAkhirKeseluruhan) * 100) : 100;
+        if (isuBlokTeras > 0) {
+            markah -= 10;
+            logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">Terdapat ${isuBlokTeras} pecahan Subjek Teras (1 masa) yang terpisah.</span></div>`);
+        } else {
+            logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">Blok Teras & Pengisi Hujung: Teras berkembar (2-3 masa) & ${peratusPengisi}% waktu akhir diisi subjek elektif/pengisi.</span></div>`);
+        }
+
+        // 5. Penunjuk Analisis Keseimbangan Beban Harian Guru (Tasmik Tidak Dikira Sebagai Beban Masa)
+        if (senaraiGuruPadatHarian.length > 0) {
+            logUlasan.push(`<div class="flex items-start gap-2 mb-2 md:col-span-2"><i class="fa-solid fa-scale-unbalanced text-amber-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">Keseimbangan Harian (Tanpa Tasmik): Terdapat guru padat > 8 masa sehari (${senaraiGuruPadatHarian.join(', ')}).</span></div>`);
+        } else {
+            logUlasan.push(`<div class="flex items-start gap-2 mb-2 md:col-span-2"><i class="fa-solid fa-scale-balanced text-emerald-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">Keseimbangan Harian Sempurna: Agihan masa mengajar harian setiap guru seimbang (Waktu Tasmik dikecualikan daripada beban harian).</span></div>`);
+        }
+
         if(markah < 0) markah = 0;
 
         // Hanya print UI jika disuruh (isVisual = true). Jika Silent Check, kita cuma pulangkan markah.
         if (isVisual) {
             let wMarkah = markah >= 90 ? 'text-emerald-500' : (markah >= 70 ? 'text-amber-500' : 'text-rose-500');
             let txtGred = markah === 100 ? 'Sempurna' : (markah >= 90 ? 'Sangat Baik' : (markah >= 70 ? 'Memuaskan' : 'Perlu Perhatian'));
+
+            // Bina Baris Jadual Rumusan Beban & Rentetan Guru (Boleh Buka/Tutup)
+            let barisRumusanHTML = dataRumusanGuru.map(g => {
+                const renderSelHari = (hariKey) => {
+                    let bilBiasa = g.bebanHarian[hariKey] || 0;
+                    let bilTsmk = g.tasmikHarian[hariKey] || 0;
+                    let warnaSel = bilBiasa >= 8 ? 'bg-rose-50 text-rose-700 border-rose-200' : (bilBiasa >= 6 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200');
+                    let notaTsmk = bilTsmk > 0 ? `<span class="block text-[8px] font-extrabold text-cyan-600 leading-none mt-0.5" title="Tasmik tidak dikira dalam beban masa harian">+${bilTsmk} TSMK</span>` : '';
+                    return `<td class="py-2 px-2 text-center border-b border-gray-100">
+                                <div class="inline-flex flex-col items-center justify-center min-w-[36px] px-2 py-1 rounded-lg border ${warnaSel} font-black text-xs">
+                                    <span>${bilBiasa}</span>
+                                    ${notaTsmk}
+                                </div>
+                            </td>`;
+                };
+
+                let lencanaBerturut = g.maxBerturut <= 3 
+                    ? `<span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] border border-emerald-200"><i class="fa-solid fa-bolt mr-1"></i>Maks: ${g.maxBerturut} Masa</span>`
+                    : (g.maxBerturut === 4 
+                        ? `<span class="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 font-black text-[10px] border border-indigo-200"><i class="fa-solid fa-check mr-1"></i>Maks: 4 Masa</span>`
+                        : `<span class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-black text-[10px] border border-rose-200"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Maks: ${g.maxBerturut} Masa</span>`);
+
+                let infoMingguanTsmk = g.jumlahTasmik > 0 ? `<span class="block text-[9px] font-bold text-cyan-600">+${g.jumlahTasmik} Tasmik (Dikecualikan)</span>` : '';
+
+                return `
+                    <tr class="hover:bg-indigo-50/40 transition-colors bg-white">
+                        <td class="py-2.5 px-3 border-b border-gray-100 text-left">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-7 h-7 rounded-full flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm border border-gray-300" style="background-color: ${g.warna}; color: #1f2937;">${g.kod}</div>
+                                <div class="min-w-0">
+                                    <div class="font-extrabold text-xs text-gray-800 truncate">${g.nama}</div>
+                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">${g.jawatan}</div>
+                                </div>
+                            </div>
+                        </td>
+                        ${renderSelHari('ISNIN')}
+                        ${renderSelHari('SELASA')}
+                        ${renderSelHari('RABU')}
+                        ${renderSelHari('KHAMIS')}
+                        ${renderSelHari('JUMAAT')}
+                        <td class="py-2.5 px-3 border-b border-gray-100 text-center">
+                            <span class="font-black text-sm text-indigo-900">${g.jumlahBiasa}</span>
+                            <span class="text-[10px] font-bold text-gray-400"> / ${g.maxWaktu}</span>
+                            ${infoMingguanTsmk}
+                        </td>
+                        <td class="py-2.5 px-3 border-b border-gray-100 text-center">
+                            ${lencanaBerturut}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
             const dasbodHTML = `
                 <div class="bg-gray-50 border border-gray-200 p-5 rounded-2xl shadow-inner mb-6 fade-in border-l-4 border-l-indigo-500">
                     <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4 border-b border-gray-200 pb-4">
                         <div>
-                            <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-heart-pulse text-rose-500"></i> Dasbod Kesihatan Jadual</h3>
-                            <p class="text-[10px] font-bold text-gray-500 mt-0.5">Analisis Kualiti Psikologi & Logistik Automatik AI</p>
+                            <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-heart-pulse text-rose-500"></i> Dasbod Kesihatan & Rumusan Jadual</h3>
+                            <p class="text-[10px] font-bold text-gray-500 mt-0.5">Analisis Kualiti Psikologi, Keseimbangan Harian (Tanpa Tasmik) & Logistik Automatik AI</p>
                         </div>
                         <div class="text-center md:text-right bg-white px-5 py-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
                             <div class="text-right">
@@ -4499,8 +4680,36 @@
                             <div class="text-3xl font-black ${wMarkah} border-l border-gray-200 pl-3">${markah}%</div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 mb-4">
                         ${logUlasan.join('')}
+                    </div>
+
+                    <!-- Butang Buka/Tutup (Collapsible) Senarai Ringkas Rumusan Beban & Rentetan Guru -->
+                    <div class="border-t border-gray-200 pt-3">
+                        <button type="button" onclick="toggleRumusanKesihatanGuru()" class="w-full flex items-center justify-between px-4 py-2.5 bg-white hover:bg-indigo-50/60 text-indigo-900 rounded-xl border border-indigo-100 shadow-sm transition-all text-xs font-extrabold uppercase tracking-wider">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-user-clock text-indigo-500"></i> <span id="teks-butang-rumusan-guru">Lihat Rumusan Beban & Rentetan Guru</span> <span class="text-[10px] font-bold text-emerald-600 normal-case bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Tasmik Dikecualikan Daripada Beban Harian</span></span>
+                            <i id="ikon-rumusan-guru-kesihatan" class="fa-solid fa-chevron-down text-indigo-400 transition-transform duration-300"></i>
+                        </button>
+
+                        <div id="panel-rumusan-guru-kesihatan" class="hidden mt-3 overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white fade-in">
+                            <table class="w-full text-xs border-collapse min-w-[720px]">
+                                <thead>
+                                    <tr class="bg-indigo-900 text-white text-[10px] uppercase tracking-wider">
+                                        <th class="py-2.5 px-3 text-left font-extrabold">Profil Guru</th>
+                                        <th class="py-2.5 px-2 text-center font-extrabold">Isn</th>
+                                        <th class="py-2.5 px-2 text-center font-extrabold">Sel</th>
+                                        <th class="py-2.5 px-2 text-center font-extrabold">Rab</th>
+                                        <th class="py-2.5 px-2 text-center font-extrabold">Kha</th>
+                                        <th class="py-2.5 px-2 text-center font-extrabold">Jum</th>
+                                        <th class="py-2.5 px-3 text-center font-extrabold">Jumlah PdP (Tanpa TSMK)</th>
+                                        <th class="py-2.5 px-3 text-center font-extrabold">Rentetan Mengajar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${barisRumusanHTML}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             `;
