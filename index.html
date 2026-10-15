@@ -44,6 +44,14 @@
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     
+    /* KOD BAHARU: Animasi Mikro Goyang Kiri-Kanan (Wiggle) Untuk Anak Panah Menu */
+    @keyframes goyang-ikon {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+    .group:hover .ikon-goyang { animation: goyang-ikon 0.4s ease-in-out infinite; }
+    
     input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
     .scroll-container { max-height: 300px; overflow-y: auto; padding-right: 4px; }
     .scroll-container::-webkit-scrollbar { width: 6px; }
@@ -129,9 +137,11 @@
           
         <!-- Accordion 1: Sistem Guru Ganti -->
           <div class="bg-indigo-50/50 rounded-2xl border border-indigo-100 overflow-hidden shadow-sm">
-            <button onclick="toggleSubMenu('menu-ganti', 'icon-ganti')" class="w-full flex items-center justify-between p-4 text-left focus:outline-none hover:bg-indigo-100/50 transition-colors">
+            <!-- Ditambah kelas "group" pada butang -->
+            <button onclick="toggleSubMenu('menu-ganti', 'icon-ganti')" class="w-full flex items-center justify-between p-4 text-left focus:outline-none hover:bg-indigo-100/50 transition-colors group">
               <span class="font-extrabold text-sm text-indigo-900 flex items-center gap-3"><i class="fa-solid fa-users-viewfinder text-indigo-500 text-lg w-5"></i> Guru Ganti</span>
-              <i id="icon-ganti" class="fa-solid fa-chevron-down text-indigo-400 transition-transform duration-300 rotate-180"></i>
+              <!-- Ikon dibungkus dengan span ikon-goyang -->
+              <span class="ikon-goyang inline-block"><i id="icon-ganti" class="fa-solid fa-chevron-down text-indigo-400 transition-transform duration-300 rotate-180"></i></span>
             </button>
             <div id="menu-ganti" class="px-3 pb-3 space-y-1 block">
               <button id="tab1-btn" onclick="switchTab(1)" class="w-full tab-active px-4 py-3 rounded-xl font-bold text-xs transition-all duration-300 flex items-center gap-3 justify-start shadow-sm"><i class="fa-solid fa-pen-to-square w-4 text-center"></i> Input Guru</button>
@@ -141,9 +151,11 @@
 
           <!-- Accordion 2: Sistem Pengurusan Jadual -->
           <div class="bg-emerald-50/50 rounded-2xl border border-emerald-100 overflow-hidden shadow-sm">
-            <button onclick="toggleSubMenu('menu-jadual', 'icon-jadual')" class="w-full flex items-center justify-between p-4 text-left focus:outline-none hover:bg-emerald-100/50 transition-colors">
+            <!-- Ditambah kelas "group" pada butang -->
+            <button onclick="toggleSubMenu('menu-jadual', 'icon-jadual')" class="w-full flex items-center justify-between p-4 text-left focus:outline-none hover:bg-emerald-100/50 transition-colors group">
               <span class="font-extrabold text-sm text-emerald-900 flex items-center gap-3"><i class="fa-solid fa-calendar-days text-emerald-500 text-lg w-5"></i> Jadual P & P</span>
-              <i id="icon-jadual" class="fa-solid fa-chevron-down text-emerald-400 transition-transform duration-300"></i>
+              <!-- Ikon dibungkus dengan span ikon-goyang -->
+              <span class="ikon-goyang inline-block"><i id="icon-jadual" class="fa-solid fa-chevron-down text-emerald-400 transition-transform duration-300"></i></span>
             </button>
             <div id="menu-jadual" class="px-3 pb-3 space-y-1 hidden">
               <button id="tab4-btn" onclick="switchTab(4)" class="w-full tab-inactive px-4 py-3 rounded-xl font-bold text-xs transition-all duration-300 flex items-center gap-3 justify-start"><i class="fa-solid fa-cogs w-4 text-center"></i> 1. Tetapan Asas Jadual</button>
@@ -152,9 +164,11 @@
           </div>
 
           <!-- KOD BAHARU: Menu TV Live Asing -->
+          <!-- Kelas "group" sedia ada dikekalkan -->
           <button id="tab3-btn" onclick="switchTab(3)" class="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-2xl p-4 text-left focus:outline-none transition-colors shadow-lg flex items-center justify-between group border border-gray-700 shrink-0">
              <span class="font-black text-sm flex items-center gap-3 text-cyan-400 group-hover:text-cyan-300"><i class="fa-solid fa-tv text-xl w-5"></i> Paparan TV Live</span>
-             <i class="fa-solid fa-chevron-right text-gray-500 group-hover:text-white transition-colors"></i>
+             <!-- Ikon dibungkus dengan span ikon-goyang -->
+             <span class="ikon-goyang inline-block"><i class="fa-solid fa-chevron-right text-gray-500 group-hover:text-white transition-colors"></i></span>
           </button>
           
         </div>
@@ -822,6 +836,10 @@
                 <div class="absolute -top-4 right-1/2 transform translate-x-1/2 bg-gray-800 text-white text-[9px] px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-sm z-10">✏️ Klik tahun untuk edit</div>
                 <h3 id="subtajuk-jadual-guru" class="text-sm font-bold text-rose-600 uppercase tracking-widest mt-1 hidden">NAMA GURU</h3>
             </div>
+            
+            <!-- KOD BAHARU: Tapak (Container) Untuk Dasbod Kesihatan AI -->
+            <div id="dasbod-kesihatan-jadual"></div>
+
             <!-- 3 TAB NAVIGASI PINTAR -->
 
              <div class="flex flex-col md:flex-row gap-2 bg-gray-100 p-2 rounded-2xl mb-4 relative z-10 shadow-inner">
@@ -4342,7 +4360,7 @@
     // KOD BAHARU: Memori Global Tahun Jadual & Pencetus Selaras (Sync Trigger)
     let tahunJadualGlobal = "2027";
 
-    window.simpanTahunGlobal = function() {
+   window.simpanTahunGlobal = function() {
         const spanTahun = document.getElementById('tahun-jadual-global');
         if (spanTahun) {
             let teksBaru = spanTahun.innerText.trim();
@@ -4350,6 +4368,146 @@
             tahunJadualGlobal = teksBaru;
             spanTahun.innerText = tahunJadualGlobal; // Kemaskan format
         }
+    };
+
+    // KOD BAHARU: Enjin Dasbod Kesihatan (Menganalisa Jadual Berdasarkan Pembolehubah f2_jadualSediaAda)
+    window.jalankanHealthCheck = function(isVisual = true) {
+        let markah = 100;
+        let logUlasan = [];
+        
+        let pjPetang = false;
+        let pjLebihPadang = false;
+        
+        // 1. Semakan PJ (Padang & Waktu Pagi)
+        ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hari => {
+            let kelasPJHariIni = 0;
+            f2_senaraiKelasUnik.forEach(kelas => {
+                let adaPJ = false;
+                if(f2_jadualSediaAda[kelas] && f2_jadualSediaAda[kelas][hari]) {
+                    f2_jadualSediaAda[kelas][hari].forEach((petak, idx) => {
+                        if (petak && petak.subjek && petak.subjek.includes('PJ')) {
+                            adaPJ = true;
+                            if (idx >= window.rehatIndexGlobal) pjPetang = true; // PJ tercampak ke petang!
+                        }
+                    });
+                }
+                if (adaPJ) kelasPJHariIni++;
+            });
+            if (kelasPJHariIni > 2) pjLebihPadang = true; // Langgar kapasiti padang
+        });
+
+        if (pjPetang || pjLebihPadang) {
+            markah -= 15;
+            logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-circle-xmark text-rose-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">Isu PJ: ${pjPetang ? 'Terdapat kelas PJ selepas rehat.' : ''} ${pjLebihPadang ? 'Padang sesak (>2 kelas/hari).' : ''}</span></div>`);
+        } else {
+            logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">PJ Sempurna: Waktu Pagi sahaja & tiada perebutan padang.</span></div>`);
+        }
+
+       // 2. Semakan Waktu Hujung (Kognitif: BM/BI/MT/SN Tidak Boleh Berada Pada 30 Minit Terakhir Sebelum Balik)
+        let isuWaktuHujung = 0;
+        const hariAdaRehat = {
+           'ISNIN': document.getElementById('rehat-isnin') ? document.getElementById('rehat-isnin').checked : true,
+           'SELASA': document.getElementById('rehat-selasa') ? document.getElementById('rehat-selasa').checked : true,
+           'RABU': document.getElementById('rehat-rabu') ? document.getElementById('rehat-rabu').checked : true,
+           'KHAMIS': document.getElementById('rehat-khamis') ? document.getElementById('rehat-khamis').checked : true,
+           'JUMAAT': document.getElementById('rehat-jumaat') ? document.getElementById('rehat-jumaat').checked : false
+        };
+        const getLimitLocal = (kelas, hariStr) => {
+           let t = 't1';
+           if (kelas.includes('1 ')) t = 't1'; else if (kelas.includes('2 ')) t = 't2'; else if (kelas.includes('3 ')) t = 't3'; else if (kelas.includes('4 ')) t = 't4'; else if (kelas.includes('5 ')) t = 't5'; else if (kelas.includes('6 ')) t = 't6';
+           let h = hariStr === 'ISNIN' ? 'isn' : (hariStr === 'SELASA' ? 'sel' : (hariStr === 'RABU' ? 'rab' : (hariStr === 'KHAMIS' ? 'kha' : 'jum')));
+           return kiraMaxSlotDinamik(`waktu-${h}-${t}`, hariAdaRehat[hariStr], hariStr === 'JUMAAT');
+        };
+
+        f2_senaraiKelasUnik.forEach(kelas => {
+            ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hari => {
+                let limit = getLimitLocal(kelas, hari);
+                if(f2_jadualSediaAda[kelas] && f2_jadualSediaAda[kelas][hari]) {
+                    // Semak 1 slot (30 minit) terakhir sebelum tamat sekolah
+                    let checkSubjekHujung = (petak) => {
+                        return petak && (petak.subjek.includes('MT') || petak.subjek.includes('SN') || petak.subjek.includes('BM') || petak.subjek.includes('BI'));
+                    };
+                    
+                    if (checkSubjekHujung(f2_jadualSediaAda[kelas][hari][limit - 1])) {
+                        isuWaktuHujung++;
+                    }
+                }
+            });
+        });
+
+        if (isuWaktuHujung > 0) {
+            markah -= (isuWaktuHujung * 2);
+            logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">${isuWaktuHujung} kelas terpaksa belajar Subjek Teras pada 30 minit terakhir.</span></div>`);
+        } else {
+            logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">Waktu 30 minit sebelum balik bebas dari Subjek Teras (Sempurna).</span></div>`);
+        }
+
+        // 3. Semakan Kepenatan Guru (> 4 waktu berturut-turut tanpa rehat)
+        let isuGuruPenat = 0;
+        let namaGuruPenat = new Set();
+        f2_senaraiGuruPenuh.forEach(guru => {
+            ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hari => {
+                let berterusan = 0;
+                for (let s = 0; s < 15; s++) {
+                    // Reset kepenatan apabila melangkah masuk ke waktu selepas rehat (TANPA melangkau slot s tersebut)
+                    if (hariAdaRehat[hari] && s === window.rehatIndexGlobal) { berterusan = 0; }
+                    
+                    let ngajar = false;
+                    f2_senaraiKelasUnik.forEach(k => {
+                        let slotData = f2_jadualSediaAda[k] && f2_jadualSediaAda[k][hari] ? f2_jadualSediaAda[k][hari][s] : null;
+                        if (slotData && slotData.kodGuru) {
+                            let senaraiKodSlot = slotData.kodGuru.split(' / ').map(x => x.trim());
+                            if (senaraiKodSlot.includes(guru.kod)) ngajar = true;
+                        }
+                    });
+                    
+                    if (ngajar) berterusan++;
+                    else berterusan = 0;
+
+                    // Maksimum 4 Masa dibenarkan! Jika menjadi 5, terus potong markah.
+                    if (berterusan > 4) { isuGuruPenat++; namaGuruPenat.add(guru.nama); }
+                }
+            });
+        });
+
+        if (isuGuruPenat > 0) {
+            markah -= 10;
+            let nGuru = Array.from(namaGuruPenat);
+            logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">Guru mengajar > 4 masa berturut dikesan (Cikgu ${nGuru[0]} ${nGuru.length > 1 ? '& lain-lain' : ''}).</span></div>`);
+        } else {
+            logUlasan.push(`<div class="flex items-start gap-2 mb-2"><i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i><span class="text-xs font-semibold text-gray-700">Kesejahteraan guru sempurna (Maksimum 4 masa berturut-turut).</span></div>`);
+        }
+
+        if(markah < 0) markah = 0;
+
+        // Hanya print UI jika disuruh (isVisual = true). Jika Silent Check, kita cuma pulangkan markah.
+        if (isVisual) {
+            let wMarkah = markah >= 90 ? 'text-emerald-500' : (markah >= 70 ? 'text-amber-500' : 'text-rose-500');
+            let txtGred = markah === 100 ? 'Sempurna' : (markah >= 90 ? 'Sangat Baik' : (markah >= 70 ? 'Memuaskan' : 'Perlu Perhatian'));
+            const dasbodHTML = `
+                <div class="bg-gray-50 border border-gray-200 p-5 rounded-2xl shadow-inner mb-6 fade-in border-l-4 border-l-indigo-500">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4 border-b border-gray-200 pb-4">
+                        <div>
+                            <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-heart-pulse text-rose-500"></i> Dasbod Kesihatan Jadual</h3>
+                            <p class="text-[10px] font-bold text-gray-500 mt-0.5">Analisis Kualiti Psikologi & Logistik Automatik AI</p>
+                        </div>
+                        <div class="text-center md:text-right bg-white px-5 py-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
+                            <div class="text-right">
+                                <div class="text-[9px] font-black uppercase tracking-widest text-gray-400 leading-none mb-1">Skor Kualiti</div>
+                                <div class="text-xs font-black uppercase tracking-widest text-gray-700 leading-none">${txtGred}</div>
+                            </div>
+                            <div class="text-3xl font-black ${wMarkah} border-l border-gray-200 pl-3">${markah}%</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+                        ${logUlasan.join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('dasbod-kesihatan-jadual').innerHTML = dasbodHTML;
+        }
+
+        return markah; 
     };
 
   // Fungsi 8: Klimaks - Butang Jana Jadual Induk (Matriks Waktu)
@@ -4613,13 +4771,18 @@
            return true; 
        };
 
-       // KOD BAHARU: ENJIN GELUNG ULANGAN PINTAR (AUTO-RETRY LOOP)
+       // KOD BAHARU: THE PERFECTION LOOP (Mencari Gred 100%)
        let jadualBerjaya = false;
-       let maxPercubaan = 100; // AI akan cuba 100 jenis susunan berbeza dalam masa 2 saat!
-       let percubaan = 0;
+       let jadualKualitiTerbaik = null;
+       let markahTertinggi = -1;
+       let pusinganKualiti = 0;
+       const maksPusinganKualiti = 5; // Cari 5 jadual yang "sah" dan pilih markah paling tinggi
 
-       while (percubaan < maxPercubaan && !jadualBerjaya) {
-           percubaan++;
+       let maxPercubaanKasar = 500; // Had logik ditingkatkan ke 500 putaran untuk menjejak 100% sempurna
+       let percubaanKasar = 0;
+
+       while (percubaanKasar < maxPercubaanKasar && pusinganKualiti < maksPusinganKualiti && markahTertinggi < 100) {
+           percubaanKasar++;
            let jadualGagal = false;
 
            // 1. Reset Papan Jadual (Kosongkan jadual untuk percubaan baharu)
@@ -4633,11 +4796,61 @@
                }
            });
 
-           // 2. Kocok Subjek (Shuffle) Secara Rawak untuk cubaan kali ini
+           // Fungsi Pembantu Mutlak: Semak Kesejahteraan Guru (Maksimum 4 Masa Berturut-turut, Sokong Guru Gabungan PI/PM)
+           const isGuruTidakPenat = (guruStr, hariAktif, startSlot, bilSlot, ignoreKelas = null, ignoreSlot = -1) => {
+               if (!guruStr || guruStr === '-') return true;
+               let senaraiKod = guruStr.split(' / ').map(g => g.trim()).filter(Boolean);
+               
+               for (let gIdx = 0; gIdx < senaraiKod.length; gIdx++) {
+                   let kodG = senaraiKod[gIdx];
+                   let berterusan = 0;
+                   
+                   for (let idx = 0; idx < 15; idx++) {
+                       if (hariAdaRehat[hariAktif] && idx === rehatIndex) {
+                           berterusan = 0; // Waktu rehat mereset kiraan kepenatan pagi
+                       }
+                       
+                       let sedangMengajar = false;
+                       if (idx >= startSlot && idx < startSlot + bilSlot) {
+                           sedangMengajar = true;
+                       } else {
+                           for (let c = 0; c < f2_senaraiKelasUnik.length; c++) {
+                               let kLain = f2_senaraiKelasUnik[c];
+                               if (kLain === ignoreKelas && idx === ignoreSlot) continue;
+                               let slotSemak = f2_jadualSediaAda[kLain][hariAktif][idx];
+                               if (slotSemak && slotSemak.kodGuru) {
+                                   let kodLainArr = slotSemak.kodGuru.split(' / ').map(x => x.trim());
+                                   if (kodLainArr.includes(kodG)) {
+                                       sedangMengajar = true;
+                                       break;
+                                   }
+                               }
+                           }
+                       }
+                       
+                       if (sedangMengajar) {
+                           berterusan++;
+                           if (berterusan > 4) return false; // Tolak jika melebihi 4 masa berturut-turut!
+                       } else {
+                           berterusan = 0;
+                       }
+                   }
+               }
+               return true;
+           };
+
+           // 2. Kocok Subjek (Shuffle) Mengikut Kasta Hirarki
+           // Kasta 0: PJ (Wajib Pagi)
+           // Kasta 1: Subjek Teras BM, BI, MT, SN (Pagi/Tengah, Haram Waktu Akhir)
+           // Kasta 2: Elektif Pertengahan (SEJ, RBT, BIB)
+           // Kasta 3: Pengisi Hujung Natural (PSV, PMZ, PK, PI / PM, PM, PI) -> Disapu masuk ke waktu akhir secara natural
            let tugasSemasa = JSON.parse(JSON.stringify(tugasSelepasGabung));
            tugasSemasa.forEach(t => {
                let subj = t.subjek;
-               if (subj === "PJ") t.kasta = 1; else if (["BM", "BI", "MT", "SN", "SEJ"].includes(subj)) t.kasta = 2; else t.kasta = 3; 
+               if (subj.includes("PJ")) t.kasta = 0; 
+               else if (["BM", "BI", "MT", "SN"].includes(subj)) t.kasta = 1; 
+               else if (["SEJ", "RBT", "BIB"].includes(subj)) t.kasta = 2;
+               else t.kasta = 3; 
                t.rawak = Math.random(); 
            });
            tugasSemasa.sort((a, b) => {
@@ -4647,15 +4860,14 @@
 
            // 3. Mula Membina Jadual
            for (let idxKelas = 0; idxKelas < f2_senaraiKelasUnik.length; idxKelas++) {
-               if (jadualGagal) break; // Keluar dari loop Kelas jika cubaan sudah gagal
+               if (jadualGagal) break;
                let kelas = f2_senaraiKelasUnik[idxKelas];
                let tugasKelas = tugasSemasa.filter(t => t.kelas === kelas);
 
-              // KOD BAHARU: Logik Serakan Auto-AI (Auto-Scatter) Tasmik
+               // Logik Serakan Auto-AI (Auto-Scatter) Tasmik (Dipantau Had 4 Masa)
                let tsmkTask = tugasKelas.find(t => t.subjek === "TSMK");
                if (tsmkTask && tsmkTask.waktu > 0) {
-                   let waktuTasmikPerlu = tsmkTask.waktu; // Boleh jadi 2 atau 4
-                   // Kocok hari Tasmik yang dibenarkan supaya sentiasa rawak dan adil
+                   let waktuTasmikPerlu = tsmkTask.waktu;
                    let cubaHariTasmik = [...hariTasmikPilihan].sort(() => Math.random() - 0.5);
                    
                    for (let h = 0; h < cubaHariTasmik.length; h++) {
@@ -4664,164 +4876,640 @@
                        let hariT = cubaHariTasmik[h];
                        let slotMula = getLimit(kelas, hariT);
                        
-                       // Semak adakah ustaz ini free pada 2 slot hujung hari tersebut?
                        let isCikguFreeS1 = isTeacherFree(tsmkTask.kodGuru, hariT, slotMula, kelas);
                        let isCikguFreeS2 = isTeacherFree(tsmkTask.kodGuru, hariT, slotMula + 1, kelas);
+                       let isCikguSegar = isGuruTidakPenat(tsmkTask.kodGuru, hariT, slotMula, 2);
                        
-                       if (isCikguFreeS1 && isCikguFreeS2) {
-                           // Jika free, baru kunci jadual ini
+                       if (isCikguFreeS1 && isCikguFreeS2 && isCikguSegar) {
                            f2_jadualSediaAda[kelas][hariT][slotMula] = { subjek: "TSMK", kodGuru: tsmkTask.kodGuru, warna: "text-cyan-600" };
                            f2_jadualSediaAda[kelas][hariT][slotMula + 1] = { subjek: "TSMK", kodGuru: tsmkTask.kodGuru, warna: "text-cyan-600" };
                            waktuTasmikPerlu -= 2;
                        }
                    }
                    
-                   // Jika lepas round semua hari tasmik pun masih ada waktu tak dapat disumbat (guru bertembung total), Auto-Retry!
                    if (waktuTasmikPerlu > 0) {
                        jadualGagal = true;
                        break;
                    } else {
-                       tsmkTask.waktu = 0; // Selesai disumbat sepenuhnya
+                       tsmkTask.waktu = 0;
                    }
                }
 
+              // Susun supaya PJ (Kasta 0) -> Subjek Teras (Kasta 1) -> Subjek 2-Guru (PI / PM) -> Elektif (Kasta 2) -> Pengisi Hujung (Kasta 3)
+               tugasKelas.sort((a, b) => {
+                   let kA = a.subjek.includes(' / ') ? 1.5 : a.kasta;
+                   let kB = b.subjek.includes(' / ') ? 1.5 : b.kasta;
+                   if (kA !== kB) return kA - kB;
+                   if (b.waktu !== a.waktu) return b.waktu - a.waktu;
+                   return a.rawak - b.rawak;
+               });
+
+               // Fungsi Pembantu: Semak sama ada semua slot bagi sesuatu subjek pada hari tersebut duduk bersebelahan (tidak terpisah & tidak lintas rehat)
+               const isBlokBersebelahan = (slotsHari, hadSlot, namaSub, adaRehat) => {
+                   let idxArr = [];
+                   for (let i = 0; i < hadSlot; i++) {
+                       if (slotsHari[i] && slotsHari[i].subjek === namaSub) idxArr.push(i);
+                   }
+                   for (let m = 1; m < idxArr.length; m++) {
+                       if (idxArr[m] !== idxArr[m - 1] + 1) return false;
+                       if (adaRehat && idxArr[m - 1] < rehatIndex && idxArr[m] >= rehatIndex) return false;
+                   }
+                   return true;
+               };
+
                for (let idxTugas = 0; idxTugas < tugasKelas.length; idxTugas++) {
-                   if (jadualGagal) break; // Keluar dari loop Tugas jika cubaan sudah gagal
+                   if (jadualGagal) break;
                    let tugas = tugasKelas[idxTugas];
                    if(tugas.waktu <= 0) continue; 
                    
                    let subjek = tugas.subjek; let kasta = tugas.kasta; let bakiWaktu = tugas.waktu;
                    let namaGuru = tugas.kodGuru; let warna = "text-emerald-600";
+                   let isTerasSubjek = (subjek.includes("BM") || subjek.includes("BI") || subjek.includes("MT") || subjek.includes("SN"));
                    
                    let chunks = [];
-                   if (bakiWaktu >= 10 && (subjek.includes("BM") || subjek.includes("BI"))) {
-                       if (bakiWaktu === 12) chunks = [3, 3, 2, 2, 2];
-                       else if (bakiWaktu === 10) chunks = [2, 2, 2, 2, 2];
-                       else chunks = [2, 2, 2, 2, 1]; 
+                   if (isTerasSubjek) {
+                       if (bakiWaktu === 12) {
+                           chunks = [3, 3, 2, 2, 2];
+                       } else if (bakiWaktu === 10) {
+                           // Bagi BM/BI 10 masa, benarkan variasi [3, 3, 2, 2] untuk menutup Zon Pagi 5-slot (3 + 2 = 5) atau [2, 2, 2, 2, 2]
+                           chunks = (Math.random() < 0.65) ? [3, 3, 2, 2] : [2, 2, 2, 2, 2];
+                       } else if (bakiWaktu === 3) {
+                           chunks = [2, 1]; // Khas untuk Subjek Teras 3 masa (2 masa + 1 masa hari berlainan)
+                       } else if (bakiWaktu >= 4) {
+                           if (bakiWaktu % 2 !== 0) { chunks.push(3); bakiWaktu -= 3; }
+                           while (bakiWaktu > 0) { chunks.push(2); bakiWaktu -= 2; }
+                       } else {
+                           chunks = [bakiWaktu];
+                       }
                    } else {
                        while (bakiWaktu > 0) { let c = Math.min(bakiWaktu, 2); chunks.push(c); bakiWaktu -= c; }
                    }
 
                    for (let idxChunk = 0; idxChunk < chunks.length; idxChunk++) {
-                       if (jadualGagal) break; // Keluar dari loop Chunks jika cubaan sudah gagal
+                       if (jadualGagal) break;
                        let chunkSize = chunks[idxChunk];
                        let placed = false;
                        let cubaHari = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].sort(() => Math.random() - 0.5);
 
-                       const cubaSumbat = (startMasa, endMasa, ignoreSpread = false) => {
-                           for (let h = 0; h < cubaHari.length; h++) {
-                               let hariAktif = cubaHari[h];
-                               let slots = f2_jadualSediaAda[kelas][hariAktif];
-                               
-                               let hadSlotSemasa = getLimit(kelas, hariAktif);
-                               let limitMasa = Math.min(endMasa, hadSlotSemasa);
+                       // Enjin Carian Ruang Mutlak (Sokong Sapuan Aras Bawah Merentas Semua Hari Untuk Subjek Pengisi Hujung)
+                       const cubaSumbat = (startMasa, endMasa, forceMode = false, sapuDariBawah = false, simpanRuangHujung = 1) => {
+                           let isTeras = (subjek.includes("BM") || subjek.includes("BI") || subjek.includes("MT") || subjek.includes("SN"));
+                           let maxDibenarkanSehari = (subjek.includes("BM") || subjek.includes("BI")) ? 3 : 2;
 
-                               let maxDibenarkanSehari = (subjek.includes("BM") || subjek.includes("BI")) ? 3 : 2;
-                               let existCount = slots.slice(0, hadSlotSemasa).filter(s => s && s.subjek === subjek).length;
-                               if (existCount + chunkSize > maxDibenarkanSehari) continue; 
+                           // Jika sapuDariBawah = true (Seni, Muzik, PM/PI, PK), utamakan petak paling hujung (offset = 0) merentas SEMUA 5 hari dahulu!
+                           if (sapuDariBawah) {
+                               for (let offset = 0; offset < 15; offset++) {
+                                   for (let h = 0; h < cubaHari.length; h++) {
+                                       let hariAktif = cubaHari[h];
+                                       let slots = f2_jadualSediaAda[kelas][hariAktif];
+                                       let hadSlotSemasa = getLimit(kelas, hariAktif);
+                                       let limitMasa = Math.min(endMasa, hadSlotSemasa);
 
-                               let foundIndex = -1;
-                               for (let s = startMasa; s <= limitMasa - chunkSize; s++) {
-                                   if (hariAktif === 'JUMAAT' && s >= getLimit(kelas, 'JUMAAT') && subjek !== "TSMK") continue;
-                                   if (hariAdaRehat[hariAktif] && s <= (rehatIndex - 1) && (s + chunkSize - 1) >= rehatIndex) continue;
+                                       let mulaEfektif = (!hariAdaRehat[hariAktif] && startMasa === rehatIndex) ? Math.max(0, hadSlotSemasa - 2) : startMasa;
+                                       let s = limitMasa - chunkSize - offset;
+                                       if (s < mulaEfektif || s < 0) continue;
 
-                                   let canFit = true;
-                                   for (let j = 0; j < chunkSize; j++) {
-                                       if (slots[s+j] !== null || !isTeacherFree(namaGuru, hariAktif, s+j, kelas)) { canFit = false; break; }
+                                       let existCount = slots.slice(0, hadSlotSemasa).filter(st => st && st.subjek === subjek).length;
+                                       if (isTeras && existCount > 0) continue;
+                                       if (existCount + chunkSize > maxDibenarkanSehari) continue;
+
+                                       if (subjek.includes("PJ")) {
+                                           let pjCountSehari = 0;
+                                           f2_senaraiKelasUnik.forEach(kLain => {
+                                               if(f2_jadualSediaAda[kLain][hariAktif].some(petak => petak && petak.subjek && petak.subjek.includes("PJ"))) pjCountSehari++;
+                                           });
+                                           if (pjCountSehari >= 2) continue;
+                                       }
+
+                                       if (hariAktif === 'JUMAAT' && s >= getLimit(kelas, 'JUMAAT') && subjek !== "TSMK") continue;
+                                       if (hariAdaRehat[hariAktif] && s <= (rehatIndex - 1) && (s + chunkSize - 1) >= rehatIndex) continue;
+                                       if (isTeras && (s + chunkSize - 1) >= (hadSlotSemasa - simpanRuangHujung)) continue;
+
+                                       let canFit = true;
+                                       for (let j = 0; j < chunkSize; j++) {
+                                           if (slots[s+j] !== null || !isTeacherFree(namaGuru, hariAktif, s+j, kelas)) { canFit = false; break; }
+                                       }
+                                       if (canFit && !isGuruTidakPenat(namaGuru, hariAktif, s, chunkSize)) canFit = false;
+
+                                       if (canFit) {
+                                           for (let j = 0; j < chunkSize; j++) { slots[s + j] = { subjek: subjek, kodGuru: namaGuru, warna: warna }; }
+                                           return true;
+                                       }
                                    }
-                                   if (canFit) { foundIndex = s; break; }
                                }
+                               return false;
+                           }
 
-                               if (foundIndex !== -1) {
-                                   for (let j = 0; j < chunkSize; j++) { slots[foundIndex + j] = { subjek: subjek, kodGuru: namaGuru, warna: warna }; }
-                                   return true;
+                           // Carian dari Pagi ke Petang (Utamakan padanan pariti zon supaya tiada lompong 1-masa tertinggal)
+                           for (let pass = 0; pass < 2; pass++) {
+                               for (let h = 0; h < cubaHari.length; h++) {
+                                   let hariAktif = cubaHari[h];
+                                   let slots = f2_jadualSediaAda[kelas][hariAktif];
+                                   
+                                   let hadSlotSemasa = getLimit(kelas, hariAktif);
+                                   let limitMasa = Math.min(endMasa, hadSlotSemasa);
+
+                                   let existCount = slots.slice(0, hadSlotSemasa).filter(s => s && s.subjek === subjek).length;
+                                   if (isTeras && existCount > 0) continue; // Setiap blok Subjek Teras masuk ke hari berlainan dahulu
+                                   if (existCount + chunkSize > maxDibenarkanSehari) continue; 
+
+                                   // Syarat Keras PJ (Maksimum 2 Kelas Sehari Seluruh Sekolah)
+                                   if (subjek.includes("PJ")) {
+                                       let pjCountSehari = 0;
+                                       f2_senaraiKelasUnik.forEach(kLain => {
+                                           if(f2_jadualSediaAda[kLain][hariAktif].some(petak => petak && petak.subjek && petak.subjek.includes("PJ"))) pjCountSehari++;
+                                       });
+                                       if (pjCountSehari >= 2) continue;
+                                   }
+
+                                   let foundIndex = -1;
+                                   for (let s = startMasa; s <= limitMasa - chunkSize; s++) {
+                                       if (s < 0) continue;
+                                       if (hariAktif === 'JUMAAT' && s >= getLimit(kelas, 'JUMAAT') && subjek !== "TSMK") continue;
+                                       if (hariAdaRehat[hariAktif] && s <= (rehatIndex - 1) && (s + chunkSize - 1) >= rehatIndex) continue;
+
+                                       // Simpan ruang hujung untuk subjek Pengisi Hujung (PSV, PMZ, PK, PI/PM) & Haramkan Teras di slot terakhir
+                                       if ((isTeras || simpanRuangHujung > 0) && (s + chunkSize - 1) >= (hadSlotSemasa - simpanRuangHujung)) continue; 
+
+                                       // Pada pass 0, elakkan meletakkan blok 2-masa di tengah-tengah ruang kosong yang meninggalkan 1 slot tunggal di kiri & kanan
+                                       if (pass === 0) {
+                                           let zStart = (hariAdaRehat[hariAktif] && s >= rehatIndex) ? rehatIndex : 0;
+                                           let zEnd = (hariAdaRehat[hariAktif] && s < rehatIndex) ? Math.min(rehatIndex, hadSlotSemasa) : hadSlotSemasa;
+                                           let rStart = s;
+                                           while (rStart > zStart && slots[rStart - 1] === null) rStart--;
+                                           let leftGap = s - rStart;
+                                           if (chunkSize === 2 && (leftGap % 2 !== 0)) continue;
+                                           if (chunkSize === 3) {
+                                               let emptyZone = 0;
+                                               for (let z = zStart; z < zEnd; z++) if (slots[z] === null) emptyZone++;
+                                               if (emptyZone % 2 === 0 || (leftGap % 2 !== 0)) continue;
+                                           }
+                                       }
+
+                                       let canFit = true;
+                                       for (let j = 0; j < chunkSize; j++) {
+                                           if (slots[s+j] !== null || !isTeacherFree(namaGuru, hariAktif, s+j, kelas)) { canFit = false; break; }
+                                       }
+
+                                       // RADAR KEPENATAN GURU (MAKSIMUM 4 MASA BERTURUT-TURUT)
+                                       if (canFit && !isGuruTidakPenat(namaGuru, hariAktif, s, chunkSize)) {
+                                           canFit = false;
+                                       }
+
+                                       if (canFit) { foundIndex = s; break; }
+                                   }
+
+                                   if (foundIndex !== -1) {
+                                       for (let j = 0; j < chunkSize; j++) { slots[foundIndex + j] = { subjek: subjek, kodGuru: namaGuru, warna: warna }; }
+                                       return true;
+                                   }
                                }
                            }
                            return false;
                        };
 
                        let limitPetang = 15;
-                       if (kasta === 1) { 
-                           placed = cubaSumbat(0, rehatIndex); if (!placed) placed = cubaSumbat(0, rehatIndex, true); 
-                       } else if (kasta === 2) { 
-                           placed = cubaSumbat(0, rehatIndex); if (!placed) placed = cubaSumbat(0, rehatIndex, true); 
-                           if (!placed) placed = cubaSumbat(rehatIndex, limitPetang); if (!placed) placed = cubaSumbat(rehatIndex, limitPetang, true);
+
+                       if (kasta === 0) { 
+                           // Kasta 0 (PJ): Wajib Pagi (Sebelum Rehat), simpan 2 slot hujung pada hari Jumaat dahulu
+                           placed = cubaSumbat(0, rehatIndex, false, false, 2); 
+                           if (!placed) placed = cubaSumbat(0, rehatIndex, false, false, 1); 
+                       } else if (kasta === 1) { 
+                           // Kasta 1 (Teras: BM, BI, MT, SN): Simpan 2 slot hujung di semua hari (termasuk Jumaat) untuk PSV/PI/PM, kemudian 1 slot akhir mutlak
+                           placed = cubaSumbat(0, rehatIndex, false, false, 2); 
+                           if (!placed) placed = cubaSumbat(rehatIndex, limitPetang, false, false, 2); 
+                           if (!placed) placed = cubaSumbat(0, rehatIndex, false, false, 1); 
+                           if (!placed) placed = cubaSumbat(rehatIndex, limitPetang, false, false, 1); 
+                           if (!placed) placed = cubaSumbat(0, limitPetang, true, false, 1); 
+                           // Jika blok 3-masa BM/BI tidak muat kerana kekangan 4 masa guru, tukarkan dua blok [3, 3] kepada tiga blok [2, 2, 2] secara dinamik!
+                           if (!placed && chunkSize === 3 && idxChunk + 1 < chunks.length && chunks[idxChunk + 1] === 3) {
+                               chunks.splice(idxChunk, 2, 2, 2, 2);
+                               chunkSize = 2;
+                               placed = cubaSumbat(0, rehatIndex, false, false, 2);
+                               if (!placed) placed = cubaSumbat(rehatIndex, limitPetang, false, false, 2);
+                               if (!placed) placed = cubaSumbat(0, limitPetang, true, false, 1);
+                           }
+                       } else if (kasta === 2) {
+                           // Kasta 2 (SEJ, RBT, BIB): Isi ruang pagi/tengah dahulu sambil membiarkan 2 slot hujung terbuka untuk PSV/PMZ/PM/PK
+                           placed = cubaSumbat(0, rehatIndex, false, false, 2);
+                           if (!placed) placed = cubaSumbat(rehatIndex, limitPetang, false, false, 2);
+                           if (!placed) placed = cubaSumbat(0, limitPetang, false, false, 1);
+                           if (!placed) placed = cubaSumbat(0, limitPetang, true, true, 0);
                        } else { 
-                           placed = cubaSumbat(0, limitPetang); if (!placed) placed = cubaSumbat(0, limitPetang, true);
+                           // Kasta 3 (Seni/PSV, Muzik/PMZ, PK, PI/PM, PM): Disapu masuk ke bawah (hujung waktu balik) merentas semua hari secara natural!
+                           placed = cubaSumbat(rehatIndex, limitPetang, false, true, 0); 
+                           if (!placed) placed = cubaSumbat(0, limitPetang, true, true, 0); 
                        }
 
                        if (!placed) {
-                           for(let k = 0; k < chunkSize; k++) {
-                               let berjayaSumbat = false;
-                               // Langkah 1
-                               for (let h = 0; h < 5; h++) {
-                                   let hariAktif = cubaHari[h];
-                                   let slots = f2_jadualSediaAda[kelas][hariAktif];
-                                   let hadSlotSemasa = getLimit(kelas, hariAktif);
-                                   
-                                   let maxDibenarkanSehari = (subjek.includes("BM") || subjek.includes("BI")) ? 3 : 2;
-                                   let existCount = slots.slice(0, hadSlotSemasa).filter(s => s && s.subjek === subjek).length;
-                                   if (existCount + 1 > maxDibenarkanSehari) continue; 
+                           let isTeras = (subjek.includes("BM") || subjek.includes("BI") || subjek.includes("MT") || subjek.includes("SN"));
+                           let isPJ = subjek.includes("PJ");
+                           let semuaHari = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'];
+                           let maxDibenarkanKita = (subjek.includes("BM") || subjek.includes("BI")) ? 3 : 2;
 
-                                   let sf = -1;
-                                   for(let s = 0; s < hadSlotSemasa; s++){
-                                       if(slots[s] === null && isTeacherFree(namaGuru, hariAktif, s, kelas)){ sf = s; break; }
+                           // ENJIN PERTUKARAN BLOK 2-MASA (Untuk SEMUA Subjek 2-Masa termasuk BM, BI, MT, SN, PJ, PI/PM, PSV, SEJ, RBT, BIB)
+                           // Membenarkan pertukaran di dalam HARI YANG SAMA (hariEmpty === hariCari) atau berlainan hari!
+                           if (chunkSize === 2) {
+                               // Teknik 1: Alihkan Blok 2-Masa Sedia Ada [m1, m2] ke 2 Petak Kosong [sEmpty, sEmpty+1] (Termasuk Hari Sama!)
+                               for (let hEmpty = 0; hEmpty < 5 && !placed; hEmpty++) {
+                                   let hariEmpty = semuaHari[hEmpty];
+                                   let slotsEmpty = f2_jadualSediaAda[kelas][hariEmpty];
+                                   let maxEmpty = getLimit(kelas, hariEmpty);
+
+                                   for (let sEmpty = 0; sEmpty <= maxEmpty - 2 && !placed; sEmpty++) {
+                                       if (hariAdaRehat[hariEmpty] && sEmpty <= (rehatIndex - 1) && (sEmpty + 1) >= rehatIndex) continue;
+                                       if (slotsEmpty[sEmpty] !== null || slotsEmpty[sEmpty + 1] !== null) continue;
+
+                                       for (let hCari = 0; hCari < 5 && !placed; hCari++) {
+                                           let hariCari = semuaHari[hCari];
+                                           let slotsCari = f2_jadualSediaAda[kelas][hariCari];
+                                           let maxCari = getLimit(kelas, hariCari);
+
+                                           let existKitaCari = slotsCari.slice(0, maxCari).filter(st => st && st.subjek === subjek).length;
+                                           if (isTeras && existKitaCari > 0) continue;
+                                           if (existKitaCari + 2 > maxDibenarkanKita) continue;
+
+                                           for (let sCari = 0; sCari <= maxCari - 2 && !placed; sCari++) {
+                                               if (hariCari === hariEmpty && Math.abs(sCari - sEmpty) < 2) continue;
+                                               if (hariAdaRehat[hariCari] && sCari <= (rehatIndex - 1) && (sCari + 1) >= rehatIndex) continue;
+                                               if (isTeras && (sCari + 1) >= (maxCari - 1)) continue;
+                                               if (isPJ && (sCari + 1) >= rehatIndex) continue;
+                                               if (!isTeacherFree(namaGuru, hariCari, sCari, kelas) || !isTeacherFree(namaGuru, hariCari, sCari + 1, kelas)) continue;
+
+                                               let m1 = slotsCari[sCari];
+                                               let m2 = slotsCari[sCari + 1];
+                                               if (!m1 || !m2 || m1.subjek !== m2.subjek) continue;
+                                               if (m1.subjek === 'PERHIMPUNAN' || m1.subjek.includes('TSMK') || m1.subjek === subjek) continue;
+                                               if (sCari > 0 && slotsCari[sCari - 1] && slotsCari[sCari - 1].subjek === m1.subjek) continue;
+                                               if (sCari + 2 < maxCari && slotsCari[sCari + 2] && slotsCari[sCari + 2].subjek === m1.subjek) continue;
+
+                                               let mangsaTeras = (m1.subjek.includes("BM") || m1.subjek.includes("BI") || m1.subjek.includes("MT") || m1.subjek.includes("SN"));
+                                               if (mangsaTeras && (sEmpty + 1) >= (maxEmpty - 1)) continue;
+                                               if (m1.subjek.includes("PJ") && (sEmpty + 1) >= rehatIndex) continue;
+
+                                               if (hariEmpty !== hariCari) {
+                                                   let existMangsaEmpty = slotsEmpty.slice(0, maxEmpty).filter(st => st && st.subjek === m1.subjek).length;
+                                                   if (existMangsaEmpty > 0) continue;
+                                               }
+
+                                               if (isTeacherFree(m1.kodGuru, hariEmpty, sEmpty, kelas) && isTeacherFree(m1.kodGuru, hariEmpty, sEmpty + 1, kelas)) {
+                                                   slotsEmpty[sEmpty] = m1; slotsEmpty[sEmpty + 1] = m2;
+                                                   slotsCari[sCari] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+                                                   slotsCari[sCari + 1] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+
+                                                   if (isGuruTidakPenat(m1.kodGuru, hariEmpty, -1, 0) && isGuruTidakPenat(namaGuru, hariCari, -1, 0)) {
+                                                       placed = true; break;
+                                                   } else {
+                                                       slotsEmpty[sEmpty] = null; slotsEmpty[sEmpty + 1] = null;
+                                                       slotsCari[sCari] = m1; slotsCari[sCari + 1] = m2;
+                                                   }
+                                               }
+                                           }
+                                       }
                                    }
-                                   if(sf !== -1){ slots[sf] = { subjek: subjek, kodGuru: namaGuru, warna: warna }; berjayaSumbat = true; break; }
                                }
 
-                               // Langkah 2: SMART SWAP
-                               if (!berjayaSumbat) {
-                                   let berjayaSwap = false;
-                                   let semuaHari = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'];
-                                   
-                                   for (let hEmpty = 0; hEmpty < 5; hEmpty++) {
-                                       let hariEmpty = semuaHari[hEmpty];
-                                       let slotsEmpty = f2_jadualSediaAda[kelas][hariEmpty];
-                                       let maxEmpty = getLimit(kelas, hariEmpty);
-                                       
-                                       for(let sEmpty = 0; sEmpty < maxEmpty; sEmpty++) {
-                                           if (slotsEmpty[sEmpty] === null && isTeacherFree(namaGuru, hariEmpty, sEmpty, kelas)) {
-                                               for (let hCari = 0; hCari < 5; hCari++) {
-                                                   let hariCari = semuaHari[hCari];
-                                                   if (hariCari === hariEmpty) continue;
-                                                   
-                                                   let slotsCari = f2_jadualSediaAda[kelas][hariCari];
-                                                   let maxCari = getLimit(kelas, hariCari);
-                                                   
-                                                   for(let sCari = 0; sCari < maxCari; sCari++) {
-                                                       let mangsa = slotsCari[sCari];
-                                                       if (mangsa !== null && mangsa.subjek !== 'PERHIMPUNAN' && !mangsa.subjek.includes('TSMK')) {
-                                                           if (mangsa.subjek === subjek) continue;
-                                                           let limitMangsa = (mangsa.subjek.includes("BM") || mangsa.subjek.includes("BI")) ? 3 : 2;
-                                                           let currMangsa = slotsEmpty.slice(0, maxEmpty).filter(s => s && s.subjek === mangsa.subjek).length;
-                                                           let isMangsaFree = isTeacherFree(mangsa.kodGuru, hariEmpty, sEmpty, kelas);
-                                                           
-                                                           let limitKita = (subjek.includes("BM") || subjek.includes("BI")) ? 3 : 2;
-                                                           let currKita = slotsCari.slice(0, maxCari).filter(s => s && s.subjek === subjek).length;
-                                                           let isKitaFree = isTeacherFree(namaGuru, hariCari, sCari, kelas);
-                                                           
-                                                           if ((currMangsa + 1 <= limitMangsa) && (currKita + 1 <= limitKita) && isMangsaFree && isKitaFree) {
-                                                               slotsEmpty[sEmpty] = mangsa;
-                                                               slotsCari[sCari] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
-                                                               berjayaSwap = true; berjayaSumbat = true; break;
+                               // Teknik 2 (1-Kosong + 1-Alih): Cari pasangan [Kosong, Mangsa] atau [Mangsa, Kosong] & alihkan Mangsa ke petak kosong lain (Termasuk Hari Sama!)
+                               for (let hCari = 0; hCari < 5 && !placed; hCari++) {
+                                   let hariCari = cubaHari[hCari];
+                                   let slotsCari = f2_jadualSediaAda[kelas][hariCari];
+                                   let maxCari = getLimit(kelas, hariCari);
+                                   let existKitaCari = slotsCari.slice(0, maxCari).filter(st => st && st.subjek === subjek).length;
+                                   if (isTeras && existKitaCari > 0) continue;
+                                   if (existKitaCari + 2 > maxDibenarkanKita) continue;
+
+                                   for (let s = 0; s <= maxCari - 2 && !placed; s++) {
+                                       if (hariAdaRehat[hariCari] && s <= (rehatIndex - 1) && (s + 1) >= rehatIndex) continue;
+                                       if (isTeras && (s + 1) >= (maxCari - 1)) continue;
+                                       if (isPJ && (s + 1) >= rehatIndex) continue;
+                                       if (!isTeacherFree(namaGuru, hariCari, s, kelas) || !isTeacherFree(namaGuru, hariCari, s + 1, kelas)) continue;
+
+                                       let idxKosong = -1; let idxMangsa = -1;
+                                       if (slotsCari[s] === null && slotsCari[s + 1] !== null) { idxKosong = s; idxMangsa = s + 1; }
+                                       else if (slotsCari[s] !== null && slotsCari[s + 1] === null) { idxKosong = s + 1; idxMangsa = s; }
+                                       if (idxKosong === -1) continue;
+
+                                       let mangsa = slotsCari[idxMangsa];
+                                       if (!mangsa || mangsa.subjek === 'PERHIMPUNAN' || mangsa.subjek.includes('TSMK') || mangsa.subjek === subjek) continue;
+                                       let mangsaTeras = (mangsa.subjek.includes("BM") || mangsa.subjek.includes("BI") || mangsa.subjek.includes("MT") || mangsa.subjek.includes("SN"));
+                                       if (mangsaTeras) {
+                                           let bilMangsaHariCari = slotsCari.slice(0, maxCari).filter(st => st && st.subjek === mangsa.subjek).length;
+                                           let wAsal = waktuMingguanMangsaCheck(kelas, mangsa.subjek);
+                                           if (bilMangsaHariCari === 2) continue;
+                                           if (bilMangsaHariCari === 1 && wAsal !== 3) continue;
+                                       }
+
+                                       for (let hEmpty = 0; hEmpty < 5 && !placed; hEmpty++) {
+                                           let hariEmpty = semuaHari[hEmpty];
+                                           let slotsEmpty = f2_jadualSediaAda[kelas][hariEmpty];
+                                           let maxEmpty = getLimit(kelas, hariEmpty);
+
+                                           for (let sEmpty = maxEmpty - 1; sEmpty >= 0 && !placed; sEmpty--) {
+                                               if (hariEmpty === hariCari && (sEmpty === s || sEmpty === s + 1)) continue;
+                                               if (slotsEmpty[sEmpty] !== null) continue;
+                                               if (mangsaTeras && sEmpty >= (maxEmpty - 1)) continue;
+                                               if (mangsa.subjek.includes("PJ") && sEmpty >= rehatIndex) continue;
+
+                                               let limitM = (mangsa.subjek.includes("BM") || mangsa.subjek.includes("BI")) ? 3 : 2;
+                                               let currM = slotsEmpty.slice(0, maxEmpty).filter(st => st && st.subjek === mangsa.subjek).length;
+                                               if (hariEmpty !== hariCari && currM + 1 > limitM) continue;
+                                               if (mangsaTeras && hariEmpty !== hariCari) {
+                                                   let wAsal = waktuMingguanMangsaCheck(kelas, mangsa.subjek);
+                                                   if (wAsal === 3 && currM > 0) continue;
+                                                   if (wAsal > 3 && currM !== 2) continue;
+                                               }
+                                               if (!isTeacherFree(mangsa.kodGuru, hariEmpty, sEmpty, kelas)) continue;
+
+                                               slotsEmpty[sEmpty] = mangsa;
+                                               slotsCari[s] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+                                               slotsCari[s + 1] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+
+                                               let terasKemas = true;
+                                               if (mangsaTeras) {
+                                                   if (!isBlokBersebelahan(slotsCari, maxCari, mangsa.subjek, hariAdaRehat[hariCari])) terasKemas = false;
+                                                   if (!isBlokBersebelahan(slotsEmpty, maxEmpty, mangsa.subjek, hariAdaRehat[hariEmpty])) terasKemas = false;
+                                               }
+
+                                               if (terasKemas && isGuruTidakPenat(mangsa.kodGuru, hariEmpty, -1, 0) && isGuruTidakPenat(namaGuru, hariCari, -1, 0)) {
+                                                   placed = true; break;
+                                               } else {
+                                                   slotsEmpty[sEmpty] = null;
+                                                   slotsCari[idxKosong] = null;
+                                                   slotsCari[idxMangsa] = mangsa;
+                                               }
+                                           }
+                                       }
+                                   }
+                               }
+
+                               // Teknik 3 (Khas BM & BI 10 Masa): Jika hari ke-5 penuh, lekatkan 1+1 secara bersebelahan pada 2 hari sedia ada supaya menjadi blok 3-masa [3, 3, 2, 2]
+                               if (!placed && (subjek.includes("BM") || subjek.includes("BI"))) {
+                                   let rekodLekat = [];
+                                   for (let k = 0; k < 2; k++) {
+                                       let dahLekat = false;
+                                       for (let h = 0; h < 5 && !dahLekat; h++) {
+                                           let hariAktif = cubaHari[h];
+                                           let slots = f2_jadualSediaAda[kelas][hariAktif];
+                                           let maxH = getLimit(kelas, hariAktif);
+                                           let idxSedia = [];
+                                           for (let idx = 0; idx < maxH; idx++) {
+                                               if (slots[idx] && slots[idx].subjek === subjek) idxSedia.push(idx);
+                                           }
+                                           if (idxSedia.length !== 2) continue;
+                                           let calonS = [idxSedia[0] - 1, idxSedia[1] + 1];
+
+                                           for (let c = 0; c < calonS.length && !dahLekat; c++) {
+                                               let sTarget = calonS[c];
+                                               if (sTarget < 0 || sTarget >= maxH - 1) continue;
+                                               if (hariAdaRehat[hariAktif] && ((sTarget < rehatIndex && idxSedia[0] >= rehatIndex) || (sTarget >= rehatIndex && idxSedia[0] < rehatIndex))) continue;
+                                               if (!isTeacherFree(namaGuru, hariAktif, sTarget, kelas)) continue;
+
+                                               if (slots[sTarget] === null) {
+                                                   slots[sTarget] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+                                                   if (isGuruTidakPenat(namaGuru, hariAktif, -1, 0)) {
+                                                       rekodLekat.push({ hari: hariAktif, s: sTarget, lama: null });
+                                                       dahLekat = true;
+                                                   } else {
+                                                       slots[sTarget] = null;
+                                                   }
+                                               } else {
+                                                   let mangsa = slots[sTarget];
+                                                   let mangsaTeras = (mangsa.subjek.includes("BM") || mangsa.subjek.includes("BI") || mangsa.subjek.includes("MT") || mangsa.subjek.includes("SN"));
+                                                   if (mangsa.subjek === 'PERHIMPUNAN' || mangsa.subjek.includes('TSMK') || mangsaTeras) continue;
+
+                                                   for (let hE = 0; hE < 5 && !dahLekat; hE++) {
+                                                       let hariEmpty = semuaHari[hE];
+                                                       let slotsEmpty = f2_jadualSediaAda[kelas][hariEmpty];
+                                                       let maxEmpty = getLimit(kelas, hariEmpty);
+                                                       for (let sEmpty = maxEmpty - 1; sEmpty >= 0 && !dahLekat; sEmpty--) {
+                                                           if (slotsEmpty[sEmpty] !== null) continue;
+                                                           if (mangsa.subjek.includes("PJ") && sEmpty >= rehatIndex) continue;
+                                                           let currM = slotsEmpty.slice(0, maxEmpty).filter(st => st && st.subjek === mangsa.subjek).length;
+                                                           if (hariEmpty !== hariAktif && currM + 1 > 2) continue;
+                                                           if (!isTeacherFree(mangsa.kodGuru, hariEmpty, sEmpty, kelas)) continue;
+
+                                                           slotsEmpty[sEmpty] = mangsa;
+                                                           slots[sTarget] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+                                                           if (isGuruTidakPenat(mangsa.kodGuru, hariEmpty, -1, 0) && isGuruTidakPenat(namaGuru, hariAktif, -1, 0)) {
+                                                               rekodLekat.push({ hari: hariAktif, s: sTarget, lama: mangsa, hariEmpty: hariEmpty, sEmpty: sEmpty });
+                                                               dahLekat = true;
+                                                           } else {
+                                                               slotsEmpty[sEmpty] = null;
+                                                               slots[sTarget] = mangsa;
                                                            }
                                                        }
                                                    }
-                                                   if (berjayaSwap) break;
                                                }
                                            }
-                                           if (berjayaSwap) break;
                                        }
-                                       if (berjayaSwap) break;
+                                   }
+                                   if (rekodLekat.length === 2) {
+                                       placed = true;
+                                   } else {
+                                       rekodLekat.forEach(r => {
+                                           f2_jadualSediaAda[kelas][r.hari][r.s] = r.lama;
+                                           if (r.lama) f2_jadualSediaAda[kelas][r.hariEmpty][r.sEmpty] = null;
+                                       });
                                    }
                                }
 
-                               // KOD BAHARU: LANGKAH 3 (BATALKAN JADUAL DAN CUBA LAGI DARI MULA)
-                               // Kita tidak lagi membenarkan 'Force Fill' yang akan merosakkan jadual guru lain.
-                               if (!berjayaSumbat) {
+                               // SEKATAN MUTLAK: Blok >= 2 masa bagi Subjek Teras & PJ tidak boleh dipecahkan kepada 1 masa!
+                               if (!placed && (isTeras || isPJ)) {
                                    jadualGagal = true;
                                    break;
+                               }
+                           }
+
+                           // Untuk ketulan 1-masa (seperti SN-1 bagi Sains 3 masa, BIB-1, PK, PMZ) atau subjek bukan Teras:
+                           if (!placed) {
+                               for(let k = 0; k < chunkSize; k++) {
+                                   let berjayaSumbat = false;
+
+                                   // Langkah 1 (Dikunci dengan Tembok Teras, Syarat PJ Pagi & Had 4 Masa Guru)
+                                   if (!isTeras && !isPJ) {
+                                       for (let offset = 0; offset < 15 && !berjayaSumbat; offset++) {
+                                           for (let h = 0; h < 5; h++) {
+                                               let hariAktif = cubaHari[h];
+                                               let slots = f2_jadualSediaAda[kelas][hariAktif];
+                                               let hadSlotSemasa = getLimit(kelas, hariAktif);
+                                               let s = hadSlotSemasa - 1 - offset;
+                                               if (s < 0) continue;
+
+                                               let maxDibenarkanSehari = 2;
+                                               let existCount = slots.slice(0, hadSlotSemasa).filter(st => st && st.subjek === subjek).length;
+                                               if (existCount + 1 > maxDibenarkanSehari) continue;
+
+                                               if (slots[s] === null && isTeacherFree(namaGuru, hariAktif, s, kelas) && isGuruTidakPenat(namaGuru, hariAktif, s, 1)) {
+                                                   slots[s] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+                                                   berjayaSumbat = true;
+                                                   break;
+                                               }
+                                           }
+                                       }
+                                   } else {
+                                       // Khas untuk baki 1-masa bagi Subjek Teras 3-masa (contoh: SN Tahap 1)
+                                       for (let h = 0; h < 5; h++) {
+                                           let hariAktif = cubaHari[h];
+                                           let slots = f2_jadualSediaAda[kelas][hariAktif];
+                                           let hadSlotSemasa = getLimit(kelas, hariAktif);
+                                           
+                                           let existCount = slots.slice(0, hadSlotSemasa).filter(s => s && s.subjek === subjek).length;
+                                           if (existCount > 0) continue; // Wajib pada hari berlainan daripada blok 2-masa!
+
+                                           let sf = -1;
+                                           for (let s = 0; s < hadSlotSemasa; s++) {
+                                               if (isPJ && s >= rehatIndex) continue;
+                                               if (isTeras && s >= (hadSlotSemasa - 1)) continue;
+                                               if (slots[s] === null && isTeacherFree(namaGuru, hariAktif, s, kelas) && isGuruTidakPenat(namaGuru, hariAktif, s, 1)) {
+                                                   sf = s;
+                                                   break;
+                                               }
+                                           }
+                                           if(sf !== -1){ slots[sf] = { subjek: subjek, kodGuru: namaGuru, warna: warna }; berjayaSumbat = true; break; }
+                                       }
+                                   }
+
+                                   // Langkah 2: SMART SWAP (Sokong Hari Sama & Lindungi Blok 2-Masa Subjek Teras)
+                                   if (!berjayaSumbat) {
+                                       let berjayaSwap = false;
+                                       let isSubjekPengisi = (subjek.includes("PSV") || subjek.includes("PMZ") || subjek.includes("PK") || subjek.includes("PM") || subjek.includes("PI"));
+                                       
+                                       for (let hEmpty = 0; hEmpty < 5; hEmpty++) {
+                                           let hariEmpty = semuaHari[hEmpty];
+                                           let slotsEmpty = f2_jadualSediaAda[kelas][hariEmpty];
+                                           let maxEmpty = getLimit(kelas, hariEmpty);
+                                           
+                                           for(let sEmpty = maxEmpty - 1; sEmpty >= 0; sEmpty--) {
+                                               if (slotsEmpty[sEmpty] === null) {
+                                                   // A. Pertukaran 1-ke-1 (Termasuk Hari Sama hariCari === hariEmpty!)
+                                                   for (let hCari = 0; hCari < 5; hCari++) {
+                                                       let hariCari = semuaHari[hCari];
+                                                       let slotsCari = f2_jadualSediaAda[kelas][hariCari];
+                                                       let maxCari = getLimit(kelas, hariCari);
+                                                       
+                                                       for(let sCari = 0; sCari < maxCari; sCari++) {
+                                                           if (hariCari === hariEmpty && sCari === sEmpty) continue;
+                                                           let mangsa = slotsCari[sCari];
+                                                           if (mangsa !== null && mangsa.subjek !== 'PERHIMPUNAN' && !mangsa.subjek.includes('TSMK')) {
+                                                               if (mangsa.subjek === subjek) continue;
+                                                               
+                                                               let isSEmptyHujung = sEmpty >= (maxEmpty - 1);
+                                                               let isSCariHujung = sCari >= (maxCari - 1);
+                                                               let subjekTerasBaru = isTeras;
+                                                               let mangsaTeras = (mangsa.subjek.includes("BM") || mangsa.subjek.includes("BI") || mangsa.subjek.includes("MT") || mangsa.subjek.includes("SN"));
+                                                               let mangsaPengisi = (mangsa.subjek.includes("PSV") || mangsa.subjek.includes("PMZ") || mangsa.subjek.includes("PK") || mangsa.subjek.includes("PM") || mangsa.subjek.includes("PI"));
+                                                               
+                                                               if ((isSEmptyHujung && mangsaTeras) || (isSCariHujung && subjekTerasBaru)) continue;
+                                                               if (isSCariHujung && mangsaPengisi && !isSubjekPengisi) continue;
+                                                               if ((mangsa.subjek.includes("PJ") && sEmpty >= rehatIndex) || (isPJ && sCari >= rehatIndex)) continue;
+
+                                                               // LINDUNGI SUBJEK TERAS: Jangan sesekali mencabut 1 masa daripada blok 2-masa Subjek Teras!
+                                                               if (mangsaTeras) {
+                                                                   let bilMangsaHariCari = slotsCari.slice(0, maxCari).filter(s => s && s.subjek === mangsa.subjek).length;
+                                                                   let waktuMingguanMangsa = waktuMingguanMangsaCheck(kelas, mangsa.subjek);
+                                                                   if (hariCari !== hariEmpty) {
+                                                                       if (bilMangsaHariCari === 2) continue;
+                                                                       if (bilMangsaHariCari === 1 && waktuMingguanMangsa !== 3) continue;
+                                                                   }
+                                                               }
+
+                                                               let limitMangsa = (mangsa.subjek.includes("BM") || mangsa.subjek.includes("BI")) ? 3 : 2;
+                                                               let currMangsa = slotsEmpty.slice(0, maxEmpty).filter(s => s && s.subjek === mangsa.subjek).length;
+                                                               if (hariCari !== hariEmpty) {
+                                                                   if (currMangsa + 1 > limitMangsa) continue;
+                                                                   if (mangsaTeras && waktuMingguanMangsaCheck(kelas, mangsa.subjek) === 3 && currMangsa > 0) continue;
+                                                                   if (mangsaTeras && waktuMingguanMangsaCheck(kelas, mangsa.subjek) > 3 && currMangsa !== 2) continue;
+                                                               }
+
+                                                               let limitKita = (subjek.includes("BM") || subjek.includes("BI")) ? 3 : 2;
+                                                               let currKita = slotsCari.slice(0, maxCari).filter(s => s && s.subjek === subjek).length;
+                                                               if (isTeras && currKita > 0) continue;
+                                                               if (currKita + 1 > limitKita) continue;
+
+                                                               let isMangsaFree = isTeacherFree(mangsa.kodGuru, hariEmpty, sEmpty, kelas);
+                                                               let isKitaFree = isTeacherFree(namaGuru, hariCari, sCari, kelas);
+                                                               
+                                                               if (isMangsaFree && isKitaFree) {
+                                                                   slotsEmpty[sEmpty] = mangsa;
+                                                                   slotsCari[sCari] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+                                                                   let blokSah = true;
+                                                                   if (mangsaTeras && (!isBlokBersebelahan(slotsCari, maxCari, mangsa.subjek, hariAdaRehat[hariCari]) || !isBlokBersebelahan(slotsEmpty, maxEmpty, mangsa.subjek, hariAdaRehat[hariEmpty]))) {
+                                                                       blokSah = false;
+                                                                   }
+                                                                   if (blokSah && isGuruTidakPenat(mangsa.kodGuru, hariEmpty, -1, 0) && isGuruTidakPenat(namaGuru, hariCari, -1, 0)) {
+                                                                       berjayaSwap = true; berjayaSumbat = true; break;
+                                                                   } else {
+                                                                       slotsEmpty[sEmpty] = null;
+                                                                       slotsCari[sCari] = mangsa;
+                                                                   }
+                                                               }
+                                                           }
+                                                       }
+                                                       if (berjayaSwap) break;
+                                                   }
+
+                                                   // B. Anjakan Blok 2-Masa Teras Bersebelahan Petak Kosong (Geser 1 petak pada hari yang sama tanpa memecahkan blok Teras!)
+                                                   if (!berjayaSwap) {
+                                                       // Kes 1: [m1, m2] berada di [sEmpty - 2, sEmpty - 1] -> geser ke [sEmpty - 1, sEmpty], buka ruang di sEmpty - 2
+                                                       if (sEmpty >= 2) {
+                                                           let m1 = slotsEmpty[sEmpty - 2];
+                                                           let m2 = slotsEmpty[sEmpty - 1];
+                                                           let sTarget = sEmpty - 2;
+                                                           let lintasRehat = (hariAdaRehat[hariEmpty] && (sEmpty - 1) <= (rehatIndex - 1) && sEmpty >= rehatIndex);
+                                                           if (m1 && m2 && m1.subjek === m2.subjek && m1.subjek !== 'PERHIMPUNAN' && !m1.subjek.includes('TSMK') && !lintasRehat) {
+                                                               let mTeras = (m1.subjek.includes("BM") || m1.subjek.includes("BI") || m1.subjek.includes("MT") || m1.subjek.includes("SN"));
+                                                               let currKita = slotsEmpty.slice(0, maxEmpty).filter(s => s && s.subjek === subjek).length;
+                                                               let limitKita = (subjek.includes("BM") || subjek.includes("BI")) ? 3 : 2;
+                                                               if (!(mTeras && sEmpty >= maxEmpty - 1) && !(m1.subjek.includes("PJ") && sEmpty >= rehatIndex) && !(isPJ && sTarget >= rehatIndex) && !(isTeras && currKita > 0) && (currKita + 1 <= limitKita)) {
+                                                                   if (isTeacherFree(m1.kodGuru, hariEmpty, sEmpty, kelas) && isTeacherFree(namaGuru, hariEmpty, sTarget, kelas)) {
+                                                                       slotsEmpty[sEmpty] = m2;
+                                                                       slotsEmpty[sTarget] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+                                                                       if (isBlokBersebelahan(slotsEmpty, maxEmpty, m1.subjek, hariAdaRehat[hariEmpty]) && isGuruTidakPenat(m1.kodGuru, hariEmpty, -1, 0) && isGuruTidakPenat(namaGuru, hariEmpty, -1, 0)) {
+                                                                           berjayaSwap = true; berjayaSumbat = true; break;
+                                                                       } else {
+                                                                           slotsEmpty[sEmpty] = null;
+                                                                           slotsEmpty[sTarget] = m1;
+                                                                       }
+                                                                   }
+                                                               }
+                                                           }
+                                                       }
+                                                       // Kes 2: [m1, m2] berada di [sEmpty + 1, sEmpty + 2] -> geser ke [sEmpty, sEmpty + 1], buka ruang di sEmpty + 2
+                                                       if (!berjayaSwap && sEmpty + 2 < maxEmpty) {
+                                                           let m1 = slotsEmpty[sEmpty + 1];
+                                                           let m2 = slotsEmpty[sEmpty + 2];
+                                                           let sTarget = sEmpty + 2;
+                                                           let lintasRehat = (hariAdaRehat[hariEmpty] && sEmpty <= (rehatIndex - 1) && (sEmpty + 1) >= rehatIndex);
+                                                           if (m1 && m2 && m1.subjek === m2.subjek && m1.subjek !== 'PERHIMPUNAN' && !m1.subjek.includes('TSMK') && !lintasRehat) {
+                                                               let currKita = slotsEmpty.slice(0, maxEmpty).filter(s => s && s.subjek === subjek).length;
+                                                               let limitKita = (subjek.includes("BM") || subjek.includes("BI")) ? 3 : 2;
+                                                               if (!(isTeras && sTarget >= maxEmpty - 1) && !(isPJ && sTarget >= rehatIndex) && !(isTeras && currKita > 0) && (currKita + 1 <= limitKita)) {
+                                                                   if (isTeacherFree(m1.kodGuru, hariEmpty, sEmpty, kelas) && isTeacherFree(namaGuru, hariEmpty, sTarget, kelas)) {
+                                                                       slotsEmpty[sEmpty] = m1;
+                                                                       slotsEmpty[sTarget] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+                                                                       if (isBlokBersebelahan(slotsEmpty, maxEmpty, m1.subjek, hariAdaRehat[hariEmpty]) && isGuruTidakPenat(m1.kodGuru, hariEmpty, -1, 0) && isGuruTidakPenat(namaGuru, hariEmpty, -1, 0)) {
+                                                                           berjayaSwap = true; berjayaSumbat = true; break;
+                                                                       } else {
+                                                                           slotsEmpty[sEmpty] = null;
+                                                                           slotsEmpty[sTarget] = m2;
+                                                                       }
+                                                                   }
+                                                               }
+                                                           }
+                                                       }
+                                                   }
+                                               }
+                                               if (berjayaSwap) break;
+                                           }
+                                           if (berjayaSwap) break;
+                                       }
+                                   }
+
+                                   // KOD BAHARU: LANGKAH 3 (BATALKAN JADUAL DAN CUBA LAGI DARI MULA)
+                                   if (!berjayaSumbat) {
+                                       jadualGagal = true;
+                                       break;
+                                   }
                                }
                            }
                        }
@@ -4829,25 +5517,165 @@
                }
            }
 
-           // Jika loop ini sampai ke penghujung tanpa 'jadualGagal', maknanya kocokan ini adalah 100% Sempurna!
-           if (!jadualGagal) {
-               jadualBerjaya = true;
+           function waktuMingguanMangsaCheck(kls, namaSub) {
+               let t = tugasSelepasGabung.find(x => x.kelas === kls && x.subjek === namaSub);
+               return t ? parseInt(t.waktu) : 0;
            }
+
+           // 4. SAPUAN GRAVITI HUJUNG NATURAL (Pastikan PSV, PMZ, PK, PI/PM ditolak ke petak akhir tanpa memecahkan blok 2-masa Subjek Teras)
+           if (!jadualGagal) {
+               const isPengisiHujung = (subjStr) => {
+                   if (!subjStr) return false;
+                   let s = subjStr.toUpperCase();
+                   return s.includes("PSV") || s.includes("PMZ") || s.includes("PK") || s.includes("PM") || s.includes("PI");
+               };
+
+               f2_senaraiKelasUnik.forEach(kelas => {
+                   ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hari => {
+                       let slots = f2_jadualSediaAda[kelas][hari];
+                       let hadSlot = getLimit(kelas, hari);
+                       if (hadSlot < 2) return;
+
+                       // A. Sapuan Blok 2-Masa (PSV / PI / PM) ke 2 Slot Terakhir (hadSlot - 2 & hadSlot - 1)
+                       let sH1 = hadSlot - 2;
+                       let sH2 = hadSlot - 1;
+                       let petakH1 = slots[sH1];
+                       let petakH2 = slots[sH2];
+                       let lintasRehatHujung = (hariAdaRehat[hari] && sH1 <= (rehatIndex - 1) && sH2 >= rehatIndex);
+
+                       if (!lintasRehatHujung && petakH1 && petakH2 && petakH1.subjek === petakH2.subjek && !isPengisiHujung(petakH1.subjek) && petakH1.subjek !== 'PERHIMPUNAN' && !petakH1.subjek.includes('TSMK')) {
+                           for (let sAwal = 0; sAwal <= hadSlot - 4; sAwal++) {
+                               if (hariAdaRehat[hari] && sAwal <= (rehatIndex - 1) && (sAwal + 1) >= rehatIndex) continue;
+                               let pA1 = slots[sAwal];
+                               let pA2 = slots[sAwal + 1];
+                               if (pA1 && pA2 && pA1.subjek === pA2.subjek && isPengisiHujung(pA1.subjek)) {
+                                   if (sAwal > 0 && slots[sAwal - 1] && slots[sAwal - 1].subjek === pA1.subjek) continue;
+                                   if (sAwal + 2 < hadSlot && slots[sAwal + 2] && slots[sAwal + 2].subjek === pA1.subjek) continue;
+                                   if (sH1 > 0 && slots[sH1 - 1] && slots[sH1 - 1].subjek === petakH1.subjek) continue;
+                                   if (petakH1.subjek.includes("PJ") && (sAwal + 1) >= rehatIndex) continue;
+
+                                   let gHujungFree = isTeacherFree(petakH1.kodGuru, hari, sAwal, kelas) && isTeacherFree(petakH1.kodGuru, hari, sAwal + 1, kelas);
+                                   let gAwalFree = isTeacherFree(pA1.kodGuru, hari, sH1, kelas) && isTeacherFree(pA1.kodGuru, hari, sH2, kelas);
+
+                                   if (gHujungFree && gAwalFree) {
+                                       slots[sAwal] = petakH1; slots[sAwal + 1] = petakH2;
+                                       slots[sH1] = pA1; slots[sH2] = pA2;
+
+                                       if (isGuruTidakPenat(petakH1.kodGuru, hari, -1, 0) && isGuruTidakPenat(pA1.kodGuru, hari, -1, 0)) {
+                                           break;
+                                       } else {
+                                           slots[sAwal] = pA1; slots[sAwal + 1] = pA2;
+                                           slots[sH1] = petakH1; slots[sH2] = petakH2;
+                                       }
+                                   }
+                               }
+                           }
+                       }
+
+                       // B. Sapuan Blok 1-Masa (PMZ / PK) ke Slot Terakhir (hadSlot - 1) HANYA JIKA petak akhir juga blok 1-masa tunggal!
+                       let sAkhir = hadSlot - 1;
+                       let petakAkhir = slots[sAkhir];
+                       if (petakAkhir && !isPengisiHujung(petakAkhir.subjek) && petakAkhir.subjek !== 'PERHIMPUNAN' && !petakAkhir.subjek.includes('TSMK')) {
+                           let isTunggalAkhir = (sAkhir === 0 || !slots[sAkhir - 1] || slots[sAkhir - 1].subjek !== petakAkhir.subjek);
+                           if (isTunggalAkhir) {
+                               for (let sAwal = 0; sAwal < sAkhir; sAwal++) {
+                                   let pAwal = slots[sAwal];
+                                   if (!pAwal || !isPengisiHujung(pAwal.subjek)) continue;
+                                   if (petakAkhir.subjek.includes("PJ") && sAwal >= rehatIndex) continue;
+
+                                   let kiriSama = (sAwal > 0 && slots[sAwal - 1] && slots[sAwal - 1].subjek === pAwal.subjek);
+                                   let kananSama = (sAwal + 1 < hadSlot && slots[sAwal + 1] && slots[sAwal + 1].subjek === pAwal.subjek);
+                                   if (kiriSama || kananSama) continue;
+
+                                   if (isTeacherFree(petakAkhir.kodGuru, hari, sAwal, kelas) && isTeacherFree(pAwal.kodGuru, hari, sAkhir, kelas)) {
+                                       slots[sAwal] = petakAkhir;
+                                       slots[sAkhir] = pAwal;
+
+                                       if (isGuruTidakPenat(petakAkhir.kodGuru, hari, -1, 0) && isGuruTidakPenat(pAwal.kodGuru, hari, -1, 0)) {
+                                           break;
+                                       } else {
+                                           slots[sAwal] = pAwal;
+                                           slots[sAkhir] = petakAkhir;
+                                       }
+                                   }
+                               }
+                           }
+                       }
+                   });
+               });
+
+               // 5. PENGAWAL INTEGRITI SUBJEK TERAS (Wajib >= 2 Masa Serentak, Kecuali Subjek Teras 3 Masa Dibenarkan 2 Masa + 1 Masa)
+               for (let cIdx = 0; cIdx < f2_senaraiKelasUnik.length && !jadualGagal; cIdx++) {
+                   let kSemak = f2_senaraiKelasUnik[cIdx];
+                   ["BM", "BI", "MT", "SN"].forEach(subTeras => {
+                       let tugasAsal = tugasSelepasGabung.find(t => t.kelas === kSemak && t.subjek === subTeras);
+                       if (!tugasAsal) return;
+                       let jumlahMingguan = parseInt(tugasAsal.waktu) || 0;
+                       let bilHariSatuMasa = 0;
+
+                       ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hSemak => {
+                           let slotsH = f2_jadualSediaAda[kSemak][hSemak];
+                           let limitH = getLimit(kSemak, hSemak);
+                           let indeksTeras = [];
+                           for (let idx = 0; idx < limitH; idx++) {
+                               if (slotsH[idx] && slotsH[idx].subjek === subTeras) indeksTeras.push(idx);
+                           }
+                           if (indeksTeras.length > 0) {
+                               for (let m = 1; m < indeksTeras.length; m++) {
+                                   if (indeksTeras[m] !== indeksTeras[m - 1] + 1) jadualGagal = true;
+                                   if (hariAdaRehat[hSemak] && indeksTeras[m - 1] < rehatIndex && indeksTeras[m] >= rehatIndex) jadualGagal = true;
+                               }
+                               if (indeksTeras.length === 1) bilHariSatuMasa++;
+                           }
+                       });
+
+                       if (jumlahMingguan === 3) {
+                           if (bilHariSatuMasa > 1) jadualGagal = true;
+                       } else if (jumlahMingguan >= 2) {
+                           if (bilHariSatuMasa > 0) jadualGagal = true;
+                       }
+                   });
+               }
+           }
+
+           // THE PERFECTION SCORER (Dipercepatkan dengan 500 Pusingan)
+           if (!jadualGagal) {
+               pusinganKualiti++; 
+               let skorSemasa = window.jalankanHealthCheck(false); 
+               
+               if (skorSemasa > markahTertinggi) {
+                   markahTertinggi = skorSemasa;
+                   jadualKualitiTerbaik = JSON.parse(JSON.stringify(f2_jadualSediaAda)); 
+               }
+
+               if (markahTertinggi === 100) {
+                   jadualBerjaya = true; 
+                   break;
+               }
+           }
+           
+           // KOD BAHARU: Paksa AI terus berpusing dan lupakan kegagalan lampau (Bypass Gagal)
+           if (jadualGagal && percubaanKasar < maxPercubaanKasar) continue;
        }
 
        setTimeout(() => {
           hideLoading();
-          if (jadualBerjaya) {
-              showToast(`Jadual Induk Sempurna Berjaya Dijana! (Dalam ${percubaan} percubaan)`, 'success');
+          if (jadualKualitiTerbaik) {
+              f2_jadualSediaAda = jadualKualitiTerbaik;
+              showToast(`Jadual Terbaik Berjaya Dijana! (Skor: ${markahTertinggi}%)`, 'success');
+              
               const hasilDiv = document.getElementById('f2-hasil-jadual');
               hasilDiv.classList.remove('hidden');
+              
+              jalankanHealthCheck(true); 
               renderJadualUI();
-              simpanFasa2Database(); // KOD BAHARU: Simpan Matriks Jadual Induk ke Google Sheet
+              simpanFasa2Database(); 
+              
               hasilDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
           } else {
-              showToast(`RALAT: Gagal mencari susunan bebas pertembungan selepas ${maxPercubaan} percubaan. Sila kurangkan beban jadual.`, 'error');
+              showToast(`RALAT KRITIKAL: Sistem gagal menyusun jadual walaupun selepas ${maxPercubaanKasar} percubaan logik. Sila kurangkan beban waktu kelas ini.`, 'error');
           }
-       }, 2000);
+       }, 1500); // Masa animasi Loading dipercepatkan sikit supaya Cikgu tak bosan menunggu
     }
 
   // KOD BAHARU: Navigasi Pintar Jadual 3-Dalam-1 dengan Tajuk Dinamik
