@@ -508,7 +508,7 @@
                </div>
            </div>
 
-           <!-- Kolum Kanan: Rehat (Dikecilkan & Dilaraskan Seimbang) -->
+          <!-- Kolum Kanan: Rehat (Dikecilkan & Dilaraskan Seimbang) -->
            <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 shadow-sm h-full flex flex-col justify-between transition-all">
                <div>
                    <h3 class="text-xs font-extrabold text-amber-900 mb-3 uppercase tracking-widest border-b border-amber-200/50 pb-2"><i class="fa-solid fa-mug-hot text-amber-500 mr-1.5"></i> Tetapan Waktu Rehat</h3>
@@ -519,10 +519,6 @@
                    <div class="flex justify-between items-center font-bold mb-3 gap-1">
                      <span class="text-[11px] text-emerald-800 shrink-0">Jumaat</span>
                      <div class="flex items-center gap-1"><input type="time" id="waktu-rehat-jum-mula" value="10:00" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-emerald-400 text-emerald-700 bg-white transition-all"> <span class="text-[9px]">ke</span> <input type="time" id="waktu-rehat-jum-tamat" value="10:15" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-emerald-400 text-emerald-700 bg-white transition-all"></div>
-                   </div>
-                   <div class="flex justify-between items-center font-bold mb-3 gap-1">
-                     <span class="text-[11px] text-emerald-800 shrink-0">Jumaat</span>
-                     <div class="flex items-center gap-1"><input type="time" id="waktu-rehat-jum-mula" value="10:00" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-emerald-400 text-emerald-700 bg-white transition-all"> <span class="text-[9px]">ke</span> <input type="time" id="waktu-rehat-jum-tamat" value="10:30" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-emerald-400 text-emerald-700 bg-white transition-all"></div>
                    </div>
                </div>
                
@@ -3739,8 +3735,32 @@
         showToast('Auto-Anjak Berjaya: Seluruh jadual ' + teksArah + ' sebanyak ' + teksMinit + ' minit.', 'success');
     };
 
-    // KOD BAHARU: Pengawal Validasi (Gatekeeper) & Live Kalkulator Kapasiti Fasa 1 (Matriks 6 Tahun)
+    // KOD BAHARU: Pengawal Validasi (Gatekeeper) & Live Kalkulator Kapasiti Fasa 1 (Matriks 6 Tahun Berasaskan Formula 1 Masa = 30 Minit)
+    window.rujukanMinitFasa1 = window.rujukanMinitFasa1 || {};
+
     function kemaskiniKapasitiLive() {
+        // Ikat pendengar 'input' secara automatik supaya perubahan masa pada Rehat / Matriks memberi respon serta-merta
+        if (!window.f1LiveListenersBound) {
+            const semuaInputMasaF1 = [
+                'waktu-mula-sekolah', 'waktu-rehat-mula', 'waktu-rehat-tamat', 'waktu-rehat-jum-mula', 'waktu-rehat-jum-tamat',
+                'waktu-isn-t1', 'waktu-isn-t2', 'waktu-isn-t3', 'waktu-isn-t4', 'waktu-isn-t5', 'waktu-isn-t6',
+                'waktu-sel-t1', 'waktu-sel-t2', 'waktu-sel-t3', 'waktu-sel-t4', 'waktu-sel-t5', 'waktu-sel-t6',
+                'waktu-rab-t1', 'waktu-rab-t2', 'waktu-rab-t3', 'waktu-rab-t4', 'waktu-rab-t5', 'waktu-rab-t6',
+                'waktu-kha-t1', 'waktu-kha-t2', 'waktu-kha-t3', 'waktu-kha-t4', 'waktu-kha-t5', 'waktu-kha-t6',
+                'waktu-jum-t1', 'waktu-jum-t2', 'waktu-jum-t3', 'waktu-jum-t4', 'waktu-jum-t5', 'waktu-jum-t6'
+            ];
+            semuaInputMasaF1.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', () => {
+                        if (id.includes('rehat')) kawalInputRehat();
+                        else kemaskiniKapasitiLive();
+                    });
+                }
+            });
+            window.f1LiveListenersBound = true;
+        }
+
         const hariAdaRehat = {
            'ISNIN': document.getElementById('rehat-isnin') ? document.getElementById('rehat-isnin').checked : true,
            'SELASA': document.getElementById('rehat-selasa') ? document.getElementById('rehat-selasa').checked : true,
@@ -3749,18 +3769,6 @@
            'JUMAAT': document.getElementById('rehat-jumaat') ? document.getElementById('rehat-jumaat').checked : false
         };
 
-        const k = (id, tolakRehat, isJumaat) => kiraMaxSlotDinamik(id, tolakRehat, isJumaat);
-
-        // Pengiraan Kapasiti Maksimum (Ditolak 1 untuk Waktu Perhimpunan)
-        let capT1 = k('waktu-isn-t1', hariAdaRehat['ISNIN'], false) + k('waktu-sel-t1', hariAdaRehat['SELASA'], false) + k('waktu-rab-t1', hariAdaRehat['RABU'], false) + k('waktu-kha-t1', hariAdaRehat['KHAMIS'], false) + k('waktu-jum-t1', hariAdaRehat['JUMAAT'], true) - 1;
-        let capT2 = k('waktu-isn-t2', hariAdaRehat['ISNIN'], false) + k('waktu-sel-t2', hariAdaRehat['SELASA'], false) + k('waktu-rab-t2', hariAdaRehat['RABU'], false) + k('waktu-kha-t2', hariAdaRehat['KHAMIS'], false) + k('waktu-jum-t2', hariAdaRehat['JUMAAT'], true) - 1;
-        let capT3 = k('waktu-isn-t3', hariAdaRehat['ISNIN'], false) + k('waktu-sel-t3', hariAdaRehat['SELASA'], false) + k('waktu-rab-t3', hariAdaRehat['RABU'], false) + k('waktu-kha-t3', hariAdaRehat['KHAMIS'], false) + k('waktu-jum-t3', hariAdaRehat['JUMAAT'], true) - 1;
-        let capT4 = k('waktu-isn-t4', hariAdaRehat['ISNIN'], false) + k('waktu-sel-t4', hariAdaRehat['SELASA'], false) + k('waktu-rab-t4', hariAdaRehat['RABU'], false) + k('waktu-kha-t4', hariAdaRehat['KHAMIS'], false) + k('waktu-jum-t4', hariAdaRehat['JUMAAT'], true) - 1;
-        let capT5 = k('waktu-isn-t5', hariAdaRehat['ISNIN'], false) + k('waktu-sel-t5', hariAdaRehat['SELASA'], false) + k('waktu-rab-t5', hariAdaRehat['RABU'], false) + k('waktu-kha-t5', hariAdaRehat['KHAMIS'], false) + k('waktu-jum-t5', hariAdaRehat['JUMAAT'], true) - 1;
-        let capT6 = k('waktu-isn-t6', hariAdaRehat['ISNIN'], false) + k('waktu-sel-t6', hariAdaRehat['SELASA'], false) + k('waktu-rab-t6', hariAdaRehat['RABU'], false) + k('waktu-kha-t6', hariAdaRehat['KHAMIS'], false) + k('waktu-jum-t6', hariAdaRehat['JUMAAT'], true) - 1;
-        
-        let jumSubjekT1 = 0, jumSubjekT2 = 0, jumSubjekT3 = 0, jumSubjekT4 = 0, jumSubjekT5 = 0, jumSubjekT6 = 0;
-        
         const abaiKiraan = (namaStr) => {
             let val = namaStr.toUpperCase();
             return val.includes('TSMK') || val.includes('ISLAM') || val === 'PI';
@@ -3776,32 +3784,195 @@
             return jumlah;
         };
 
-        jumSubjekT1 = semakJumlah(arraySubjekTahap1, '1');
-        jumSubjekT2 = semakJumlah(arraySubjekTahap2, '2');
-        jumSubjekT3 = semakJumlah(arraySubjekTahap3, '3');
-        jumSubjekT4 = semakJumlah(arraySubjekTahap4, '4');
-        jumSubjekT5 = semakJumlah(arraySubjekTahap5, '5');
-        jumSubjekT6 = semakJumlah(arraySubjekTahap6, '6');
-
-        const updateLabel = (id, cap, sub) => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.innerHTML = `Kapasiti Masa: ${cap} | Diisi: ${sub}`;
-            if (sub > cap) el.className = "text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-black border border-rose-300 animate-pulse";
-            else if (sub < cap) el.className = "text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-black border border-amber-300";
-            else el.className = "text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-black border border-emerald-300";
+        let jumSubjekMap = {
+            1: semakJumlah(arraySubjekTahap1, '1'),
+            2: semakJumlah(arraySubjekTahap2, '2'),
+            3: semakJumlah(arraySubjekTahap3, '3'),
+            4: semakJumlah(arraySubjekTahap4, '4'),
+            5: semakJumlah(arraySubjekTahap5, '5'),
+            6: semakJumlah(arraySubjekTahap6, '6')
         };
 
-        updateLabel('kapasiti-live-t1', capT1, jumSubjekT1);
-        updateLabel('kapasiti-live-t2', capT2, jumSubjekT2);
-        updateLabel('kapasiti-live-t3', capT3, jumSubjekT3);
-        updateLabel('kapasiti-live-t4', capT4, jumSubjekT4);
-        updateLabel('kapasiti-live-t5', capT5, jumSubjekT5);
-        updateLabel('kapasiti-live-t6', capT6, jumSubjekT6);
+        const senaraiHariInfo = [
+            { pfx: 'isn', nama: 'Isnin', key: 'ISNIN', isJum: false, idx: 0 },
+            { pfx: 'sel', nama: 'Selasa', key: 'SELASA', isJum: false, idx: 1 },
+            { pfx: 'rab', nama: 'Rabu', key: 'RABU', isJum: false, idx: 2 },
+            { pfx: 'kha', nama: 'Khamis', key: 'KHAMIS', isJum: false, idx: 3 },
+            { pfx: 'jum', nama: 'Jumaat', key: 'JUMAAT', isJum: true, idx: 4 }
+        ];
+
+        const formatTempohMinit = (mins) => {
+            let m = Math.abs(Math.round(mins));
+            let jam = Math.floor(m / 60);
+            let baki = m % 60;
+            if (jam > 0 && baki > 0) return `${jam} jam ${baki} minit`;
+            if (jam > 0) return `${jam} jam`;
+            return `${baki} minit`;
+        };
+
+        const formatJulatHari = (senaraiItem) => {
+            if (senaraiItem.length === 0) return '';
+            if (senaraiItem.length === 1) return `Hari ${senaraiItem[0].nama}`;
+            if (senaraiItem.length === 2) return `Hari ${senaraiItem[0].nama} & ${senaraiItem[1].nama}`;
+            let isBerturutan = true;
+            for (let i = 1; i < senaraiItem.length; i++) {
+                if (senaraiItem[i].idx !== senaraiItem[i - 1].idx + 1) {
+                    isBerturutan = false;
+                    break;
+                }
+            }
+            if (isBerturutan) {
+                return `Hari ${senaraiItem[0].nama} hingga ${senaraiItem[senaraiItem.length - 1].nama}`;
+            }
+            let namaArr = senaraiItem.map(x => x.nama);
+            return `Hari ${namaArr.slice(0, -1).join(', ')} & ${namaArr[namaArr.length - 1]}`;
+        };
+
+        let hasilTahun = {};
+
+        for (let t = 1; t <= 6; t++) {
+            let jumSub = jumSubjekMap[t];
+            let sasaranMinitMingguan = (jumSub + 1) * 30; // +1 waktu untuk Perhimpunan
+            let minitHari = {};
+            let jumlahMinitSemasa = 0;
+            let semuaGenap30 = true;
+
+            senaraiHariInfo.forEach(h => {
+                let m = kiraMinitBersihSlot(`waktu-${h.pfx}-t${t}`, hariAdaRehat[h.key], h.isJum);
+                minitHari[h.pfx] = m;
+                jumlahMinitSemasa += m;
+                if (m <= 0 || m % 30 !== 0) semuaGenap30 = false;
+            });
+
+            // Jika jadual tahun ini sah sepenuhnya (genap 30 minit setiap hari & jumlah minit == sasaran), simpan sebagai rujukan
+            if (semuaGenap30 && jumlahMinitSemasa === sasaranMinitMingguan) {
+                window.rujukanMinitFasa1[t] = { ...minitHari };
+                senaraiHariInfo.forEach(h => {
+                    let elInput = document.getElementById(`waktu-${h.pfx}-t${t}`);
+                    if (elInput) elInput.classList.remove('ring-2', 'ring-rose-500', 'bg-rose-50');
+                });
+                hasilTahun[t] = { cap: jumSub, sub: jumSub, sah: true, ralatTeks: '' };
+                continue;
+            }
+
+            // Tentukan sasaran minit bagi setiap hari untuk mengenal pasti hari yang terlebih/terkurang masa
+            let sasaranHari = {};
+            let sumBundarAtas = 0;
+            let sumBundarBawah = 0;
+            senaraiHariInfo.forEach(h => {
+                let m = minitHari[h.pfx];
+                let baki = ((m % 30) + 30) % 30;
+                sumBundarAtas += (baki !== 0) ? (m + (30 - baki)) : m;
+                sumBundarBawah += (baki !== 0) ? (m - baki) : m;
+            });
+
+            if (!semuaGenap30 && sumBundarAtas === sasaranMinitMingguan) {
+                // Kes 1: Hari-hari yang tidak genap 30 minit kekurangan baki minit (cth: kurang 15 minit kerana rehat)
+                senaraiHariInfo.forEach(h => {
+                    let m = minitHari[h.pfx];
+                    let baki = ((m % 30) + 30) % 30;
+                    sasaranHari[h.pfx] = (baki !== 0) ? (m + (30 - baki)) : m;
+                });
+            } else if (!semuaGenap30 && sumBundarBawah === sasaranMinitMingguan) {
+                // Kes 2: Hari-hari yang tidak genap 30 minit terlebih baki minit (cth: terlebih 15 minit kerana rehat)
+                senaraiHariInfo.forEach(h => {
+                    let m = minitHari[h.pfx];
+                    let baki = ((m % 30) + 30) % 30;
+                    sasaranHari[h.pfx] = (baki !== 0) ? (m - baki) : m;
+                });
+            } else if (window.rujukanMinitFasa1[t] && (window.rujukanMinitFasa1[t].isn + window.rujukanMinitFasa1[t].sel + window.rujukanMinitFasa1[t].rab + window.rujukanMinitFasa1[t].kha + window.rujukanMinitFasa1[t].jum) === sasaranMinitMingguan) {
+                // Kes 3: Bandingkan dengan memori jadual sah terakhir bagi Tahun tersebut
+                sasaranHari = { ...window.rujukanMinitFasa1[t] };
+            } else {
+                // Kes 4: Bina agihan sasaran standard berdasarkan jumlah waktu subjek (Diisi)
+                let jumSasaran = 180; // 6 masa (180 minit) pada hari Jumaat
+                let bakiSlot4Hari = Math.round((sasaranMinitMingguan - jumSasaran) / 30);
+                let baseSlot = Math.floor(bakiSlot4Hari / 4);
+                let lebihSlot = ((bakiSlot4Hari % 4) + 4) % 4;
+                ['isn', 'sel', 'rab', 'kha'].forEach((pfx, idx) => {
+                    sasaranHari[pfx] = (baseSlot + (idx < lebihSlot ? 1 : 0)) * 30;
+                });
+                sasaranHari['jum'] = jumSasaran;
+            }
+
+            // Kira Kapasiti Masa (Slot) & kumpulkan senarai hari yang mempunyai ralat masa
+            let jumlahSlotKapasiti = 0;
+            let kumpulanRalat = {};
+
+            senaraiHariInfo.forEach(h => {
+                let m = minitHari[h.pfx];
+                let s = sasaranHari[h.pfx];
+                let delta = m - s; // negatif = kurang masa, positif = lebih masa
+                let baki = ((m % 30) + 30) % 30;
+                let elInput = document.getElementById(`waktu-${h.pfx}-t${t}`);
+
+                if (delta < 0) {
+                    jumlahSlotKapasiti += Math.floor(m / 30);
+                    let kunci = `Tambahkan masa ${formatTempohMinit(Math.abs(delta))}`;
+                    if (!kumpulanRalat[kunci]) kumpulanRalat[kunci] = [];
+                    kumpulanRalat[kunci].push(h);
+                    if (elInput) elInput.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
+                } else if (delta > 0) {
+                    jumlahSlotKapasiti += Math.ceil(m / 30);
+                    let kunci = `Kurangkan masa ${formatTempohMinit(delta)}`;
+                    if (!kumpulanRalat[kunci]) kumpulanRalat[kunci] = [];
+                    kumpulanRalat[kunci].push(h);
+                    if (elInput) elInput.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
+                } else if (baki !== 0) {
+                    jumlahSlotKapasiti += Math.floor(m / 30);
+                    let kunci = `Tambahkan masa ${formatTempohMinit(30 - baki)}`;
+                    if (!kumpulanRalat[kunci]) kumpulanRalat[kunci] = [];
+                    kumpulanRalat[kunci].push(h);
+                    if (elInput) elInput.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
+                } else {
+                    jumlahSlotKapasiti += Math.round(m / 30);
+                    if (elInput) elInput.classList.remove('ring-2', 'ring-rose-500', 'bg-rose-50');
+                }
+            });
+
+            let capPaparan = jumlahSlotKapasiti - 1; // Tolak 1 waktu Perhimpunan
+            let senaraiMesej = Object.keys(kumpulanRalat).map(kunci => `${kunci} (${formatJulatHari(kumpulanRalat[kunci])})`);
+
+            // Jika berlaku ralat silang hari (cth: Isnin +15m dan Selasa -15m) tetapi capPaparan kebetulan sama dengan jumSub, paksa berbeza supaya disekat
+            if (capPaparan === jumSub && senaraiMesej.length > 0) {
+                capPaparan = (jumlahMinitSemasa >= sasaranMinitMingguan) ? (jumSub + 1) : (jumSub - 1);
+            }
+
+            hasilTahun[t] = {
+                cap: capPaparan,
+                sub: jumSub,
+                sah: false,
+                ralatTeks: senaraiMesej.join(' | ')
+            };
+        }
+
+        const updateLabel = (id, obj) => {
+            const el = document.getElementById(id);
+            if (!el || !obj) return;
+            if (!obj.sah) {
+                el.innerHTML = `<div>Kapasiti Masa: ${obj.cap} | Diisi: ${obj.sub}</div><div class="text-[9px] font-extrabold mt-0.5 leading-tight">⚠️ ${obj.ralatTeks}</div>`;
+                if (obj.cap > obj.sub) {
+                    el.className = "text-[10px] w-full block text-center bg-rose-100 text-rose-700 px-2 py-1.5 rounded font-black border border-rose-300 animate-pulse";
+                } else {
+                    el.className = "text-[10px] w-full block text-center bg-amber-100 text-amber-800 px-2 py-1.5 rounded font-black border border-amber-300 animate-pulse";
+                }
+            } else {
+                el.innerHTML = `Kapasiti Masa: ${obj.cap} | Diisi: ${obj.sub}`;
+                el.className = "text-[10px] w-full block text-center bg-emerald-100 text-emerald-700 px-2 py-1.5 rounded font-black border border-emerald-300";
+            }
+        };
+
+        updateLabel('kapasiti-live-t1', hasilTahun[1]);
+        updateLabel('kapasiti-live-t2', hasilTahun[2]);
+        updateLabel('kapasiti-live-t3', hasilTahun[3]);
+        updateLabel('kapasiti-live-t4', hasilTahun[4]);
+        updateLabel('kapasiti-live-t5', hasilTahun[5]);
+        updateLabel('kapasiti-live-t6', hasilTahun[6]);
 
         return { 
-            c1: capT1, c2: capT2, c3: capT3, c4: capT4, c5: capT5, c6: capT6, 
-            t1: jumSubjekT1, t2: jumSubjekT2, t3: jumSubjekT3, t4: jumSubjekT4, t5: jumSubjekT5, t6: jumSubjekT6 
+            c1: hasilTahun[1].cap, c2: hasilTahun[2].cap, c3: hasilTahun[3].cap, c4: hasilTahun[4].cap, c5: hasilTahun[5].cap, c6: hasilTahun[6].cap, 
+            t1: hasilTahun[1].sub, t2: hasilTahun[2].sub, t3: hasilTahun[3].sub, t4: hasilTahun[4].sub, t5: hasilTahun[5].sub, t6: hasilTahun[6].sub,
+            info: hasilTahun
         };
     }
 
@@ -3809,12 +3980,12 @@
     async function simpanFasa1() {
        let d = kemaskiniKapasitiLive();
        
-       if (d.t1 !== d.c1) { showToast(`RALAT: Peruntukan Subjek Tahun 1 (${d.t1}) tidak seimbang dengan Kapasiti Masa (${d.c1})!`, 'error'); return; }
-       if (d.t2 !== d.c2) { showToast(`RALAT: Peruntukan Subjek Tahun 2 (${d.t2}) tidak seimbang dengan Kapasiti Masa (${d.c2})!`, 'error'); return; }
-       if (d.t3 !== d.c3) { showToast(`RALAT: Peruntukan Subjek Tahun 3 (${d.t3}) tidak seimbang dengan Kapasiti Masa (${d.c3})!`, 'error'); return; }
-       if (d.t4 !== d.c4) { showToast(`RALAT: Peruntukan Subjek Tahun 4 (${d.t4}) tidak seimbang dengan Kapasiti Masa (${d.c4})!`, 'error'); return; }
-       if (d.t5 !== d.c5) { showToast(`RALAT: Peruntukan Subjek Tahun 5 (${d.t5}) tidak seimbang dengan Kapasiti Masa (${d.c5})!`, 'error'); return; }
-       if (d.t6 !== d.c6) { showToast(`RALAT: Peruntukan Subjek Tahun 6 (${d.t6}) tidak seimbang dengan Kapasiti Masa (${d.c6})!`, 'error'); return; }
+       for (let thn = 1; thn <= 6; thn++) {
+           if (d.info && d.info[thn] && !d.info[thn].sah) {
+               showToast(`RALAT TAHUN ${thn}: Kapasiti Masa (${d.info[thn].cap}) tidak seimbang dengan Diisi (${d.info[thn].sub}). Sila ${d.info[thn].ralatTeks}!`, 'error');
+               return;
+           }
+       }
 
        // Pengesahan Minimum 2 Hari Pendidikan Jasmani (PJ)
        const bilHariPJ = ['isnin', 'selasa', 'rabu', 'khamis', 'jumaat'].filter(h => document.getElementById('pj-' + h) && document.getElementById('pj-' + h).checked).length;
@@ -4400,19 +4571,19 @@
     }
     setTimeout(kawalInputRehat, 500);
 
-   // Fungsi Matematik Mengira Jumlah Slot Daripada Input Masa Cikgu di Fasa 1
-    function kiraMaxSlotDinamik(timeValId, tolakRehat, isJumaat = false) {
+  // Fungsi Matematik Mengira Jumlah Minit Bersih PdP Sehari (1 Masa = 30 Minit)
+    function kiraMinitBersihSlot(timeValId, tolakRehat, isJumaat = false) {
         let inputMasa = document.getElementById(timeValId);
         let timeStr = inputMasa ? inputMasa.value : "";
-        if (!timeStr) return 11; 
+        if (!timeStr) return 330; 
         
         let parts = timeStr.split(':');
-        if(parts.length !== 2) return 11;
+        if(parts.length !== 2) return 330;
         
         let endMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
         
         let mulaSekolahInput = document.getElementById('waktu-mula-sekolah');
-        let mulaStr = mulaSekolahInput ? mulaSekolahInput.value : '07:30';
+        let mulaStr = (mulaSekolahInput && mulaSekolahInput.value) ? mulaSekolahInput.value : '07:30';
         let mulaParts = mulaStr.split(':');
         let startMins = parseInt(mulaParts[0]) * 60 + parseInt(mulaParts[1]); 
         
@@ -4421,21 +4592,27 @@
         if (tolakRehat) { 
             let rMula = '10:00'; let rTamat = '10:15';
             if (isJumaat) {
-                rMula = document.getElementById('waktu-rehat-jum-mula') ? document.getElementById('waktu-rehat-jum-mula').value : '10:00';
-                rTamat = document.getElementById('waktu-rehat-jum-tamat') ? document.getElementById('waktu-rehat-jum-tamat').value : '10:30';
+                rMula = (document.getElementById('waktu-rehat-jum-mula') && document.getElementById('waktu-rehat-jum-mula').value) ? document.getElementById('waktu-rehat-jum-mula').value : '10:00';
+                rTamat = (document.getElementById('waktu-rehat-jum-tamat') && document.getElementById('waktu-rehat-jum-tamat').value) ? document.getElementById('waktu-rehat-jum-tamat').value : '10:15';
             } else {
-                rMula = document.getElementById('waktu-rehat-mula') ? document.getElementById('waktu-rehat-mula').value : '10:00';
-                rTamat = document.getElementById('waktu-rehat-tamat') ? document.getElementById('waktu-rehat-tamat').value : '10:15';
+                rMula = (document.getElementById('waktu-rehat-mula') && document.getElementById('waktu-rehat-mula').value) ? document.getElementById('waktu-rehat-mula').value : '10:00';
+                rTamat = (document.getElementById('waktu-rehat-tamat') && document.getElementById('waktu-rehat-tamat').value) ? document.getElementById('waktu-rehat-tamat').value : '10:15';
             }
             let rm = parseInt(rMula.split(':')[0]) * 60 + parseInt(rMula.split(':')[1]);
             let rt = parseInt(rTamat.split(':')[0]) * 60 + parseInt(rTamat.split(':')[1]);
             
             // Tolak masa rehat HANYA jika waktu balik melangkaui jam mula rehat
-            if (endMins > rm) {
+            if (endMins > rm && rt > rm) {
                 diff -= (rt - rm);
             }
         }
         
+        return diff;
+    }
+
+   // Fungsi Matematik Mengira Jumlah Slot Daripada Input Masa Cikgu di Fasa 1
+    function kiraMaxSlotDinamik(timeValId, tolakRehat, isJumaat = false) {
+        let diff = kiraMinitBersihSlot(timeValId, tolakRehat, isJumaat);
         return Math.floor(diff / 30);
     }
 
