@@ -513,7 +513,7 @@
                <div>
                    <h3 class="text-xs font-extrabold text-amber-900 mb-3 uppercase tracking-widest border-b border-amber-200/50 pb-2"><i class="fa-solid fa-mug-hot text-amber-500 mr-1.5"></i> Tetapan Waktu Rehat</h3>
                    <div class="flex justify-between items-center font-bold mb-3 gap-1">
-                     <span class="text-[11px] text-amber-800 shrink-0">Isn - Kha</span>
+                     <span class="text-[11px] text-amber-800 shrink-0">Isn - Khms</span>
                      <div class="flex items-center gap-1"><input type="time" id="waktu-rehat-mula" value="10:00" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-amber-400 text-amber-700 bg-white transition-all"> <span class="text-[9px]">ke</span> <input type="time" id="waktu-rehat-tamat" value="10:15" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-amber-400 text-amber-700 bg-white transition-all"></div>
                    </div>
                    <div class="flex justify-between items-center font-bold mb-3 gap-1">
@@ -3866,6 +3866,8 @@
                 sumBundarBawah += (baki !== 0) ? (m - baki) : m;
             });
 
+            let adalahPerubahanSubjek = false;
+
             if (!semuaGenap30 && sumBundarAtas === sasaranMinitMingguan) {
                 // Kes 1: Hari-hari yang tidak genap 30 minit kekurangan baki minit (cth: kurang 15 minit kerana rehat)
                 senaraiHariInfo.forEach(h => {
@@ -3881,69 +3883,97 @@
                     sasaranHari[h.pfx] = (baki !== 0) ? (m - baki) : m;
                 });
             } else if (window.rujukanMinitFasa1[t] && (window.rujukanMinitFasa1[t].isn + window.rujukanMinitFasa1[t].sel + window.rujukanMinitFasa1[t].rab + window.rujukanMinitFasa1[t].kha + window.rujukanMinitFasa1[t].jum) === sasaranMinitMingguan) {
-                // Kes 3: Bandingkan dengan memori jadual sah terakhir bagi Tahun tersebut
+                // Kes 3: Bandingkan dengan memori jadual sah terakhir bagi Tahun tersebut (apabila masa pada Jadual Matriks diubah)
                 sasaranHari = { ...window.rujukanMinitFasa1[t] };
             } else {
-                // Kes 4: Bina agihan sasaran standard berdasarkan jumlah waktu subjek (Diisi)
-                let jumSasaran = 180; // 6 masa (180 minit) pada hari Jumaat
-                let bakiSlot4Hari = Math.round((sasaranMinitMingguan - jumSasaran) / 30);
-                let baseSlot = Math.floor(bakiSlot4Hari / 4);
-                let lebihSlot = ((bakiSlot4Hari % 4) + 4) % 4;
-                ['isn', 'sel', 'rab', 'kha'].forEach((pfx, idx) => {
-                    sasaranHari[pfx] = (baseSlot + (idx < lebihSlot ? 1 : 0)) * 30;
+                // Kes 4: Peruntukan Subjek (Diisi) ditambah atau dikurangkan -> Bebaskan pengguna pilih hari ikut kesesuaian & highlight semua hari bagi Tahun ini
+                adalahPerubahanSubjek = true;
+            }
+
+            if (adalahPerubahanSubjek) {
+                let deltaMingguan = sasaranMinitMingguan - jumlahMinitSemasa; // positif = perlu tambah masa, negatif = perlu kurangkan masa
+                let jumlahSlotKapasiti = 0;
+
+                senaraiHariInfo.forEach(h => {
+                    let m = minitHari[h.pfx];
+                    if (deltaMingguan >= 0) jumlahSlotKapasiti += Math.floor(m / 30);
+                    else jumlahSlotKapasiti += Math.ceil(m / 30);
+
+                    let elInput = document.getElementById(`waktu-${h.pfx}-t${t}`);
+                    if (elInput) elInput.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
                 });
-                sasaranHari['jum'] = jumSasaran;
-            }
 
-            // Kira Kapasiti Masa (Slot) & kumpulkan senarai hari yang mempunyai ralat masa
-            let jumlahSlotKapasiti = 0;
-            let kumpulanRalat = {};
-
-            senaraiHariInfo.forEach(h => {
-                let m = minitHari[h.pfx];
-                let s = sasaranHari[h.pfx];
-                let delta = m - s; // negatif = kurang masa, positif = lebih masa
-                let baki = ((m % 30) + 30) % 30;
-                let elInput = document.getElementById(`waktu-${h.pfx}-t${t}`);
-
-                if (delta < 0) {
-                    jumlahSlotKapasiti += Math.floor(m / 30);
-                    let kunci = `Tambahkan masa ${formatTempohMinit(Math.abs(delta))}`;
-                    if (!kumpulanRalat[kunci]) kumpulanRalat[kunci] = [];
-                    kumpulanRalat[kunci].push(h);
-                    if (elInput) elInput.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
-                } else if (delta > 0) {
-                    jumlahSlotKapasiti += Math.ceil(m / 30);
-                    let kunci = `Kurangkan masa ${formatTempohMinit(delta)}`;
-                    if (!kumpulanRalat[kunci]) kumpulanRalat[kunci] = [];
-                    kumpulanRalat[kunci].push(h);
-                    if (elInput) elInput.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
-                } else if (baki !== 0) {
-                    jumlahSlotKapasiti += Math.floor(m / 30);
-                    let kunci = `Tambahkan masa ${formatTempohMinit(30 - baki)}`;
-                    if (!kumpulanRalat[kunci]) kumpulanRalat[kunci] = [];
-                    kumpulanRalat[kunci].push(h);
-                    if (elInput) elInput.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
-                } else {
-                    jumlahSlotKapasiti += Math.round(m / 30);
-                    if (elInput) elInput.classList.remove('ring-2', 'ring-rose-500', 'bg-rose-50');
+                let capPaparan = jumlahSlotKapasiti - 1; // Tolak 1 waktu Perhimpunan
+                if (capPaparan === jumSub) {
+                    capPaparan = (deltaMingguan < 0) ? (jumSub + 1) : (jumSub - 1);
                 }
-            });
 
-            let capPaparan = jumlahSlotKapasiti - 1; // Tolak 1 waktu Perhimpunan
-            let senaraiMesej = Object.keys(kumpulanRalat).map(kunci => `${kunci} (${formatJulatHari(kumpulanRalat[kunci])})`);
+                let teksArahan = '';
+                if (deltaMingguan > 0) {
+                    teksArahan = `Tambahkan masa ${formatTempohMinit(deltaMingguan)} (Pilih hari ikut kesesuaian)`;
+                } else if (deltaMingguan < 0) {
+                    teksArahan = `Kurangkan masa ${formatTempohMinit(Math.abs(deltaMingguan))} (Pilih hari ikut kesesuaian)`;
+                } else {
+                    teksArahan = `Selaraskan semula masa supaya genap gandaan 30 minit (Pilih hari ikut kesesuaian)`;
+                }
 
-            // Jika berlaku ralat silang hari (cth: Isnin +15m dan Selasa -15m) tetapi capPaparan kebetulan sama dengan jumSub, paksa berbeza supaya disekat
-            if (capPaparan === jumSub && senaraiMesej.length > 0) {
-                capPaparan = (jumlahMinitSemasa >= sasaranMinitMingguan) ? (jumSub + 1) : (jumSub - 1);
+                hasilTahun[t] = {
+                    cap: capPaparan,
+                    sub: jumSub,
+                    sah: false,
+                    ralatTeks: teksArahan
+                };
+            } else {
+                // Kira Kapasiti Masa (Slot) & kumpulkan senarai hari spesifik yang mempunyai ralat masa
+                let jumlahSlotKapasiti = 0;
+                let kumpulanRalat = {};
+
+                senaraiHariInfo.forEach(h => {
+                    let m = minitHari[h.pfx];
+                    let s = sasaranHari[h.pfx];
+                    let delta = m - s; // negatif = kurang masa, positif = lebih masa
+                    let baki = ((m % 30) + 30) % 30;
+                    let elInput = document.getElementById(`waktu-${h.pfx}-t${t}`);
+
+                    if (delta < 0) {
+                        jumlahSlotKapasiti += Math.floor(m / 30);
+                        let kunci = `Tambahkan masa ${formatTempohMinit(Math.abs(delta))}`;
+                        if (!kumpulanRalat[kunci]) kumpulanRalat[kunci] = [];
+                        kumpulanRalat[kunci].push(h);
+                        if (elInput) elInput.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
+                    } else if (delta > 0) {
+                        jumlahSlotKapasiti += Math.ceil(m / 30);
+                        let kunci = `Kurangkan masa ${formatTempohMinit(delta)}`;
+                        if (!kumpulanRalat[kunci]) kumpulanRalat[kunci] = [];
+                        kumpulanRalat[kunci].push(h);
+                        if (elInput) elInput.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
+                    } else if (baki !== 0) {
+                        jumlahSlotKapasiti += Math.floor(m / 30);
+                        let kunci = `Tambahkan masa ${formatTempohMinit(30 - baki)}`;
+                        if (!kumpulanRalat[kunci]) kumpulanRalat[kunci] = [];
+                        kumpulanRalat[kunci].push(h);
+                        if (elInput) elInput.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50');
+                    } else {
+                        jumlahSlotKapasiti += Math.round(m / 30);
+                        if (elInput) elInput.classList.remove('ring-2', 'ring-rose-500', 'bg-rose-50');
+                    }
+                });
+
+                let capPaparan = jumlahSlotKapasiti - 1; // Tolak 1 waktu Perhimpunan
+                let senaraiMesej = Object.keys(kumpulanRalat).map(kunci => `${kunci} (${formatJulatHari(kumpulanRalat[kunci])})`);
+
+                // Jika berlaku ralat silang hari (cth: Isnin +15m dan Selasa -15m) tetapi capPaparan kebetulan sama dengan jumSub, paksa berbeza supaya disekat
+                if (capPaparan === jumSub && senaraiMesej.length > 0) {
+                    capPaparan = (jumlahMinitSemasa >= sasaranMinitMingguan) ? (jumSub + 1) : (jumSub - 1);
+                }
+
+                hasilTahun[t] = {
+                    cap: capPaparan,
+                    sub: jumSub,
+                    sah: false,
+                    ralatTeks: senaraiMesej.join(' | ')
+                };
             }
-
-            hasilTahun[t] = {
-                cap: capPaparan,
-                sub: jumSub,
-                sah: false,
-                ralatTeks: senaraiMesej.join(' | ')
-            };
         }
 
         const updateLabel = (id, obj) => {
@@ -5016,7 +5046,7 @@
                 <div class="bg-gray-50 border border-gray-200 p-5 rounded-2xl shadow-inner mb-6 fade-in border-l-4 border-l-indigo-500">
                     <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4 border-b border-gray-200 pb-4">
                         <div>
-                            <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-heart-pulse text-rose-500"></i> Dasbod Kesihatan & Rumusan Jadual</h3>
+                            <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-heart-pulse text-rose-500"></i> Dashboard Kesihatan & Rumusan Jadual</h3>
                             <p class="text-[10px] font-bold text-gray-500 mt-0.5">Analisis Kualiti Psikologi, Keseimbangan Harian (Tanpa Tasmik) & Logistik Automatik AI</p>
                         </div>
                         <div class="text-center md:text-right bg-white px-5 py-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
