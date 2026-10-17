@@ -514,7 +514,11 @@
                    <h3 class="text-xs font-extrabold text-amber-900 mb-3 uppercase tracking-widest border-b border-amber-200/50 pb-2"><i class="fa-solid fa-mug-hot text-amber-500 mr-1.5"></i> Tetapan Waktu Rehat</h3>
                    <div class="flex justify-between items-center font-bold mb-3 gap-1">
                      <span class="text-[11px] text-amber-800 shrink-0">Isn - Kha</span>
-                     <div class="flex items-center gap-1"><input type="time" id="waktu-rehat-mula" value="10:00" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-amber-400 text-amber-700 bg-white transition-all"> <span class="text-[9px]">ke</span> <input type="time" id="waktu-rehat-tamat" value="10:15" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-amber-400 text-amber-700 bg-white transition-all"></div>
+                     <div class="flex items-center gap-1"><input type="time" id="waktu-rehat-mula" value="10:00" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-amber-400 text-amber-700 bg-white transition-all"> <span class="text-[9px]">ke</span> <input type="time" id="waktu-rehat-tamat" value="10:15" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-amber-400 text-amber-700 bg-white transition-all"></div>
+                   </div>
+                   <div class="flex justify-between items-center font-bold mb-3 gap-1">
+                     <span class="text-[11px] text-emerald-800 shrink-0">Jumaat</span>
+                     <div class="flex items-center gap-1"><input type="time" id="waktu-rehat-jum-mula" value="10:00" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-emerald-400 text-emerald-700 bg-white transition-all"> <span class="text-[9px]">ke</span> <input type="time" id="waktu-rehat-jum-tamat" value="10:15" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-emerald-400 text-emerald-700 bg-white transition-all"></div>
                    </div>
                    <div class="flex justify-between items-center font-bold mb-3 gap-1">
                      <span class="text-[11px] text-emerald-800 shrink-0">Jumaat</span>
@@ -1209,8 +1213,14 @@
                 f2_senaraiKelasUnik = Array.from(kelasSet).sort();
                 if (f2_senaraiKelasUnik.length > 0) {
                     document.getElementById('f2-hasil-jadual').classList.remove('hidden');
+                    jalankanHealthCheck(true);
                     renderJadualUI();
+                    simpanLocalState();
                 }
+            } else if (f2_senaraiKelasUnik.length > 0 && Object.keys(f2_jadualSediaAda).length > 0) {
+                document.getElementById('f2-hasil-jadual').classList.remove('hidden');
+                jalankanHealthCheck(true);
+                renderJadualUI();
             }
         }
       } catch(e) {
@@ -3546,22 +3556,29 @@
         renderSubjekFasa1();
     }
 
-    // KOD BAHARU: Penyimpanan Memori Web (Sokong Matriks Penuh)
+    // KOD BAHARU: Penyimpanan Memori Web (Sokong Matriks Penuh, Jadual Fasa 2 & Dasbod Kesihatan)
     function simpanLocalState() {
         const getStateVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
         const state = {
             f1_waktu: {
                 mula: getStateVal('waktu-mula-sekolah') || '07:30',
+                perhimpunanTamat: getStateVal('waktu-perhimpunan-tamat') || '08:00',
                 rehatMula: getStateVal('waktu-rehat-mula') || '10:00',
                 rehatTamat: getStateVal('waktu-rehat-tamat') || '10:15',
                 rehatJumMula: getStateVal('waktu-rehat-jum-mula') || '10:00',
-                rehatJumTamat: getStateVal('waktu-rehat-jum-tamat') || '10:30',
+                rehatJumTamat: getStateVal('waktu-rehat-jum-tamat') || '10:15',
                 
                 isn_t1: getStateVal('waktu-isn-t1') || '13:15', isn_t2: getStateVal('waktu-isn-t2') || '13:15', isn_t3: getStateVal('waktu-isn-t3') || '13:15',
                 sel_t1: getStateVal('waktu-sel-t1') || '12:45', sel_t2: getStateVal('waktu-sel-t2') || '13:15', sel_t3: getStateVal('waktu-sel-t3') || '13:15',
                 rab_t1: getStateVal('waktu-rab-t1') || '12:45', rab_t2: getStateVal('waktu-rab-t2') || '13:15', rab_t3: getStateVal('waktu-rab-t3') || '13:15',
                 kha_t1: getStateVal('waktu-kha-t1') || '12:45', kha_t2: getStateVal('waktu-kha-t2') || '13:15', kha_t3: getStateVal('waktu-kha-t3') || '13:15',
-                jum_t1: getStateVal('waktu-jum-t1') || '10:30', jum_t2: getStateVal('waktu-jum-t2') || '10:30', jum_t3: getStateVal('waktu-jum-t3') || '10:30'
+                jum_t1: getStateVal('waktu-jum-t1') || '10:30', jum_t2: getStateVal('waktu-jum-t2') || '10:30', jum_t3: getStateVal('waktu-jum-t3') || '10:30',
+
+                isn_t4: getStateVal('waktu-isn-t4') || '13:15', isn_t5: getStateVal('waktu-isn-t5') || '13:15', isn_t6: getStateVal('waktu-isn-t6') || '13:15',
+                sel_t4: getStateVal('waktu-sel-t4') || '13:15', sel_t5: getStateVal('waktu-sel-t5') || '13:15', sel_t6: getStateVal('waktu-sel-t6') || '13:15',
+                rab_t4: getStateVal('waktu-rab-t4') || '13:15', rab_t5: getStateVal('waktu-rab-t5') || '13:15', rab_t6: getStateVal('waktu-rab-t6') || '13:15',
+                kha_t4: getStateVal('waktu-kha-t4') || '13:15', kha_t5: getStateVal('waktu-kha-t5') || '13:15', kha_t6: getStateVal('waktu-kha-t6') || '13:15',
+                jum_t4: getStateVal('waktu-jum-t4') || '10:30', jum_t5: getStateVal('waktu-jum-t5') || '10:30', jum_t6: getStateVal('waktu-jum-t6') || '10:30'
             },
             f1_tasmik: {
                 isnin: document.getElementById('tasmik-isnin').checked, selasa: document.getElementById('tasmik-selasa').checked,
@@ -3582,7 +3599,11 @@
             f1_hadBeban: {
                 gb: parseInt(document.getElementById('max-gb').value) || 7, pk: parseInt(document.getElementById('max-pk').value) || 12, gab: parseInt(document.getElementById('max-gab').value) || 30
             },
-            f1_subjekT1: arraySubjekTahap1, f1_subjekT2: arraySubjekTahap2, f1_subjekT3: arraySubjekTahap3, f2_guru: f2_senaraiGuruPenuh
+            f1_subjekT1: arraySubjekTahap1, f1_subjekT2: arraySubjekTahap2, f1_subjekT3: arraySubjekTahap3,
+            f1_subjekT4: arraySubjekTahap4, f1_subjekT5: arraySubjekTahap5, f1_subjekT6: arraySubjekTahap6,
+            f2_guru: f2_senaraiGuruPenuh,
+            f2_jadual: f2_jadualSediaAda,
+            f2_kelas: f2_senaraiKelasUnik
         };
         localStorage.setItem('sistemJadualData', JSON.stringify(state));
     }
@@ -3604,6 +3625,12 @@
                 setVal('waktu-rab-t1', state.f1_waktu.rab_t1); setVal('waktu-rab-t2', state.f1_waktu.rab_t2); setVal('waktu-rab-t3', state.f1_waktu.rab_t3);
                 setVal('waktu-kha-t1', state.f1_waktu.kha_t1); setVal('waktu-kha-t2', state.f1_waktu.kha_t2); setVal('waktu-kha-t3', state.f1_waktu.kha_t3);
                 setVal('waktu-jum-t1', state.f1_waktu.jum_t1); setVal('waktu-jum-t2', state.f1_waktu.jum_t2); setVal('waktu-jum-t3', state.f1_waktu.jum_t3);
+
+                setVal('waktu-isn-t4', state.f1_waktu.isn_t4); setVal('waktu-isn-t5', state.f1_waktu.isn_t5); setVal('waktu-isn-t6', state.f1_waktu.isn_t6);
+                setVal('waktu-sel-t4', state.f1_waktu.sel_t4); setVal('waktu-sel-t5', state.f1_waktu.sel_t5); setVal('waktu-sel-t6', state.f1_waktu.sel_t6);
+                setVal('waktu-rab-t4', state.f1_waktu.rab_t4); setVal('waktu-rab-t5', state.f1_waktu.rab_t5); setVal('waktu-rab-t6', state.f1_waktu.rab_t6);
+                setVal('waktu-kha-t4', state.f1_waktu.kha_t4); setVal('waktu-kha-t5', state.f1_waktu.kha_t5); setVal('waktu-kha-t6', state.f1_waktu.kha_t6);
+                setVal('waktu-jum-t4', state.f1_waktu.jum_t4); setVal('waktu-jum-t5', state.f1_waktu.jum_t5); setVal('waktu-jum-t6', state.f1_waktu.jum_t6);
             }
             
             if(state.f1_tasmik && document.getElementById('tasmik-isnin')) {
@@ -3634,10 +3661,23 @@
             if(state.f1_subjekT1 && state.f1_subjekT2) {
                 arraySubjekTahap1 = state.f1_subjekT1; arraySubjekTahap2 = state.f1_subjekT2;
                 if (state.f1_subjekT3) arraySubjekTahap3 = state.f1_subjekT3;
+                if (state.f1_subjekT4) arraySubjekTahap4 = state.f1_subjekT4;
+                if (state.f1_subjekT5) arraySubjekTahap5 = state.f1_subjekT5;
+                if (state.f1_subjekT6) arraySubjekTahap6 = state.f1_subjekT6;
             }
 
             if(state.f2_guru && state.f2_guru.length > 0) {
                 f2_senaraiGuruPenuh = state.f2_guru; renderGridGuru();
+            }
+
+            if(state.f2_jadual && state.f2_kelas && state.f2_kelas.length > 0) {
+                f2_jadualSediaAda = state.f2_jadual;
+                f2_senaraiKelasUnik = state.f2_kelas;
+                document.getElementById('f2-hasil-jadual').classList.remove('hidden');
+                setTimeout(() => {
+                    jalankanHealthCheck(true);
+                    renderJadualUI();
+                }, 100);
             }
         }
         renderSubjekFasa1(); 
@@ -4317,12 +4357,22 @@
         const jumCheck = document.getElementById('rehat-jumaat');
         const jumMula = document.getElementById('waktu-rehat-jum-mula');
         const jumTamat = document.getElementById('waktu-rehat-jum-tamat');
+        const biasaMulaInput = document.getElementById('waktu-rehat-mula');
+        const biasaTamatInput = document.getElementById('waktu-rehat-tamat');
         if (jumCheck && jumMula && jumTamat) {
             if (!jumCheck.checked) {
+                if (biasaMulaInput && biasaTamatInput) {
+                    jumMula.value = biasaMulaInput.value;
+                    jumTamat.value = biasaTamatInput.value;
+                }
                 jumMula.disabled = true; jumTamat.disabled = true;
                 jumMula.classList.add('opacity-50', 'bg-gray-100', 'cursor-not-allowed');
                 jumTamat.classList.add('opacity-50', 'bg-gray-100', 'cursor-not-allowed');
             } else {
+                if (jumMula.disabled && biasaMulaInput && biasaTamatInput) {
+                    jumMula.value = biasaMulaInput.value;
+                    jumTamat.value = biasaTamatInput.value;
+                }
                 jumMula.disabled = false; jumTamat.disabled = false;
                 jumMula.classList.remove('opacity-50', 'bg-gray-100', 'cursor-not-allowed');
                 jumTamat.classList.remove('opacity-50', 'bg-gray-100', 'cursor-not-allowed');
@@ -4469,6 +4519,12 @@
         let markah = 100;
         let logUlasan = [];
         const senaraiHari = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'];
+        let mulaSekolahStrHC = document.getElementById('waktu-mula-sekolah') ? document.getElementById('waktu-mula-sekolah').value : '07:30';
+        let rehatMulaStrHC = document.getElementById('waktu-rehat-mula') ? document.getElementById('waktu-rehat-mula').value : '10:00';
+        let [mH_HC, mM_HC] = mulaSekolahStrHC.split(':').map(Number);
+        let [rmH_HC, rmM_HC] = rehatMulaStrHC.split(':').map(Number);
+        let kiraRehatIdx = Math.floor(((rmH_HC * 60 + rmM_HC) - (mH_HC * 60 + mM_HC)) / 30);
+        if (!isNaN(kiraRehatIdx) && kiraRehatIdx > 0) window.rehatIndexGlobal = kiraRehatIdx;
         const rehatIdx = (typeof window.rehatIndexGlobal === 'number') ? window.rehatIndexGlobal : 5;
         
         const hariPJBoleh = {
@@ -6139,8 +6195,9 @@
               const hasilDiv = document.getElementById('f2-hasil-jadual');
               hasilDiv.classList.remove('hidden');
               
-              jalankanHealthCheck(true); 
+             jalankanHealthCheck(true); 
               renderJadualUI();
+              simpanLocalState();
               simpanFasa2Database(); 
               
               hasilDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -6205,10 +6262,18 @@
         const waktuPerhimpunanTamat = document.getElementById('waktu-perhimpunan-tamat') ? document.getElementById('waktu-perhimpunan-tamat').value : '08:00';
         const waktuRehatMula = document.getElementById('waktu-rehat-mula') ? document.getElementById('waktu-rehat-mula').value : '10:00';
         const waktuRehatTamat = document.getElementById('waktu-rehat-tamat') ? document.getElementById('waktu-rehat-tamat').value : '10:15';
-        const waktuRehatJumMula = document.getElementById('waktu-rehat-jum-mula') ? document.getElementById('waktu-rehat-jum-mula').value : '10:00';
-        const waktuRehatJumTamat = document.getElementById('waktu-rehat-jum-tamat') ? document.getElementById('waktu-rehat-jum-tamat').value : '10:30';
 
-        let rehatIndex = window.rehatIndexGlobal || 5;
+        let [mH_UI, mM_UI] = waktuMula.split(':').map(Number);
+        let [rmH_UI, rmM_UI] = waktuRehatMula.split(':').map(Number);
+        let [rtH_UI, rtM_UI] = waktuRehatTamat.split(':').map(Number);
+        let rehatIndex = Math.floor(((rmH_UI * 60 + rmM_UI) - (mH_UI * 60 + mM_UI)) / 30);
+        if (isNaN(rehatIndex) || rehatIndex <= 0) rehatIndex = 5;
+        window.rehatIndexGlobal = rehatIndex;
+
+        // Pastikan Dasbod Kesihatan & Rumusan Jadual sentiasa terpapar kekal setiap kali jadual dilukis (termasuk selepas refresh)
+        if (f2_senaraiKelasUnik.length > 0 && Object.keys(f2_jadualSediaAda).length > 0) {
+            jalankanHealthCheck(true);
+        }
 
         const addMinutes = (timeStr, mins) => {
             let [h, m] = timeStr.split(':').map(Number);
@@ -6216,8 +6281,10 @@
             return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
         };
 
-        let isRehatSama = (waktuRehatMula === waktuRehatJumMula && waktuRehatTamat === waktuRehatJumTamat && hariAdaRehat['ISNIN'] === hariAdaRehat['JUMAAT']);
+        let durasiRehatBiasa = (rtH_UI * 60 + rtM_UI) - (rmH_UI * 60 + rmM_UI);
         let jumAdaRehat = hariAdaRehat['JUMAAT'];
+        // Label JUM: hanya dibenarkan keluar apabila rehat Isnin-Khamis berdurasi 15 minit DAN Jumaat tiada rehat
+        let perluNotaJum = (durasiRehatBiasa === 15 && !jumAdaRehat);
         
         // KOD BAHARU: Pemotong Masa Dinamik - Menghitung titik henti tepat tanpa petak kosong
         let maxTotalSlot = 0;
@@ -6250,28 +6317,23 @@
         let currentMasa = waktuMula; let jumCurrentMasa = waktuMula; let jumSlotIndex = 0; 
 
         for(let i = 0; i < rehatIndex; i++) {
-            // KOD BAHARU: Wajibkan rantaian pengiraan masa tepat 30 minit berterusan tanpa sebarang langkau
+            // Waktu sebelum rehat adalah seragam 30 minit bagi semua hari (tiada label JUM diperlukan)
             let nextMasa = addMinutes(currentMasa, 30);
             let nextJum = addMinutes(jumCurrentMasa, 30);
-            
-            let showJumNote = (jumSlotIndex < totalMaxJumSlot) && (!isRehatSama) && (currentMasa !== jumCurrentMasa || nextMasa !== nextJum);
-            
-            // Susun masa Jumaat ke bawah
-            if (showJumNote) thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 text-gray-700 font-bold text-center min-w-[55px] leading-tight break-words">${currentMasa}<br>${nextMasa}<br><span class="text-[8px] text-emerald-700 block mt-0.5">JUM: ${jumCurrentMasa}<br>${nextJum}</span></th>`;
-            else thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 text-gray-700 font-bold text-center min-w-[55px] leading-tight break-words">${currentMasa}<br>${nextMasa}</th>`;
-            
+            thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 text-gray-700 font-bold text-center min-w-[55px] leading-tight break-words">${currentMasa}<br>${nextMasa}</th>`;
             currentMasa = nextMasa; jumCurrentMasa = nextJum; jumSlotIndex++;
         }
         
         let teksRehat = `${waktuRehatMula}<br>${waktuRehatTamat}`;
-        if (jumAdaRehat) {
-            if (!isRehatSama) teksRehat += `<br><span class="text-[8px] text-emerald-700 block mt-0.5">JUM: ${waktuRehatJumMula}<br>${waktuRehatJumTamat}</span>`;
-            jumCurrentMasa = waktuRehatJumTamat;
-        } else {
+        if (perluNotaJum) {
             let nextJum = addMinutes(jumCurrentMasa, 30);
-            let showJumNote = (jumSlotIndex < totalMaxJumSlot) && !isRehatSama && (waktuRehatMula !== jumCurrentMasa || waktuRehatTamat !== nextJum);
-            if (showJumNote) teksRehat += `<br><span class="text-[8px] text-emerald-700 block mt-0.5">JUM: ${jumCurrentMasa}<br>${nextJum}</span>`;
+            if (jumSlotIndex < totalMaxJumSlot) {
+                teksRehat += `<br><span class="text-[8px] text-emerald-700 block mt-0.5">JUM: ${jumCurrentMasa}<br>${nextJum}</span>`;
+            }
             jumSlotIndex++; jumCurrentMasa = nextJum;
+        } else {
+            jumCurrentMasa = waktuRehatTamat;
+            if (!jumAdaRehat) jumSlotIndex++;
         }
         // KOD BAHARU: Buang whitespace-nowrap pada petak rehat
         thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 bg-amber-100 text-amber-800 font-black text-center min-w-[55px] leading-tight break-words">${teksRehat}</th>`;
@@ -6280,8 +6342,8 @@
         for(let i = rehatIndex; i < maxTotalSlot; i++) {
             let nextMasa = addMinutes(currentMasa, 30);
             let nextJum = addMinutes(jumCurrentMasa, 30);
-            let showJumNote = (jumSlotIndex < totalMaxJumSlot) && (!isRehatSama) && (currentMasa !== jumCurrentMasa || nextMasa !== nextJum);
-            // KOD BAHARU: Susun masa Jumaat ke bawah pada sesi selepas rehat
+            let showJumNote = perluNotaJum && (jumSlotIndex < totalMaxJumSlot) && (currentMasa !== jumCurrentMasa || nextMasa !== nextJum);
+            // KOD BAHARU: Susun masa Jumaat ke bawah pada sesi selepas rehat HANYA jika perluNotaJum aktif
             if (showJumNote) thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 text-gray-700 font-bold text-center min-w-[55px] leading-tight break-words">${currentMasa}<br>${nextMasa}<br><span class="text-[8px] text-emerald-700 block mt-0.5">JUM: ${jumCurrentMasa}<br>${nextJum}</span></th>`;
             else thHtmlMasa += `<th class="border border-gray-300 p-1 md:p-2 text-gray-700 font-bold text-center min-w-[55px] leading-tight break-words">${currentMasa}<br>${nextMasa}</th>`;
             currentMasa = nextMasa; jumCurrentMasa = nextJum; jumSlotIndex++;
