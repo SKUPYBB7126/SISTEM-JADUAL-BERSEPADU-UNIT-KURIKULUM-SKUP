@@ -416,7 +416,7 @@
                    </table>
                </div>
            </div>
-      </div>>
+      </div>
 
       <!-- KONTENA SLAID 2: JADUAL GURU GANTI (FIT-TO-SCREEN) -->
       <div id="tv-slide-ganti" class="flex-1 w-full h-full absolute top-0 left-0 pt-28 px-4 md:px-8 pb-10 z-0 transition-opacity duration-1000 ease-in-out opacity-0 pointer-events-none flex flex-col">
@@ -824,7 +824,7 @@
          </div>
       </div>
 
-      <!-- KOD BAHARU: Papan Radar Status Subjek Mengikut Tahun (Hijau = Belum Diambil, Merah = Sudah Diambil) -->
+      <!-- KOD BAHARU: Papan Radar Status Subjek Mengikut Tahun (Merah = Belum Diambil, Hijau = Sudah Diambil) -->
       <div class="bg-white/90 p-5 rounded-2xl border border-indigo-100 shadow-sm mb-8">
          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-gray-200 pb-3 mb-4">
             <div>
@@ -834,11 +834,11 @@
                <p class="text-[11px] font-semibold text-gray-500 mt-0.5">Pantau subjek yang masih kosong atau sudah diambil mengikut kelas secara langsung sebelum memilih.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-wider shrink-0">
-               <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Hijau: Belum Diambil (Kosong)
-               </span>
                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-300 shadow-sm">
-                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Merah: Sudah Diambil
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Merah: Belum Diambil (Kosong)
+               </span>
+               <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Hijau: Sudah Diambil
                </span>
             </div>
          </div>
@@ -3203,7 +3203,7 @@
                 let styleEl = document.getElementById('tv-custom-scale-css');
                 if (!styleEl) {
                     styleEl = document.createElement('style');
-                    style.id = 'tv-custom-scale-css';
+                    styleEl.id = 'tv-custom-scale-css';
                     document.head.appendChild(styleEl);
                 }
                 styleEl.innerHTML = `
@@ -4436,7 +4436,7 @@
        return { diambil: false };
     }
 
-    // KOD BAHARU: Bina Senarai Pilihan HTML Dropdown Subjek Dengan Penanda Hijau (Belum Diambil) & Merah (Sudah Diambil)
+   // KOD BAHARU: Bina Senarai Pilihan HTML Dropdown Subjek Dengan Penanda Merah (Belum Diambil) & Hijau (Sudah Diambil)
     function binaPilihanDropdownSubjekHTML(namaKelas, subjekList, rowId, nilaiSemasa = '') {
        return '<option value="">-- Pilih Subjek --</option>' +
            subjekList.map(s => {
@@ -4444,14 +4444,14 @@
                const isSelected = (nilaiSemasa && nilaiSemasa.trim().toUpperCase() === s.nama.trim().toUpperCase()) ? 'selected' : '';
                if (info && info.diambil) {
                    const labelPemilik = info.sumber === 'BORANG' ? 'DIPILIH DALAM BORANG INI' : `DIAMBIL: CIKGU ${info.nama} (${info.kod})`;
-                   return `<option value="${s.nama}" ${isSelected} style="background-color: #ffe4e6; color: #be123c; font-weight: 800;">🔴 ${s.nama} (${s.waktu} Masa) — [${labelPemilik}]</option>`;
+                   return `<option value="${s.nama}" ${isSelected} style="background-color: #ecfdf5; color: #047857; font-weight: 800;">🟢 ${s.nama} (${s.waktu} Masa) — [${labelPemilik}]</option>`;
                } else {
-                   return `<option value="${s.nama}" ${isSelected} style="background-color: #ecfdf5; color: #047857; font-weight: 800;">🟢 ${s.nama} (${s.waktu} Masa) — [BELUM DIAMBIL]</option>`;
+                   return `<option value="${s.nama}" ${isSelected} style="background-color: #ffe4e6; color: #be123c; font-weight: 800;">🔴 ${s.nama} (${s.waktu} Masa) — [BELUM DIAMBIL]</option>`;
                }
            }).join('');
     }
 
-    // KOD BAHARU: Segarkan Semua Dropdown Subjek Dalam Borang Supaya Warna Hijau/Merah Sentiasa Tepat
+    // KOD BAHARU: Segarkan Semua Dropdown Subjek Dalam Borang Supaya Warna Merah/Hijau Sentiasa Tepat
     function segarkanSemuaDropdownSubjekFasa2() {
        for (let i = 1; i <= f2_currentRows; i++) {
            const selTahun = document.getElementById(`f2-tahun-${i}`);
@@ -4480,7 +4480,7 @@
        }
     }
 
-    // KOD BAHARU: Pelukis Papan Radar Status Subjek 6 Tahun (Hijau = Belum Diambil, Merah = Sudah Diambil)
+    // KOD BAHARU: Pelukis Papan Radar Status Subjek 6 Tahun (Merah = Belum Diambil, Hijau = Sudah Diambil)
     function renderRadarSubjekFasa2() {
        const gridRadar = document.getElementById('f2-radar-subjek-grid');
        if (!gridRadar) return;
@@ -4504,24 +4504,24 @@
                    jumDiambil++;
                    const labelGuru = info.sumber === 'BORANG' ? `BORANG (${info.kod})` : `${info.kod} • ${info.nama}`;
                    return `
-                       <div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 shadow-sm">
+                       <div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-emerald-50/90 border border-emerald-200 text-emerald-950 shadow-sm">
                            <div class="flex items-center gap-1.5 min-w-0">
-                               <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                               <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
                                <span class="text-[11px] font-extrabold truncate" title="${s.nama}">${s.nama}</span>
-                               <span class="text-[9px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded shrink-0">${s.waktu}m</span>
+                               <span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0">${s.waktu}m</span>
                            </div>
-                           <span class="text-[9px] font-black bg-rose-600 text-white px-2 py-0.5 rounded-md uppercase tracking-wider truncate max-w-[125px] shrink-0" title="Diambil oleh: ${info.nama}">${labelGuru}</span>
+                           <span class="text-[9px] font-black bg-emerald-600 text-white px-2 py-0.5 rounded-md uppercase tracking-wider truncate max-w-[125px] shrink-0" title="Diambil oleh: ${info.nama}">${labelGuru}</span>
                        </div>
                    `;
                } else {
                    return `
-                       <div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-emerald-50/90 border border-emerald-200 text-emerald-950 shadow-sm">
+                       <div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 shadow-sm">
                            <div class="flex items-center gap-1.5 min-w-0">
-                               <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
+                               <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0 animate-pulse"></span>
                                <span class="text-[11px] font-extrabold truncate" title="${s.nama}">${s.nama}</span>
-                               <span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0">${s.waktu}m</span>
+                               <span class="text-[9px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded shrink-0">${s.waktu}m</span>
                            </div>
-                           <span class="text-[9px] font-black bg-emerald-600 text-white px-2 py-0.5 rounded-md uppercase tracking-wider shrink-0">BELUM DIAMBIL</span>
+                           <span class="text-[9px] font-black bg-rose-600 text-white px-2 py-0.5 rounded-md uppercase tracking-wider shrink-0">BELUM DIAMBIL</span>
                        </div>
                    `;
                }
@@ -4529,8 +4529,8 @@
 
            const bakiKosong = jumSubjek - jumDiambil;
            const statusKelasBadge = bakiKosong === 0
-               ? `<span class="bg-white/25 text-white px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">✅ Lengkap (${jumDiambil}/${jumSubjek})</span>`
-               : `<span class="bg-emerald-400 text-gray-900 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">${bakiKosong} Kosong (${jumDiambil}/${jumSubjek})</span>`;
+               ? `<span class="bg-emerald-400 text-gray-900 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">✅ Lengkap (${jumDiambil}/${jumSubjek})</span>`
+               : `<span class="bg-rose-500 text-white px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">${bakiKosong} Kosong (${jumDiambil}/${jumSubjek})</span>`;
 
            return `
                <div class="bg-gray-50/90 rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
