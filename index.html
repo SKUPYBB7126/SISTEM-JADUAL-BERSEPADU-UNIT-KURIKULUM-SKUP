@@ -508,7 +508,7 @@
                </div>
            </div>
 
-          <!-- Kolum Kanan: Rehat (Dikecilkan & Dilaraskan Seimbang) -->
+<!-- Kolum Kanan: Rehat (Dikecilkan & Dilaraskan Seimbang) -->
            <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 shadow-sm h-full flex flex-col justify-between transition-all">
                <div>
                    <h3 class="text-xs font-extrabold text-amber-900 mb-3 uppercase tracking-widest border-b border-amber-200/50 pb-2"><i class="fa-solid fa-mug-hot text-amber-500 mr-1.5"></i> Tetapan Waktu Rehat</h3>
@@ -522,8 +522,7 @@
                    </div>
                </div>
                
-               <div class="bg-white/50 p-2.5 rounded-lg border border-amber-200/50">
-                  <span class="block text-[10px] text-amber-800 font-bold uppercase tracking-widest mb-2 border-b border-amber-200 pb-1">Hari Terdapat Rehat:</span>
+               <div class="bg-white/50 p-2.5 rounded-lg border border-amber-200/50">                  <span class="block text-[10px] text-amber-800 font-bold uppercase tracking-widest mb-2 border-b border-amber-200 pb-1">Hari Terdapat Rehat:</span>
                   <div class="grid grid-cols-3 gap-2 font-bold text-[11px] text-amber-900">
                       <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-amber-100 shadow-sm cursor-pointer hover:bg-amber-50 transition-all"><input type="checkbox" id="rehat-isnin" onchange="kawalInputRehat()" checked class="w-3.5 h-3.5 text-amber-500 rounded focus:ring-amber-400 cursor-pointer shrink-0"> Isnin</label>
                       <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-amber-100 shadow-sm cursor-pointer hover:bg-amber-50 transition-all"><input type="checkbox" id="rehat-selasa" onchange="kawalInputRehat()" checked class="w-3.5 h-3.5 text-amber-500 rounded focus:ring-amber-400 cursor-pointer shrink-0"> Selasa</label>
@@ -811,7 +810,7 @@
             </div>
          </div>
 
-         <!-- Baris Bawah: Pengiraan Waktu & Butang Simpan -->
+        <!-- Baris Bawah: Pengiraan Waktu & Butang Simpan -->
          <div class="flex flex-col md:flex-row justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-200">
             <div class="mb-4 md:mb-0">
                <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Jumlah Keseluruhan Waktu:</span>
@@ -823,6 +822,27 @@
                <i class="fa-solid fa-user-check"></i> Simpan Kad Guru
             </button>
          </div>
+      </div>
+
+      <!-- KOD BAHARU: Papan Radar Status Subjek Mengikut Tahun (Hijau = Belum Diambil, Merah = Sudah Diambil) -->
+      <div class="bg-white/90 p-5 rounded-2xl border border-indigo-100 shadow-sm mb-8">
+         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-gray-200 pb-3 mb-4">
+            <div>
+               <h3 class="text-xs md:text-sm font-black text-indigo-950 uppercase tracking-widest flex items-center gap-2">
+                  <i class="fa-solid fa-satellite-dish text-indigo-600"></i> Radar Status Agihan Subjek Mengikut Tahun (Live)
+               </h3>
+               <p class="text-[11px] font-semibold text-gray-500 mt-0.5">Pantau subjek yang masih kosong atau sudah diambil mengikut kelas secara langsung sebelum memilih.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-wider shrink-0">
+               <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Hijau: Belum Diambil (Kosong)
+               </span>
+               <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-300 shadow-sm">
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Merah: Sudah Diambil
+               </span>
+            </div>
+         </div>
+         <div id="f2-radar-subjek-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
       <!-- Grid Paparan Guru Tersimpan -->
@@ -2828,17 +2848,24 @@
     function toggleSidebar() {
       const sidebar = document.getElementById('main-sidebar');
       const overlay = document.getElementById('sidebar-overlay');
+      if (!sidebar) return;
+
+      const isMobile = window.innerWidth < 768;
+      const isClosed = isMobile ? sidebar.classList.contains('w-0') : sidebar.classList.contains('md:w-0');
       
-      if (sidebar.classList.contains('w-0')) {
+      if (isClosed) {
         // Buka Sidebar
         sidebar.classList.remove('w-0', 'md:w-0');
         sidebar.classList.add('w-64', 'md:w-72');
-        overlay.classList.remove('hidden');
+        if (overlay) {
+          if (isMobile) overlay.classList.remove('hidden');
+          else overlay.classList.add('hidden');
+        }
       } else {
         // Tutup Sidebar
         sidebar.classList.remove('w-64', 'md:w-72');
         sidebar.classList.add('w-0', 'md:w-0');
-        overlay.classList.add('hidden');
+        if (overlay) overlay.classList.add('hidden');
       }
     }
 
@@ -3509,10 +3536,11 @@
         setHtml('bekas-subjek-tahap1', arraySubjekTahap1, 'purple', '1');
         setHtml('bekas-subjek-tahap2', arraySubjekTahap2, 'indigo', '2');
         setHtml('bekas-subjek-tahap3', arraySubjekTahap3, 'blue', '3');
-        setHtml('bekas-subjek-tahap4', arraySubjekTahap4, 'orange', '4');
+       setHtml('bekas-subjek-tahap4', arraySubjekTahap4, 'orange', '4');
         setHtml('bekas-subjek-tahap5', arraySubjekTahap5, 'teal', '5');
         setHtml('bekas-subjek-tahap6', arraySubjekTahap6, 'cyan', '6');
         
+        if (typeof renderRadarSubjekFasa2 === 'function') renderRadarSubjekFasa2();
         setTimeout(kemaskiniKapasitiLive, 200); 
     }
 
@@ -4377,12 +4405,153 @@
       container.appendChild(row);
     }
 
+   // KOD BAHARU: Pengesan Pemilik Subjek Mengikut Kelas (Menyemak Pangkalan Data Guru & Borang Semasa)
+    function cariPemilikSubjekKelas(namaKelas, namaSubjek, excludeRowId = -1) {
+       if (!namaKelas || !namaSubjek) return null;
+       const sasaranSubjek = namaSubjek.trim().toUpperCase();
+
+       // 1. Semak dalam Pangkalan Data Guru yang telah disimpan
+       for (let g = 0; g < f2_senaraiGuruPenuh.length; g++) {
+           if (f2_editGuruIndex === g) continue; // Abaikan kad asal jika guru tersebut sedang dalam mod kemas kini
+           const guru = f2_senaraiGuruPenuh[g];
+           if (!guru || !Array.isArray(guru.senaraiTugas)) continue;
+           const jumpa = guru.senaraiTugas.find(t => t.tahun === namaKelas && t.subjek.trim().toUpperCase() === sasaranSubjek);
+           if (jumpa) {
+               return { diambil: true, kod: guru.kod, nama: guru.nama, sumber: 'SIMPAN' };
+           }
+       }
+
+       // 2. Semak dalam baris borang yang sedang diisi oleh pengguna
+       for (let i = 1; i <= f2_currentRows; i++) {
+           if (i === excludeRowId) continue;
+           const rTahun = document.getElementById(`f2-tahun-${i}`);
+           const rSubjek = document.getElementById(`f2-subjek-${i}`);
+           if (rTahun && rSubjek && rTahun.value === namaKelas && rSubjek.value.trim().toUpperCase() === sasaranSubjek) {
+               const namaBorang = (document.getElementById('f2-nama') && document.getElementById('f2-nama').value.trim()) ? document.getElementById('f2-nama').value.trim().toUpperCase() : 'BORANG SEMASA';
+               const kodBorang = (document.getElementById('f2-kod') && document.getElementById('f2-kod').value.trim()) ? document.getElementById('f2-kod').value.trim().toUpperCase() : 'SEDANG DIISI';
+               return { diambil: true, kod: kodBorang, nama: namaBorang, sumber: 'BORANG' };
+           }
+       }
+
+       return { diambil: false };
+    }
+
+    // KOD BAHARU: Bina Senarai Pilihan HTML Dropdown Subjek Dengan Penanda Hijau (Belum Diambil) & Merah (Sudah Diambil)
+    function binaPilihanDropdownSubjekHTML(namaKelas, subjekList, rowId, nilaiSemasa = '') {
+       return '<option value="">-- Pilih Subjek --</option>' +
+           subjekList.map(s => {
+               const info = cariPemilikSubjekKelas(namaKelas, s.nama, rowId);
+               const isSelected = (nilaiSemasa && nilaiSemasa.trim().toUpperCase() === s.nama.trim().toUpperCase()) ? 'selected' : '';
+               if (info && info.diambil) {
+                   const labelPemilik = info.sumber === 'BORANG' ? 'DIPILIH DALAM BORANG INI' : `DIAMBIL: CIKGU ${info.nama} (${info.kod})`;
+                   return `<option value="${s.nama}" ${isSelected} style="background-color: #ffe4e6; color: #be123c; font-weight: 800;">🔴 ${s.nama} (${s.waktu} Masa) — [${labelPemilik}]</option>`;
+               } else {
+                   return `<option value="${s.nama}" ${isSelected} style="background-color: #ecfdf5; color: #047857; font-weight: 800;">🟢 ${s.nama} (${s.waktu} Masa) — [BELUM DIAMBIL]</option>`;
+               }
+           }).join('');
+    }
+
+    // KOD BAHARU: Segarkan Semua Dropdown Subjek Dalam Borang Supaya Warna Hijau/Merah Sentiasa Tepat
+    function segarkanSemuaDropdownSubjekFasa2() {
+       for (let i = 1; i <= f2_currentRows; i++) {
+           const selTahun = document.getElementById(`f2-tahun-${i}`);
+           const selSubjek = document.getElementById(`f2-subjek-${i}`);
+           if (!selTahun || !selSubjek || !selTahun.value) continue;
+
+           const tahun = selTahun.options[selTahun.selectedIndex].getAttribute('data-tahun');
+           if (!tahun) continue;
+
+           let subjekList = arraySubjekTahap1;
+           if (tahun === "2") subjekList = arraySubjekTahap2;
+           else if (tahun === "3") subjekList = arraySubjekTahap3;
+           else if (tahun === "4") subjekList = arraySubjekTahap4;
+           else if (tahun === "5") subjekList = arraySubjekTahap5;
+           else if (tahun === "6") subjekList = arraySubjekTahap6;
+
+           const nilaiSemasa = selSubjek.value;
+           selSubjek.innerHTML = binaPilihanDropdownSubjekHTML(selTahun.value, subjekList, i, nilaiSemasa);
+           selSubjek.value = nilaiSemasa;
+
+           if (nilaiSemasa) {
+               selSubjek.className = "w-full md:w-1/3 px-3 py-2 border-2 border-emerald-300 rounded text-xs font-extrabold text-emerald-900 outline-none focus:ring-2 focus:ring-emerald-400 bg-emerald-50/40";
+           } else {
+               selSubjek.className = "w-full md:w-1/3 px-3 py-2 border border-gray-200 rounded text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-300 bg-white";
+           }
+       }
+    }
+
+    // KOD BAHARU: Pelukis Papan Radar Status Subjek 6 Tahun (Hijau = Belum Diambil, Merah = Sudah Diambil)
+    function renderRadarSubjekFasa2() {
+       const gridRadar = document.getElementById('f2-radar-subjek-grid');
+       if (!gridRadar) return;
+
+       const senaraiKelasConfig = [
+           { kelas: '1 Sopan', tajuk: 'Tahun 1 Sopan', arr: arraySubjekTahap1, warnaHeader: 'from-purple-600 to-indigo-600' },
+           { kelas: '2 Amanah', tajuk: 'Tahun 2 Amanah', arr: arraySubjekTahap2, warnaHeader: 'from-indigo-600 to-blue-600' },
+           { kelas: '3 Cemerlang', tajuk: 'Tahun 3 Cemerlang', arr: arraySubjekTahap3, warnaHeader: 'from-blue-600 to-sky-600' },
+           { kelas: '4 Jujur', tajuk: 'Tahun 4 Jujur', arr: arraySubjekTahap4, warnaHeader: 'from-orange-500 to-amber-600' },
+           { kelas: '5 Sopan', tajuk: 'Tahun 5 Sopan', arr: arraySubjekTahap5, warnaHeader: 'from-teal-600 to-emerald-600' },
+           { kelas: '6 Bersih', tajuk: 'Tahun 6 Bersih', arr: arraySubjekTahap6, warnaHeader: 'from-cyan-600 to-blue-600' }
+       ];
+
+       gridRadar.innerHTML = senaraiKelasConfig.map(item => {
+           let jumSubjek = item.arr.length;
+           let jumDiambil = 0;
+
+           const senaraiLencanaHTML = item.arr.map(s => {
+               const info = cariPemilikSubjekKelas(item.kelas, s.nama, -1);
+               if (info && info.diambil) {
+                   jumDiambil++;
+                   const labelGuru = info.sumber === 'BORANG' ? `BORANG (${info.kod})` : `${info.kod} • ${info.nama}`;
+                   return `
+                       <div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 shadow-sm">
+                           <div class="flex items-center gap-1.5 min-w-0">
+                               <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                               <span class="text-[11px] font-extrabold truncate" title="${s.nama}">${s.nama}</span>
+                               <span class="text-[9px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded shrink-0">${s.waktu}m</span>
+                           </div>
+                           <span class="text-[9px] font-black bg-rose-600 text-white px-2 py-0.5 rounded-md uppercase tracking-wider truncate max-w-[125px] shrink-0" title="Diambil oleh: ${info.nama}">${labelGuru}</span>
+                       </div>
+                   `;
+               } else {
+                   return `
+                       <div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-emerald-50/90 border border-emerald-200 text-emerald-950 shadow-sm">
+                           <div class="flex items-center gap-1.5 min-w-0">
+                               <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
+                               <span class="text-[11px] font-extrabold truncate" title="${s.nama}">${s.nama}</span>
+                               <span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0">${s.waktu}m</span>
+                           </div>
+                           <span class="text-[9px] font-black bg-emerald-600 text-white px-2 py-0.5 rounded-md uppercase tracking-wider shrink-0">BELUM DIAMBIL</span>
+                       </div>
+                   `;
+               }
+           }).join('');
+
+           const bakiKosong = jumSubjek - jumDiambil;
+           const statusKelasBadge = bakiKosong === 0
+               ? `<span class="bg-white/25 text-white px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">✅ Lengkap (${jumDiambil}/${jumSubjek})</span>`
+               : `<span class="bg-emerald-400 text-gray-900 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">${bakiKosong} Kosong (${jumDiambil}/${jumSubjek})</span>`;
+
+           return `
+               <div class="bg-gray-50/90 rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                   <div class="bg-gradient-to-r ${item.warnaHeader} px-3.5 py-2.5 text-white flex items-center justify-between">
+                       <span class="font-black text-xs uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-door-open text-white/80"></i> ${item.tajuk}</span>
+                       ${statusKelasBadge}
+                   </div>
+                   <div class="p-3 space-y-1.5 max-h-64 overflow-y-auto" style="scrollbar-width: thin;">
+                       ${senaraiLencanaHTML}
+                   </div>
+               </div>
+           `;
+       }).join('');
+    }
+
     function buangBarisKelas(rowId) {
        document.getElementById(`f2-row-${rowId}`).remove();
        kiraTotalWaktu();
     }
 
-    // Fungsi 3: Apabila Tahun Dipilih, Subjek Keluar Mengikut 6 Tahun (KP2027)
+    // Fungsi 3: Apabila Tahun Dipilih, Subjek Keluar Mengikut 6 Tahun (KP2027) Lengkap Dengan Status Hijau/Merah
     function kemaskiniSubjekDropdown(rowId) {
       const selTahun = document.getElementById(`f2-tahun-${rowId}`);
       const selSubjek = document.getElementById(`f2-subjek-${rowId}`);
@@ -4393,7 +4562,7 @@
       if (!tahun) {
          selSubjek.disabled = true;
          selSubjek.innerHTML = '<option value="">-- Pilih Subjek --</option>';
-         selSubjek.classList.add('bg-gray-50');
+         selSubjek.className = "w-full md:w-1/3 px-3 py-2 border border-gray-200 rounded text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-300 bg-gray-50";
          inputWaktu.value = '';
          kiraTotalWaktu();
          return;
@@ -4409,8 +4578,7 @@
       else if (tahun === "5") subjekList = arraySubjekTahap5;
       else if (tahun === "6") subjekList = arraySubjekTahap6;
       
-      selSubjek.innerHTML = '<option value="">-- Pilih Subjek --</option>' + 
-          subjekList.map(s => `<option value="${s.nama}">${s.nama}</option>`).join('');
+      selSubjek.innerHTML = binaPilihanDropdownSubjekHTML(selTahun.value, subjekList, rowId, '');
           
       inputWaktu.value = '';
       kiraTotalWaktu();
@@ -4473,7 +4641,7 @@
       kiraTotalWaktu();
     }
 
-    // Fungsi 5: Pengiraan Matematik Waktu Keseluruhan + Amaran
+   // Fungsi 5: Pengiraan Matematik Waktu Keseluruhan + Amaran + Kemas Kini Radar Subjek Live
     function kiraTotalWaktu() {
       let total = 0;
       for (let i = 1; i <= f2_currentRows; i++) {
@@ -4494,6 +4662,9 @@
       } else {
           amaran.classList.add('hidden');
       }
+
+      if (typeof segarkanSemuaDropdownSubjekFasa2 === 'function') segarkanSemuaDropdownSubjekFasa2();
+      if (typeof renderRadarSubjekFasa2 === 'function') renderRadarSubjekFasa2();
     }
 
     // Fungsi 6: Simpan Kad Profil Guru Ke Dalam Pangkalan Data Visual
@@ -4620,8 +4791,11 @@
       f2_currentRows = 0;
     }
 
-    // Fungsi 7: Paparkan Kad-Kad Guru
+    // Fungsi 7: Paparkan Kad-Kad Guru + Kemas Kini Papan Radar Status Subjek
     function renderGridGuru() {
+      if (typeof renderRadarSubjekFasa2 === 'function') renderRadarSubjekFasa2();
+      if (typeof segarkanSemuaDropdownSubjekFasa2 === 'function') segarkanSemuaDropdownSubjekFasa2();
+
       const grid = document.getElementById('f2-grid-guru');
       if (f2_senaraiGuruPenuh.length === 0) {
          grid.innerHTML = '<div class="col-span-full py-8 text-center text-gray-400 font-medium italic bg-gray-50 rounded-xl border border-dashed border-gray-200"><i class="fa-solid fa-folder-open text-3xl mb-2 block opacity-30"></i>Belum ada profil guru didaftarkan</div>';
