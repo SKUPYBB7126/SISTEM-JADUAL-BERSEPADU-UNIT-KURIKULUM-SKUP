@@ -4910,8 +4910,8 @@
         showToast('Mod Kemaskini Aktif: Sila edit dan tekan Simpan.');
     }
 
-   // KOD BAHARU: Fungsi Kunci Masa Rehat Jika Hari Dibuang & Pencetus (Trigger) Kalkulator Kapasiti Live
-    function kawalInputRehat() {
+   // KOD BAHARU: Fungsi Kunci Masa Rehat, Auto-Anjak Jadual Matriks (Tahun 1-6) & Pencetus Kalkulator Kapasiti Live
+    function kawalInputRehat(abaikanAnjak = false) {
         const jumCheck = document.getElementById('rehat-jumaat');
         const jumMula = document.getElementById('waktu-rehat-jum-mula');
         const jumTamat = document.getElementById('waktu-rehat-jum-tamat');
@@ -4952,11 +4952,60 @@
                 biasaTamat.classList.remove('opacity-50', 'bg-gray-100', 'cursor-not-allowed');
             }
         }
+
+        // Enjin Auto-Anjak Jadual Matriks Tahun 1 hingga Tahun 6 Mengikut Perubahan Tempoh/Tagging Rehat
+        const parseMinitRehat = (str) => {
+            if (!str || !str.includes(':')) return 0;
+            const [h, m] = str.split(':').map(Number);
+            return (isNaN(h) || isNaN(m)) ? 0 : (h * 60 + m);
+        };
+
+        const anjakInputMatriks = (idInput, deltaMinit) => {
+            const el = document.getElementById(idInput);
+            if (!el || !el.value || deltaMinit === 0) return;
+            let jumlahMinit = parseMinitRehat(el.value) + deltaMinit;
+            jumlahMinit = ((jumlahMinit % 1440) + 1440) % 1440;
+            const hh = String(Math.floor(jumlahMinit / 60)).padStart(2, '0');
+            const mm = String(jumlahMinit % 60).padStart(2, '0');
+            el.value = `${hh}:${mm}`;
+        };
+
+        const tempohRehatBiasa = (biasaMulaInput && biasaTamatInput)
+            ? Math.max(0, parseMinitRehat(biasaTamatInput.value) - parseMinitRehat(biasaMulaInput.value))
+            : 15;
+        const tempohRehatJumaat = (jumMula && jumTamat)
+            ? Math.max(0, parseMinitRehat(jumTamat.value) - parseMinitRehat(jumMula.value))
+            : 15;
+
+        const statusRehatSemasa = {
+            isn: (document.getElementById('rehat-isnin') && document.getElementById('rehat-isnin').checked) ? tempohRehatBiasa : 0,
+            sel: (document.getElementById('rehat-selasa') && document.getElementById('rehat-selasa').checked) ? tempohRehatBiasa : 0,
+            rab: (document.getElementById('rehat-rabu') && document.getElementById('rehat-rabu').checked) ? tempohRehatBiasa : 0,
+            kha: (document.getElementById('rehat-khamis') && document.getElementById('rehat-khamis').checked) ? tempohRehatBiasa : 0,
+            jum: (jumCheck && jumCheck.checked) ? tempohRehatJumaat : 0
+        };
+
+        const tab4El = document.getElementById('tab4');
+        const isTab4Aktif = tab4El && !tab4El.classList.contains('hidden');
+
+        if (!window.memoriTempohRehatHari || abaikanAnjak === true || !isTab4Aktif) {
+            window.memoriTempohRehatHari = { ...statusRehatSemasa };
+        } else {
+            ['isn', 'sel', 'rab', 'kha', 'jum'].forEach(pfx => {
+                const delta = statusRehatSemasa[pfx] - window.memoriTempohRehatHari[pfx];
+                if (delta !== 0) {
+                    for (let t = 1; t <= 6; t++) {
+                        anjakInputMatriks(`waktu-${pfx}-t${t}`, delta);
+                    }
+                    window.memoriTempohRehatHari[pfx] = statusRehatSemasa[pfx];
+                }
+            });
+        }
         
         // Arahan paksa pengiraan kapasiti sebaik sahaja butang rehat ditekan
         if(typeof kemaskiniKapasitiLive === 'function') kemaskiniKapasitiLive();
     }
-    setTimeout(kawalInputRehat, 500);
+    setTimeout(() => kawalInputRehat(true), 500);
 
   // Fungsi Matematik Mengira Jumlah Minit Bersih PdP Sehari (1 Masa = 30 Minit)
     function kiraMinitBersihSlot(timeValId, tolakRehat, isJumaat = false) {
@@ -4988,8 +5037,8 @@
             let rm = parseInt(rMula.split(':')[0]) * 60 + parseInt(rMula.split(':')[1]);
             let rt = parseInt(rTamat.split(':')[0]) * 60 + parseInt(rTamat.split(':')[1]);
             
-            // Tolak masa rehat HANYA jika waktu balik melangkaui jam mula rehat
-            if (endMins > rm && rt > rm) {
+            // Tolak masa rehat mengikut tempoh rehat yang ditetapkan pada hari tersebut
+            if (rt > rm) {
                 diff -= (rt - rm);
             }
         }
