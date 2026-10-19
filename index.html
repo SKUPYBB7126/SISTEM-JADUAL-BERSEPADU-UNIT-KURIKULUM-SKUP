@@ -4985,21 +4985,45 @@
             jum: (jumCheck && jumCheck.checked) ? tempohRehatJumaat : 0
         };
 
-        const tab4El = document.getElementById('tab4');
+       const tab4El = document.getElementById('tab4');
         const isTab4Aktif = tab4El && !tab4El.classList.contains('hidden');
 
         if (!window.memoriTempohRehatHari || abaikanAnjak === true || !isTab4Aktif) {
             window.memoriTempohRehatHari = { ...statusRehatSemasa };
         } else {
+            const namaHariPenuh = { isn: 'Isnin', sel: 'Selasa', rab: 'Rabu', kha: 'Khamis', jum: 'Jumaat' };
+            let senaraiHariAnjak = [];
+            let nilaiDeltaTerakhir = 0;
+
             ['isn', 'sel', 'rab', 'kha', 'jum'].forEach(pfx => {
                 const delta = statusRehatSemasa[pfx] - window.memoriTempohRehatHari[pfx];
                 if (delta !== 0) {
                     for (let t = 1; t <= 6; t++) {
-                        anjakInputMatriks(`waktu-${pfx}-t${t}`, delta);
+                        const idKotak = `waktu-${pfx}-t${t}`;
+                        anjakInputMatriks(idKotak, delta);
+                        const elKotak = document.getElementById(idKotak);
+                        if (elKotak) {
+                            elKotak.classList.add('ring-2', 'ring-amber-400', 'bg-amber-50');
+                            setTimeout(() => {
+                                elKotak.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-50');
+                            }, 1200);
+                        }
                     }
                     window.memoriTempohRehatHari[pfx] = statusRehatSemasa[pfx];
+                    senaraiHariAnjak.push(namaHariPenuh[pfx]);
+                    nilaiDeltaTerakhir = delta;
                 }
             });
+
+            if (senaraiHariAnjak.length > 0) {
+                const labelHari = (senaraiHariAnjak.length === 4 && senaraiHariAnjak[0] === 'Isnin' && senaraiHariAnjak[3] === 'Khamis')
+                    ? 'Isnin - Khamis'
+                    : senaraiHariAnjak.join(', ');
+                const teksTindakan = nilaiDeltaTerakhir > 0
+                    ? `ditambah +${nilaiDeltaTerakhir} minit`
+                    : `dikurangkan -${Math.abs(nilaiDeltaTerakhir)} minit`;
+                showToast(`Auto-Anjak Rehat: Jadual Matriks (Tahun 1-6) bagi ${labelHari} telah ${teksTindakan}.`, 'success');
+            }
         }
         
         // Arahan paksa pengiraan kapasiti sebaik sahaja butang rehat ditekan
