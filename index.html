@@ -458,21 +458,27 @@
        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
            <!-- Kolum Kiri: Perhimpunan & Tasmik -->
            <div class="flex flex-col gap-4">
-                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-sm h-full">
-                 <h3 class="text-xs font-extrabold text-indigo-900 mb-3 uppercase tracking-widest border-b border-indigo-200 pb-2"><i class="fa-solid fa-bullhorn text-indigo-500 mr-1.5"></i> Waktu Perhimpunan</h3>
-                 <div class="flex justify-between items-center font-bold mb-3">
-                  <span class="text-xs text-indigo-800">Hari Perhimpunan:</span>
-                  <select id="tetapan-perhimpunan" onchange="kawalHariPerhimpunanPKA()" class="border border-indigo-200 rounded p-1 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-400 text-indigo-700 bg-white shadow-sm cursor-pointer">
-                    <option value="ISNIN">Hari Isnin</option>
-                    <option value="SELASA">Hari Selasa</option>
-                    <option value="RABU" selected>Hari Rabu</option>
-                    <option value="KHAMIS">Hari Khamis</option>
-                    <option value="JUMAAT">Hari Jumaat</option>
-                  </select>
+                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-sm h-full flex flex-col justify-between">
+                 <div>
+                  <h3 class="text-xs font-extrabold text-indigo-900 mb-3 uppercase tracking-widest border-b border-indigo-200 pb-2"><i class="fa-solid fa-bullhorn text-indigo-500 mr-1.5"></i> Waktu Perhimpunan</h3>
+                  <div class="flex justify-between items-center font-bold mb-3">
+                   <span class="text-xs text-indigo-800">Hari Perhimpunan:</span>
+                   <select id="tetapan-perhimpunan" onchange="kawalHariPerhimpunanPKA()" class="border border-indigo-200 rounded p-1 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-400 text-indigo-700 bg-white shadow-sm cursor-pointer">
+                     <option value="ISNIN">Hari Isnin</option>
+                     <option value="SELASA">Hari Selasa</option>
+                     <option value="RABU" selected>Hari Rabu</option>
+                     <option value="KHAMIS">Hari Khamis</option>
+                     <option value="JUMAAT">Hari Jumaat</option>
+                   </select>
+                  </div>
                  </div>
-                 <div class="flex justify-between items-center font-bold">
-                     <span class="text-[10px] text-indigo-500 font-bold italic">*Mula automatik</span>
-                     <div class="flex items-center gap-2 text-xs text-indigo-800">Tamat: <input type="time" id="waktu-perhimpunan-tamat" value="08:00" class="border rounded p-1 text-xs font-black outline-none focus:ring-2 focus:ring-indigo-400 text-indigo-700 bg-white" title="Waktu Tamat Perhimpunan"></div>
+                 <input type="hidden" id="waktu-perhimpunan-tamat" value="08:00">
+                 <div id="info-waktu-perhimpunan-pintar" class="bg-white/90 p-2.5 rounded-lg border border-indigo-200/80 text-[10px] font-bold text-indigo-900 leading-snug shadow-sm">
+                  <div class="flex items-center justify-between gap-1 border-b border-indigo-100 pb-1 mb-1">
+                   <span class="font-black text-indigo-800"><i class="fa-solid fa-clock text-indigo-500 mr-1"></i>Masa Auto: <span id="label-masa-perhimpunan-auto" class="text-indigo-700">07:30 – 08:00</span></span>
+                   <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-[8px] font-black uppercase shrink-0">1 Masa (30m)</span>
+                  </div>
+                  <p class="text-[9.5px] font-bold text-gray-600 leading-relaxed"><i class="fa-solid fa-circle-info text-indigo-500 mr-1"></i>Perhimpunan dijalankan selama <span class="text-indigo-800 font-black">30 minit sahaja (1 masa)</span> pada <span class="text-indigo-800 font-black">1 hari dalam seminggu</span> (mula automatik ikut Waktu Mula Sekolah).</p>
                  </div>
                 </div>
 
@@ -6051,7 +6057,6 @@
         // Ikat pendengar 'input' & pemilih masa tanpa ruang kosong secara automatik pada semua kotak masa Fasa 1
         if (!window.f1LiveListenersBound) {
             const semuaInputMasaF1 = [
-                'waktu-perhimpunan-tamat',
                 'waktu-mula-sekolah', 'waktu-rehat-mula', 'waktu-rehat-tamat', 'waktu-rehat-jum-mula', 'waktu-rehat-jum-tamat',
                 'waktu-isn-t1', 'waktu-isn-t2', 'waktu-isn-t3', 'waktu-isn-t4', 'waktu-isn-t5', 'waktu-isn-t6',
                 'waktu-sel-t1', 'waktu-sel-t2', 'waktu-sel-t3', 'waktu-sel-t4', 'waktu-sel-t5', 'waktu-sel-t6',
@@ -6325,8 +6330,11 @@
         updateLabel('kapasiti-live-t5', hasilTahun[5]);
         updateLabel('kapasiti-live-t6', hasilTahun[6]);
 
-        if (typeof window.kemaskiniInfoZonRehatPintar === 'function') {
+         if (typeof window.kemaskiniInfoZonRehatPintar === 'function') {
             window.kemaskiniInfoZonRehatPintar();
+        }
+        if (typeof window.kemaskiniInfoPerhimpunanPintar === 'function') {
+            window.kemaskiniInfoPerhimpunanPintar();
         }
 
         return { 
@@ -6334,6 +6342,7 @@
             t1: hasilTahun[1].sub, t2: hasilTahun[2].sub, t3: hasilTahun[3].sub, t4: hasilTahun[4].sub, t5: hasilTahun[5].sub, t6: hasilTahun[6].sub,
             info: hasilTahun
         };
+
     }
 
     // Pendinding Fasa 1 (Halang simpanan jika tidak seimbang)
@@ -7730,6 +7739,27 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         return cbHari ? cbHari.checked : false;
     }
 
+     // KOD BAHARU: Penyelaras Automatik Waktu Perhimpunan (Mula Ikut Waktu Mula Sekolah + 30 Minit / 1 Masa)
+    window.kemaskiniInfoPerhimpunanPintar = function() {
+        const mulaEl = document.getElementById('waktu-mula-sekolah');
+        const tamatHiddenEl = document.getElementById('waktu-perhimpunan-tamat');
+        const labelMasaEl = document.getElementById('label-masa-perhimpunan-auto');
+        const hariPerhEl = document.getElementById('tetapan-perhimpunan');
+
+        const mulaStr = (mulaEl && mulaEl.value) ? mulaEl.value : '07:30';
+        const parts = mulaStr.split(':').map(Number);
+        const mulaMinit = (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) ? (parts[0] * 60 + parts[1]) : 450;
+        const tamatMinit = ((mulaMinit + 30) % 1440 + 1440) % 1440;
+        const tamatStr = `${String(Math.floor(tamatMinit / 60)).padStart(2, '0')}:${String(tamatMinit % 60).padStart(2, '0')}`;
+
+        if (tamatHiddenEl) tamatHiddenEl.value = tamatStr;
+        if (labelMasaEl) {
+            const hariRaw = (hariPerhEl && hariPerhEl.value) ? hariPerhEl.value : 'RABU';
+            const hariCantik = hariRaw.charAt(0).toUpperCase() + hariRaw.slice(1).toLowerCase();
+            labelMasaEl.textContent = `${mulaStr} – ${tamatStr} (${hariCantik})`;
+        }
+    };
+
     // Fungsi Mengunci Hari Perhimpunan Daripada Dipilih Untuk PKA Tahap 2 & 3
     window.kawalHariPerhimpunanPKA = function(abaikanAnjak = false) {
         const hariPerh = (document.getElementById('tetapan-perhimpunan') ? document.getElementById('tetapan-perhimpunan').value : 'RABU').toLowerCase();
@@ -7752,8 +7782,12 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                 }
             }
         });
+        if (typeof window.kemaskiniInfoPerhimpunanPintar === 'function') {
+            window.kemaskiniInfoPerhimpunanPintar();
+        }
         if (!abaikanAnjak) selaraskanMatriksDanSubjekPKA(false);
     };
+
 
       // Fungsi Auto-Masukkan / Auto-Buang Pembentukan Karakter (PKA), Penyelarasan Rehat 15m/30m & Auto-Anjak Matriks
     function selaraskanMatriksDanSubjekPKA(abaikanAnjak = false, infoTrigger = '') {
