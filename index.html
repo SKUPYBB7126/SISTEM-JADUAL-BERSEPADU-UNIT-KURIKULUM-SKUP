@@ -1472,11 +1472,15 @@
                 }
               }
 
-              const isLewat = (minitHantar !== null && minitHantar > hadMinit);
+             const isLewat = (minitHantar !== null && minitHantar > hadMinit) || String(teksMasa).toUpperCase().includes('LEWAT');
+              const teksMasaBersih = String(teksMasa).replace(/\(LEWAT\)/gi, '').replace(/HADIR LEWAT/gi, '').trim();
               const kelasWarnaMasa = isLewat
-                ? 'bg-red-100 text-red-700 border-red-300'
+                ? 'bg-red-100 text-red-700 border-red-400'
                 : 'bg-green-100 text-green-800 border-green-300';
               const kelasIkonMasa = isLewat ? 'text-red-600' : 'text-green-700';
+              const badgeHadirLewat = isLewat
+                ? `<span class="ml-1 px-2 py-0.5 bg-red-600 text-white text-[10px] font-extrabold rounded-md uppercase tracking-wider shadow-sm">HADIR LEWAT</span>`
+                : '';
 
               const rekodTempatan = getLocalStaffAttendanceCache(document.getElementById('check-date').value, item.nama_staf);
               const teksMasaBalik = item.masa_balik || (rekodTempatan ? rekodTempatan.masa_balik : '') || '';
@@ -1488,11 +1492,12 @@
 
               paparanMasa = `
                 <div class="flex flex-wrap gap-1.5">
-                  <div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 ${kelasWarnaMasa} text-xs font-bold rounded-lg border">
+                  <div class="mt-2 inline-flex items-center flex-wrap gap-1.5 px-2.5 py-1 ${kelasWarnaMasa} text-xs font-bold rounded-lg border">
                     <svg class="w-3.5 h-3.5 ${kelasIkonMasa}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span>Masa Hadir: <strong class="${isLewat ? 'text-red-600 font-extrabold' : ''}">${teksMasa}</strong></span>
+                    <span>Masa Hadir: <strong class="${isLewat ? 'text-red-600 font-extrabold' : ''}">${teksMasaBersih}</strong></span>
+                    ${badgeHadirLewat}
                   </div>
                   ${badgeMasaBalik}
                 </div>
@@ -2463,17 +2468,32 @@
       startGpsMonitoring();
     }
 
-    // Fungsi Kemas Kini Jam Masa Nyata, Kiraan Detik Penstabilan GPS 10 Saat & Kawalan Kehadiran
+    // Fungsi Kemas Kini Jam Masa Nyata (Bertukar Merah Jika Lewat), Kiraan Detik Penstabilan GPS 10 Saat & Kawalan Kehadiran
     function updateRealtimeClock() {
       const clockEl = document.getElementById('realtime-clock');
       if (clockEl) {
         const now = new Date();
-        clockEl.textContent = now.toLocaleTimeString('ms-MY', {
+        const teksJamSemasa = now.toLocaleTimeString('ms-MY', {
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit',
           hour12: true
         }).toUpperCase();
+
+        const staffNameEl = document.getElementById('staff-name');
+        const selectedStaff = staffNameEl ? staffNameEl.value : '';
+        const jawatanSemasa = (staffData[selectedStaff] || '').toLowerCase();
+        const isAKP = jawatanSemasa.includes('ahli kumpulan pelaksana') || jawatanSemasa.includes('akp');
+        const hadMinit = isAKP ? (8 * 60 + 0) : (7 * 60 + 30);
+        const minitSekarang = now.getHours() * 60 + now.getMinutes();
+        const lewatSekarang = minitSekarang > hadMinit;
+
+        clockEl.textContent = teksJamSemasa;
+        if (lewatSekarang) {
+          clockEl.className = 'text-lg font-extrabold text-red-600 tracking-wider font-mono';
+        } else {
+          clockEl.className = 'text-lg font-bold text-teal-800 tracking-wider font-mono';
+        }
       }
 
       // Kiraan detik 10 saat penstabilan satelit GPS
@@ -2687,22 +2707,12 @@
 
       // Semak kategori jawatan: AKP (4:30 pagi - 8:00 pagi) vs Pentadbir & Guru Akademik Biasa (6:00 pagi - 7:30 pagi)
       const isAKP = jawatanLower.includes('ahli kumpulan pelaksana') || jawatanLower.includes('akp');
-      const startMinutes = isAKP ? (4 * 60 + 30) : (6 * 60 + 0);
       const endMinutes = isAKP ? (8 * 60 + 0) : (7 * 60 + 30);
       const labelWaktuMula = isAKP ? '4:30 pagi' : '6:00 pagi';
       const labelWaktuAkhir = isAKP ? '8:00 pagi' : '7:30 pagi';
       const labelWaktu = `${labelWaktuMula} hingga ${labelWaktuAkhir}`;
 
-      // Kunci hanya jika cuba isi terlalu awal sebelum waktu bermula (sebelum 4:30 pagi / 6:00 pagi)
-      if (currentMinutes < startMinutes) {
-        submitBtn.disabled = true;
-        submitText.textContent = `Belum Waktu Kehadiran (Dibuka Jam ${labelWaktuMula})`;
-        infoBox.className = 'mt-2 px-4 py-2.5 rounded-xl text-xs font-semibold border bg-red-50 text-red-700 border-red-200';
-        infoBox.textContent = `⛔ Pengisian HADIR bagi ${jawatan} hanya dibuka bermula jam ${labelWaktu}.`;
-        infoBox.classList.remove('hidden');
-        return false;
-      }
-
+      // Tiada kunci had masa: Guru, Pentadbir & AKP boleh mengisi kehadiran walaupun telah melepasi masa ditetapkan
       const isLateSubmission = currentMinutes > endMinutes;
 
       // Semak syarat keselamatan: Anti-VPN, Anti-Fake GPS, Penstabilan 10s, Ralat <= 10m & Zon Lokasi GPS
@@ -2725,8 +2735,8 @@
       }
 
       if (isLateSubmission) {
-        infoBox.className = 'mt-2 px-4 py-2.5 rounded-xl text-xs font-semibold border bg-red-50 text-red-700 border-red-300';
-        infoBox.textContent = `⚠️ LEWAT HADIR: Waktu ditetapkan bagi ${jawatan} ialah ${labelWaktu}. Anda masih boleh menghantar laporan tetapi nombor masa akan berwarna MERAH pada Dashboard & Cetakan.`;
+        infoBox.className = 'mt-2 px-4 py-2.5 rounded-xl text-xs font-bold border bg-red-50 text-red-700 border-red-300';
+        infoBox.textContent = `⚠️ HADIR LEWAT: Waktu ditetapkan bagi ${jawatan} ialah ${labelWaktu}. Pengisian kehadiran masih dibuka tetapi Masa Semasa (Real-Time) bertukar MERAH dan ditandakan HADIR LEWAT pada Semak Pengisian.`;
         infoBox.classList.remove('hidden');
       } else {
         infoBox.className = 'mt-2 px-4 py-2.5 rounded-xl text-xs font-semibold border bg-green-50 text-green-700 border-green-200';
@@ -2756,7 +2766,7 @@
       submitBtn.disabled = false;
       const labelSekaligus = nilaiMasaBalik ? ` + Masa Balik (${formatTimeInputToMalay(nilaiMasaBalik)})` : '';
       submitText.textContent = isLateSubmission
-        ? `Hantar Laporan — Lewat Hadir${labelSekaligus}`
+        ? `Hantar Laporan — Hadir Lewat (${currentDeviceGps.zoneName})${labelSekaligus}`
         : `Hantar Laporan (${currentDeviceGps.zoneName})${labelSekaligus}`;
       return true;
     }
