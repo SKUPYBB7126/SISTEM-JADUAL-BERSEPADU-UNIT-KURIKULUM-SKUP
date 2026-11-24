@@ -1493,12 +1493,10 @@
                             'RABU': new Array(15).fill(null), 'KHAMIS': new Array(15).fill(null), 'JUMAAT': new Array(15).fill(null)
                         };
                     }
-                    let objSlot = { subjek: subj, kodGuru: kodG, warna: warna };
+                   let objSlot = { subjek: subj, kodGuru: kodG, warna: warna };
                     if (slotIdx === 14 || subj === 'PKA') {
                         const isT1Kelas = kls.includes('1 ') || kls.includes('2 ');
-                        const cbRehatHari = document.getElementById('rehat-' + hari.toLowerCase());
-                        const adaRehatHariIni = cbRehatHari ? cbRehatHari.checked : (hari !== 'JUMAAT');
-                        objSlot.posisi = isT1Kelas ? (adaRehatHariIni ? 'SEBELUM_REHAT' : 'AKHIR_PDP') : 'AWAL_PAGI';
+                        objSlot.posisi = isT1Kelas ? 'SEBELUM_REHAT' : 'AWAL_PAGI';
                     }
                     f2_jadualSediaAda[kls][hari][slotIdx] = objSlot;
                 });
@@ -2671,8 +2669,10 @@
           let lim = getLimitKelas(h);
           let slots = (f2_jadualSediaAda[kelas] && f2_jadualSediaAda[kelas][h]) ? f2_jadualSediaAda[kelas][h] : [];
           let extra = (slots[lim] && slots[lim].subjek === 'TSMK') ? 2 : 0;
-          let extraPKATanpaRehat = (!hariAdaRehat[h] && isTahap1 && isPKAKelasIni) ? 1 : 0;
-          if (lim + extra + extraPKATanpaRehat > maxSlot) maxSlot = lim + extra + extraPKATanpaRehat;
+          let perluSlot = (!hariAdaRehat[h] && isTahap1 && isPKAKelasIni)
+            ? (Math.max(rehatIdx, lim) + extra - 1)
+            : (lim + extra);
+          if (perluSlot > maxSlot) maxSlot = perluSlot;
         });
         if (maxSlot < rehatIdx + 1) maxSlot = rehatIdx + 1;
 
@@ -2753,47 +2753,35 @@
               rowsHtml += `<td class="border border-gray-300 p-1.5 bg-amber-50 font-black text-amber-600 tracking-widest text-[10px]">REHAT</td>`;
               for (let i = rehatIdx; i < maxSlot; i++) rowsHtml += renderSel(i);
             } else {
-              // Hari Tiada Rehat (Jumaat Balik Awal):
-              // 10:00 - 10:30 ialah Slot ke-6 PdP (merentangi 2 lajur 10:00-10:15 & 10:15-10:30)
-              if (rehatIdx < lim && slots[rehatIdx]) {
-                rowsHtml += renderSelObj(slots[rehatIdx], `${pkaMula} - ${rehatTamat}`, 2);
-              } else {
-                rowsHtml += `<td colspan="2" class="border border-gray-300 p-1.5 bg-gray-50 font-bold text-gray-400 text-[9px]">TIADA REHAT</td>`;
-              }
+              // Hari Tiada Rehat (Jumaat): PKA kekal tepat di lajur 10:00 - 10:15 sama seperti Isnin - Khamis
+              rowsHtml += `<td class="border border-gray-300 p-1.5 font-bold" style="background-color: ${warnaPKA};">
+                <div class="font-black text-gray-900 text-xs leading-tight">PKA</div>
+                <div class="text-[9px] font-extrabold text-gray-700 mt-0.5">${kodGuruPKA}</div>
+              </td>`;
 
-              // Bina urutan petak selepas 10:30: Sebarang baki PdP -> PKA (15m Akhir PdP) -> Tasmik (Jika ada, selepas PKA) -> TAMAT
-              let senaraiSelepas1030 = [];
-              let masaSemasaJumaat = rehatTamat;
-              for (let idxPdP = rehatIdx + 1; idxPdP < lim; idxPdP++) {
+              // Selepas PKA (10:15 ke atas): Sebarang baki PdP (jika ada) -> Tasmik 2 masa (jika ada) -> TAMAT
+              let senaraiSelepasPKA = [];
+              let masaSemasaJumaat = pkaTamat;
+              for (let idxPdP = rehatIdx; idxPdP < lim; idxPdP++) {
                 let mTamatPdP = tambahMinitMasa(masaSemasaJumaat, 30);
-                senaraiSelepas1030.push(renderSelObj(slots[idxPdP], `${masaSemasaJumaat} - ${mTamatPdP}`));
+                senaraiSelepasPKA.push(renderSelObj(slots[idxPdP], `${masaSemasaJumaat} - ${mTamatPdP}`));
                 masaSemasaJumaat = mTamatPdP;
               }
 
-               // Letakkan PKA (15m) di akhir sekali sesi PdP (sebelum Tasmik)
-              let masaTamatPKAJumaat = tambahMinitMasa(masaSemasaJumaat, 15);
-              senaraiSelepas1030.push(`<td class="border border-gray-300 p-1.5 font-bold" style="background-color: ${warnaPKA};">
-                <div class="font-black text-gray-900 text-xs leading-tight">PKA</div>
-                <div class="text-[9px] font-extrabold text-gray-700 mt-0.5">${kodGuruPKA}</div>
-                <div class="text-[8px] font-bold text-gray-800/80">${masaSemasaJumaat} - ${masaTamatPKAJumaat}</div>
-              </td>`);
-              masaSemasaJumaat = masaTamatPKAJumaat;
-
-              // Jika ada Tasmik pada hari Jumaat, letakkan Tasmik SELEPAS PKA (10:45 - 11:15 & 11:15 - 11:45)
-              if (slots[lim] && slots[lim].subjek === 'TSMK') {
+              if (lim >= rehatIdx && slots[lim] && slots[lim].subjek === 'TSMK') {
                 let tsmk1Tamat = tambahMinitMasa(masaSemasaJumaat, 30);
-                senaraiSelepas1030.push(renderSelObj(slots[lim], `${masaSemasaJumaat} - ${tsmk1Tamat}`));
+                senaraiSelepasPKA.push(renderSelObj(slots[lim], `${masaSemasaJumaat} - ${tsmk1Tamat}`));
                 masaSemasaJumaat = tsmk1Tamat;
               }
-              if (slots[lim + 1] && slots[lim + 1].subjek === 'TSMK') {
+              if (lim >= rehatIdx && slots[lim + 1] && slots[lim + 1].subjek === 'TSMK') {
                 let tsmk2Tamat = tambahMinitMasa(masaSemasaJumaat, 30);
-                senaraiSelepas1030.push(renderSelObj(slots[lim + 1], `${masaSemasaJumaat} - ${tsmk2Tamat}`));
+                senaraiSelepasPKA.push(renderSelObj(slots[lim + 1], `${masaSemasaJumaat} - ${tsmk2Tamat}`));
                 masaSemasaJumaat = tsmk2Tamat;
               }
 
-              const bilKolumSelepas1030 = maxSlot - rehatIdx;
-              for (let k = 0; k < bilKolumSelepas1030; k++) {
-                if (k < senaraiSelepas1030.length) rowsHtml += senaraiSelepas1030[k];
+              const bilKolumSelepasPKA = 1 + (maxSlot - rehatIdx);
+              for (let k = 0; k < bilKolumSelepasPKA; k++) {
+                if (k < senaraiSelepasPKA.length) rowsHtml += senaraiSelepasPKA[k];
                 else rowsHtml += `<td class="border border-gray-300 p-1.5 bg-gray-100 text-gray-400 font-bold text-[10px]">TAMAT</td>`;
               }
             }
@@ -2888,12 +2876,12 @@
               </td>`;
               for (let i = 0; i < rehatIdx; i++) rowsHtml += renderSelBiasa(i);
 
-              if (hariAdaRehat[hari]) {
+             if (hariAdaRehat[hari]) {
                 rowsHtml += `<td class="border border-gray-300 p-1.5 bg-amber-50 font-black text-amber-600 tracking-widest text-[10px]">REHAT</td>`;
                 for (let i = rehatIdx; i < maxSlot; i++) rowsHtml += renderSelBiasa(i);
               } else {
-                // Hari Jumaat Tiada Rehat: Slot ke-6 (slots[rehatIdx]) di kolum 10:15-10:30, diikuti baki slot/Tasmik
-                for (let i = rehatIdx; i < maxSlot; i++) rowsHtml += renderSelBiasa(i);
+                // Hari Jumaat Tiada Rehat: Merangkumi lajur 10:15-10:30 serta semua lajur petang (1 + maxSlot - rehatIdx lajur)
+                for (let i = rehatIdx; i <= maxSlot; i++) rowsHtml += renderSelBiasa(i);
               }
             } else {
               // Hari Perhimpunan / Tiada PKA: Terus bermula dengan PERHIMPUNAN (07:30-08:00) pada kolum pertama tanpa simbol (-)
@@ -2905,7 +2893,7 @@
                 for (let i = rehatIdx; i < maxSlot; i++) rowsHtml += renderSelBiasa(i);
               } else {
                 rowsHtml += renderSelBiasa(rehatIdx, 2);
-                for (let i = rehatIdx + 1; i < maxSlot; i++) rowsHtml += renderSelBiasa(i);
+                for (let i = rehatIdx + 1; i <= maxSlot; i++) rowsHtml += renderSelBiasa(i);
               }
             }
             rowsHtml += `</tr>`;
@@ -3156,39 +3144,60 @@
               if (bakiLompong > 0) {
                 rowsHtml += `<td colspan="${bakiLompong}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
               }
-            } else {
-              // Hari Tiada Rehat (Jumaat Balik Awal): 10:00 - 10:30 ialah Slot ke-6 PdP (merentangi 2 kolum)
-              if (rehatIdx < maksSlotSekolahHariIni || sCikgu[rehatIdx]) {
-                rowsHtml += lukisSelPdPGuru(sCikgu[rehatIdx], 2);
-              } else {
-                rowsHtml += `<td colspan="2" class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px] border-b-[3px] border-b-gray-800">TAMAT</td>`;
+           } else {
+              // Hari Tiada Rehat (Jumaat): PKA Tahap 1 kekal tepat di lajur 10:00 - 10:15
+              let idxAkhirAktifGuru = -1;
+              for (let x = rehatIdx; x < 14; x++) {
+                if (sCikgu[x]) idxAkhirAktifGuru = x;
               }
 
-              let senaraiSelepas1030 = [];
-              for (let i = rehatIdx + 1; i < maksSlotSekolahHariIni; i++) {
-                senaraiSelepas1030.push({ jenis: 'PDP', data: sCikgu[i] });
-              }
               if (klsPKAT1.length > 0) {
-                senaraiSelepas1030.push({ jenis: 'PKA', data: klsPKAT1 });
-              }
-              if (sCikgu[maksSlotSekolahHariIni]) {
-                senaraiSelepas1030.push({ jenis: 'PDP', data: sCikgu[maksSlotSekolahHariIni] });
-              }
-              if (sCikgu[maksSlotSekolahHariIni + 1]) {
-                senaraiSelepas1030.push({ jenis: 'PDP', data: sCikgu[maksSlotSekolahHariIni + 1] });
-              }
-
-              let terisi = 0;
-              senaraiSelepas1030.forEach(item => {
-                if (terisi < bilKolumPetangGuru) {
-                  if (item.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(item.data);
-                  else rowsHtml += lukisSelPdPGuru(item.data);
-                  terisi++;
+                rowsHtml += lukisSelPKAGuru(klsPKAT1);
+                const jumKolumSelepasPKA = 1 + bilKolumPetangGuru;
+                let terisi = 0;
+                if (idxAkhirAktifGuru >= rehatIdx) {
+                  for (let i = rehatIdx; i <= idxAkhirAktifGuru && terisi < jumKolumSelepasPKA; i++) {
+                    rowsHtml += lukisSelPdPGuru(sCikgu[i]);
+                    terisi++;
+                  }
                 }
-              });
-              const bakiTamat = bilKolumPetangGuru - terisi;
-              if (bakiTamat > 0) {
-                rowsHtml += `<td colspan="${bakiTamat}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
+                const bakiTamat = jumKolumSelepasPKA - terisi;
+                if (bakiTamat > 0) {
+                  rowsHtml += `<td colspan="${bakiTamat}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
+                }
+              } else {
+                const noThnSlotRehat = sCikgu[rehatIdx] ? dapatkanNoTahunKelas(sCikgu[rehatIdx].kodGuru) : 0;
+                const slotRehatMula1015 = !!(sCikgu[rehatIdx] && adalahPKAAktifPadaHari(noThnSlotRehat, hari) && (noThnSlotRehat <= 2 || hari !== hariPerhimpunan));
+
+                if (slotRehatMula1015) {
+                  rowsHtml += lukisSelPdPGuru(null);
+                  const jumKolumSelepas = 1 + bilKolumPetangGuru;
+                  let terisi = 0;
+                  for (let i = rehatIdx; i <= idxAkhirAktifGuru && terisi < jumKolumSelepas; i++) {
+                    rowsHtml += lukisSelPdPGuru(sCikgu[i]);
+                    terisi++;
+                  }
+                  const bakiTamat = jumKolumSelepas - terisi;
+                  if (bakiTamat > 0) {
+                    rowsHtml += `<td colspan="${bakiTamat}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
+                  }
+                } else {
+                  const hadPaparanGuru = Math.max(maksSlotSekolahHariIni - 1, idxAkhirAktifGuru);
+                  if (rehatIdx <= hadPaparanGuru) {
+                    rowsHtml += lukisSelPdPGuru(sCikgu[rehatIdx], 2);
+                    let terisi = 0;
+                    for (let i = rehatIdx + 1; i <= hadPaparanGuru && terisi < bilKolumPetangGuru; i++) {
+                      rowsHtml += lukisSelPdPGuru(sCikgu[i]);
+                      terisi++;
+                    }
+                    const bakiTamat = bilKolumPetangGuru - terisi;
+                    if (bakiTamat > 0) {
+                      rowsHtml += `<td colspan="${bakiTamat}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
+                    }
+                  } else {
+                    rowsHtml += `<td colspan="${2 + bilKolumPetangGuru}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
+                  }
+                }
               }
             }
 
@@ -3301,6 +3310,9 @@
             rowsHtml += `<tr class="hover:bg-rose-50/50 transition-colors">`;
             rowsHtml += `<td colspan="2" class="border border-gray-300 p-2 font-black bg-rose-100 text-rose-900 tracking-widest uppercase align-middle border-b-[3px] border-b-gray-800">${hari}</td>`;
 
+            let itemKolum6TanpaRehat = null;
+            let adaSlotT23HariIni = false;
+
             if (hari === hariPerhimpunan) {
               // Hari Perhimpunan: Semua kelas bermula serentak 07:30 - 10:00 tanpa anjakan PKA Tahap 2/3
               for (let i = 0; i < rehatIdx; i++) {
@@ -3319,16 +3331,15 @@
                 } else {
                   rowsHtml += `<td colspan="2" class="border border-gray-300 p-2 bg-amber-50 font-black text-amber-600 tracking-widest align-middle border-b-[3px] border-b-gray-800">REHAT</td>`;
                 }
-              } else {
-                if (rehatIdx < maksSlotSekolahHariIni || sCikgu[rehatIdx]) rowsHtml += lukisSelPdPGuru(sCikgu[rehatIdx], 2);
-                else rowsHtml += `<td colspan="2" class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px] border-b-[3px] border-b-gray-800">TAMAT</td>`;
+              } else if (klsPKAT1.length > 0) {
+                itemKolum6TanpaRehat = { jenis: 'PKA', data: klsPKAT1 };
               }
             } else {
               // Petakan setiap slot pagi guru ke lajur masa sebenar (Lajur 1..6):
               // - Kelas Tahap 2/3 yang ada PKA pada hari ini (07:45-10:15): Slot x berada di kolum (x + 1), manakala PKA (07:30-07:45) di kolum 0
               // - Kelas tanpa PKA Tahap 2/3 (07:30-10:00): Slot x berada di kolum x, manakala PKA Tahap 1 (10:00-10:15) di kolum rehatIdx (kolum 5)
               let kolumPagi = new Array(rehatIdx + 1).fill(null);
-              let adaSlotT23HariIni = (klsPKAT23.length > 0);
+              adaSlotT23HariIni = (klsPKAT23.length > 0);
 
               if (klsPKAT23.length > 0) {
                 kolumPagi[0] = { jenis: 'PKA', data: klsPKAT23 };
@@ -3344,7 +3355,7 @@
                   kolumPagi[idxKolum] = { jenis: 'PDP', data: sCikgu[x] };
                 }
               }
-              if (adaRehatH && klsPKAT1.length > 0) {
+              if (klsPKAT1.length > 0) {
                 kolumPagi[rehatIdx] = { jenis: 'PKA', data: klsPKAT1 };
               }
 
@@ -3368,20 +3379,11 @@
                   rowsHtml += `<td colspan="2" class="border border-gray-300 p-2 bg-amber-50 font-black text-amber-600 tracking-widest align-middle border-b-[3px] border-b-gray-800">REHAT</td>`;
                 }
               } else {
-                const itemKolum6 = kolumPagi[rehatIdx];
-                if (itemKolum6) {
-                  if (itemKolum6.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(itemKolum6.data);
-                  else rowsHtml += lukisSelPdPGuru(itemKolum6.data);
-                  if (rehatIdx < maksSlotSekolahHariIni || sCikgu[rehatIdx]) rowsHtml += lukisSelPdPGuru(sCikgu[rehatIdx]);
-                  else rowsHtml += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px] border-b-[3px] border-b-gray-800">TAMAT</td>`;
-                } else {
-                  if (rehatIdx < maksSlotSekolahHariIni || sCikgu[rehatIdx]) rowsHtml += lukisSelPdPGuru(sCikgu[rehatIdx], 2);
-                  else rowsHtml += `<td colspan="2" class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px] border-b-[3px] border-b-gray-800">TAMAT</td>`;
-                }
+                itemKolum6TanpaRehat = kolumPagi[rehatIdx];
               }
             }
 
-            // Zon Selepas 10:30
+            // Zon Selepas 10:30 (Hari Ada Rehat) & Zon 10:00 Ke Atas (Hari Tiada Rehat)
             if (adaRehatH) {
               let bakiLompong = bilKolumPetangGuru;
               for (let i = rehatIdx; i < maxTotalSlotGuru; i++) {
@@ -3394,31 +3396,61 @@
                 rowsHtml += `<td colspan="${bakiLompong}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
               }
             } else {
-              let senaraiSelepas1030 = [];
-              for (let i = rehatIdx + 1; i < maksSlotSekolahHariIni; i++) {
-                senaraiSelepas1030.push({ jenis: 'PDP', data: sCikgu[i] });
-              }
-              if (klsPKAT1.length > 0) {
-                senaraiSelepas1030.push({ jenis: 'PKA', data: klsPKAT1 });
-              }
-              if (sCikgu[maksSlotSekolahHariIni]) {
-                senaraiSelepas1030.push({ jenis: 'PDP', data: sCikgu[maksSlotSekolahHariIni] });
-              }
-              if (sCikgu[maksSlotSekolahHariIni + 1]) {
-                senaraiSelepas1030.push({ jenis: 'PDP', data: sCikgu[maksSlotSekolahHariIni + 1] });
+              let idxAkhirAktifGuru = -1;
+              for (let x = rehatIdx; x < 14; x++) {
+                if (sCikgu[x]) idxAkhirAktifGuru = x;
               }
 
-              let terisi = 0;
-              senaraiSelepas1030.forEach(item => {
-                if (terisi < bilKolumPetangGuru) {
-                  if (item.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(item.data);
-                  else rowsHtml += lukisSelPdPGuru(item.data);
-                  terisi++;
+              if (itemKolum6TanpaRehat) {
+                if (itemKolum6TanpaRehat.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(itemKolum6TanpaRehat.data);
+                else rowsHtml += lukisSelPdPGuru(itemKolum6TanpaRehat.data);
+
+                const jumKolumSelepas = 1 + bilKolumPetangGuru;
+                let terisi = 0;
+                if (idxAkhirAktifGuru >= rehatIdx) {
+                  for (let i = rehatIdx; i <= idxAkhirAktifGuru && terisi < jumKolumSelepas; i++) {
+                    rowsHtml += lukisSelPdPGuru(sCikgu[i]);
+                    terisi++;
+                  }
                 }
-              });
-              const bakiTamat = bilKolumPetangGuru - terisi;
-              if (bakiTamat > 0) {
-                rowsHtml += `<td colspan="${bakiTamat}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
+                const bakiTamat = jumKolumSelepas - terisi;
+                if (bakiTamat > 0) {
+                  rowsHtml += `<td colspan="${bakiTamat}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
+                }
+              } else {
+                const noThnSlotRehat = sCikgu[rehatIdx] ? dapatkanNoTahunKelas(sCikgu[rehatIdx].kodGuru) : 0;
+                const slotRehatMula1015 = !!(sCikgu[rehatIdx] && adalahPKAAktifPadaHari(noThnSlotRehat, hari) && (noThnSlotRehat <= 2 || hari !== hariPerhimpunan));
+
+                if (slotRehatMula1015 || (adaSlotT23HariIni && maksSlotSekolahHariIni >= rehatIdx)) {
+                  rowsHtml += lukisSelPdPGuru(null);
+                  const jumKolumSelepas = 1 + bilKolumPetangGuru;
+                  const hadT23 = Math.max(maksSlotSekolahHariIni - 1, idxAkhirAktifGuru);
+                  let terisi = 0;
+                  for (let i = rehatIdx; i <= hadT23 && terisi < jumKolumSelepas; i++) {
+                    rowsHtml += lukisSelPdPGuru(sCikgu[i]);
+                    terisi++;
+                  }
+                  const bakiTamat = jumKolumSelepas - terisi;
+                  if (bakiTamat > 0) {
+                    rowsHtml += `<td colspan="${bakiTamat}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
+                  }
+                } else {
+                  const hadPaparanGuru = Math.max(maksSlotSekolahHariIni - 1, idxAkhirAktifGuru);
+                  if (rehatIdx <= hadPaparanGuru) {
+                    rowsHtml += lukisSelPdPGuru(sCikgu[rehatIdx], 2);
+                    let terisi = 0;
+                    for (let i = rehatIdx + 1; i <= hadPaparanGuru && terisi < bilKolumPetangGuru; i++) {
+                      rowsHtml += lukisSelPdPGuru(sCikgu[i]);
+                      terisi++;
+                    }
+                    const bakiTamat = bilKolumPetangGuru - terisi;
+                    if (bakiTamat > 0) {
+                      rowsHtml += `<td colspan="${bakiTamat}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
+                    }
+                  } else {
+                    rowsHtml += `<td colspan="${2 + bilKolumPetangGuru}" class="border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest border-b-[3px] border-b-gray-800">TAMAT</td>`;
+                  }
+                }
               }
             }
 
@@ -3773,41 +3805,77 @@
                   const isEnd = (rIdx === bilBaris - 1);
                   const exBdr = isEnd ? ' border-b-[3px] border-b-gray-800' : '';
                   const idxSlot1000 = (rIdx === 0) ? (2 + rehatIdx) : ((hariSemasa === hariPerhimpunan) ? rehatIdx : (1 + rehatIdx));
-                  const tdSlot1000 = meta.selAsal[idxSlot1000];
-                  if (tdSlot1000) tdSlot1000.setAttribute('colspan', '2');
 
-                  for (let k = idxSlot1000 + 1; k < meta.selAsal.length; k++) {
+                  for (let k = idxSlot1000; k < meta.selAsal.length; k++) {
                     meta.selAsal[k].remove();
                   }
 
-                  const senaraiPetang = [];
-                  for (let idxP = rehatIdx + 1; idxP < meta.limKelas; idxP++) {
-                    senaraiPetang.push(meta.slotsHariIni[idxP]);
-                  }
-                  if (meta.isPKAT1) {
-                    senaraiPetang.push({ subjek: 'PKA', kodGuru: meta.kodGuruPKA });
-                  }
-                  if (meta.slotsHariIni[meta.limKelas] && meta.slotsHariIni[meta.limKelas].subjek === 'TSMK') {
-                    senaraiPetang.push(meta.slotsHariIni[meta.limKelas]);
-                  }
-                  if (meta.slotsHariIni[meta.limKelas + 1] && meta.slotsHariIni[meta.limKelas + 1].subjek === 'TSMK') {
-                    senaraiPetang.push(meta.slotsHariIni[meta.limKelas + 1]);
-                  }
-
-                  let terisi = 0;
-                  senaraiPetang.forEach(itemObj => {
-                    if (terisi < bilKolumPetangInduk) {
-                      meta.tr.appendChild(lukisSelSubjekInduk(itemObj, isEnd));
-                      terisi++;
-                    }
-                  });
-                  const bakiTamat = bilKolumPetangInduk - terisi;
-                  if (bakiTamat > 0) {
+                  const tambahTamatInduk = (bilLajur) => {
+                    if (bilLajur <= 0) return;
                     const tdTamat = document.createElement('td');
-                    if (bakiTamat > 1) tdTamat.setAttribute('colspan', String(bakiTamat));
+                    if (bilLajur > 1) tdTamat.setAttribute('colspan', String(bilLajur));
                     tdTamat.className = `border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest${exBdr}`;
                     tdTamat.innerText = 'TAMAT';
                     meta.tr.appendChild(tdTamat);
+                  };
+
+                  if (meta.isPKAT1) {
+                    // Tahap 1 PKA pada Jumaat tanpa rehat: Lajur 10:00-10:15 ialah PKA, diikuti terus Tasmik (jika ada) atau TAMAT
+                    meta.tr.appendChild(lukisSelSubjekInduk({ subjek: 'PKA', kodGuru: meta.kodGuruPKA }, isEnd));
+
+                    const senaraiSelepasPKA = [];
+                    for (let idxP = rehatIdx; idxP < meta.limKelas; idxP++) {
+                      senaraiSelepasPKA.push(meta.slotsHariIni[idxP]);
+                    }
+                    if (meta.limKelas >= rehatIdx && meta.slotsHariIni[meta.limKelas] && meta.slotsHariIni[meta.limKelas].subjek === 'TSMK') {
+                      senaraiSelepasPKA.push(meta.slotsHariIni[meta.limKelas]);
+                    }
+                    if (meta.limKelas >= rehatIdx && meta.slotsHariIni[meta.limKelas + 1] && meta.slotsHariIni[meta.limKelas + 1].subjek === 'TSMK') {
+                      senaraiSelepasPKA.push(meta.slotsHariIni[meta.limKelas + 1]);
+                    }
+
+                    const jumKolumSelepasPKA = 1 + bilKolumPetangInduk;
+                    let terisi = 0;
+                    senaraiSelepasPKA.forEach(itemObj => {
+                      if (terisi < jumKolumSelepasPKA) {
+                        meta.tr.appendChild(lukisSelSubjekInduk(itemObj, isEnd));
+                        terisi++;
+                      }
+                    });
+                    tambahTamatInduk(jumKolumSelepasPKA - terisi);
+                  } else {
+                    // Kelas tanpa PKA Tahap 1: Lajur 10:00-10:30 merentangi 2 lajur, tanpa cetakan berganda Tasmik
+                    let obj1000 = null;
+                    if (rehatIdx < meta.limKelas) {
+                      obj1000 = meta.slotsHariIni[rehatIdx];
+                    } else if ((rehatIdx === meta.limKelas || rehatIdx === meta.limKelas + 1) && meta.slotsHariIni[rehatIdx] && meta.slotsHariIni[rehatIdx].subjek === 'TSMK') {
+                      obj1000 = meta.slotsHariIni[rehatIdx];
+                    }
+
+                    if (!obj1000) {
+                      tambahTamatInduk(2 + bilKolumPetangInduk);
+                    } else {
+                      meta.tr.appendChild(lukisSelSubjekInduk(obj1000, isEnd, 2));
+                      const senaraiPetang = [];
+                      for (let idxP = rehatIdx + 1; idxP < meta.limKelas; idxP++) {
+                        senaraiPetang.push(meta.slotsHariIni[idxP]);
+                      }
+                      if (meta.limKelas >= rehatIdx + 1 && meta.slotsHariIni[meta.limKelas] && meta.slotsHariIni[meta.limKelas].subjek === 'TSMK') {
+                        senaraiPetang.push(meta.slotsHariIni[meta.limKelas]);
+                      }
+                      if (meta.limKelas + 1 >= rehatIdx + 1 && meta.slotsHariIni[meta.limKelas + 1] && meta.slotsHariIni[meta.limKelas + 1].subjek === 'TSMK') {
+                        senaraiPetang.push(meta.slotsHariIni[meta.limKelas + 1]);
+                      }
+
+                      let terisi = 0;
+                      senaraiPetang.forEach(itemObj => {
+                        if (terisi < bilKolumPetangInduk) {
+                          meta.tr.appendChild(lukisSelSubjekInduk(itemObj, isEnd));
+                          terisi++;
+                        }
+                      });
+                      tambahTamatInduk(bilKolumPetangInduk - terisi);
+                    }
                   }
                 });
               }
@@ -3920,40 +3988,96 @@
                 if (bakiLompong > 0) {
                   tambahSelTeks('TAMAT', `border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest${exBdr}`, bakiLompong);
                 }
-              } else {
+             } else {
                 // HARI TIADA REHAT (Jumaat Balik Awal)
-                if (meta.isPKAT23) {
-                  // Bagi Tahap 2/3 yang ada PKA awal pagi (07:30-07:45), 5 slot PdP pertama berakhir pada 10:15; slot ke-6 (slots[rehatIdx]) berada di 10:15-10:30
-                  lukisSlotPdPBiasa(rehatIdx, 1);
-                } else {
-                  // Bagi kelas yang bermula PdP 07:30, slot ke-6 (slots[rehatIdx], 10:00-10:30) merentangi 2 kolum
-                  lukisSlotPdPBiasa(rehatIdx, 2);
-                }
-
-                const senaraiPetang = [];
-                for (let idxP = rehatIdx + 1; idxP < meta.limKelas; idxP++) {
-                  senaraiPetang.push(meta.slotsHariIni[idxP]);
-                }
                 if (meta.isPKAT1) {
-                  senaraiPetang.push({ subjek: 'PKA', kodGuru: meta.kodGuruPKA });
-                }
-                if (meta.slotsHariIni[meta.limKelas] && meta.slotsHariIni[meta.limKelas].subjek === 'TSMK') {
-                  senaraiPetang.push(meta.slotsHariIni[meta.limKelas]);
-                }
-                if (meta.slotsHariIni[meta.limKelas + 1] && meta.slotsHariIni[meta.limKelas + 1].subjek === 'TSMK') {
-                  senaraiPetang.push(meta.slotsHariIni[meta.limKelas + 1]);
-                }
+                  // Tahap 1 PKA: Lajur 10:00-10:15 ialah PKA, diikuti terus Tasmik (jika ada) atau TAMAT
+                  meta.tr.appendChild(lukisSelSubjekInduk({ subjek: 'PKA', kodGuru: meta.kodGuruPKA }, isEnd));
 
-                let terisi = 0;
-                senaraiPetang.forEach(itemObj => {
-                  if (terisi < bilKolumPetangInduk) {
-                    meta.tr.appendChild(lukisSelSubjekInduk(itemObj, isEnd));
-                    terisi++;
+                  const senaraiSelepasPKA = [];
+                  for (let idxP = rehatIdx; idxP < meta.limKelas; idxP++) {
+                    senaraiSelepasPKA.push(meta.slotsHariIni[idxP]);
                   }
-                });
-                const bakiTamat = bilKolumPetangInduk - terisi;
-                if (bakiTamat > 0) {
-                  tambahSelTeks('TAMAT', `border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest${exBdr}`, bakiTamat);
+                  if (meta.limKelas >= rehatIdx && meta.slotsHariIni[meta.limKelas] && meta.slotsHariIni[meta.limKelas].subjek === 'TSMK') {
+                    senaraiSelepasPKA.push(meta.slotsHariIni[meta.limKelas]);
+                  }
+                  if (meta.limKelas >= rehatIdx && meta.slotsHariIni[meta.limKelas + 1] && meta.slotsHariIni[meta.limKelas + 1].subjek === 'TSMK') {
+                    senaraiSelepasPKA.push(meta.slotsHariIni[meta.limKelas + 1]);
+                  }
+
+                  const jumKolumSelepasPKA = 1 + bilKolumPetangInduk;
+                  let terisi = 0;
+                  senaraiSelepasPKA.forEach(itemObj => {
+                    if (terisi < jumKolumSelepasPKA) {
+                      meta.tr.appendChild(lukisSelSubjekInduk(itemObj, isEnd));
+                      terisi++;
+                    }
+                  });
+                  const bakiTamat = jumKolumSelepasPKA - terisi;
+                  if (bakiTamat > 0) {
+                    tambahSelTeks('TAMAT', `border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest${exBdr}`, bakiTamat);
+                  }
+                } else if (meta.isPKAT23) {
+                  // Tahap 2/3 PKA: 5 slot PdP pagi berakhir pada 10:15; baki 1 + bilKolumPetangInduk lajur diisi tanpa ulangan Tasmik
+                  const senaraiSelepas1015 = [];
+                  for (let idxP = rehatIdx; idxP < meta.limKelas; idxP++) {
+                    senaraiSelepas1015.push(meta.slotsHariIni[idxP]);
+                  }
+                  if (meta.limKelas >= rehatIdx && meta.slotsHariIni[meta.limKelas] && meta.slotsHariIni[meta.limKelas].subjek === 'TSMK') {
+                    senaraiSelepas1015.push(meta.slotsHariIni[meta.limKelas]);
+                  }
+                  if (meta.limKelas >= rehatIdx && meta.slotsHariIni[meta.limKelas + 1] && meta.slotsHariIni[meta.limKelas + 1].subjek === 'TSMK') {
+                    senaraiSelepas1015.push(meta.slotsHariIni[meta.limKelas + 1]);
+                  }
+
+                  const jumKolumSelepas1015 = 1 + bilKolumPetangInduk;
+                  let terisi = 0;
+                  senaraiSelepas1015.forEach(itemObj => {
+                    if (terisi < jumKolumSelepas1015) {
+                      meta.tr.appendChild(lukisSelSubjekInduk(itemObj, isEnd));
+                      terisi++;
+                    }
+                  });
+                  const bakiTamat = jumKolumSelepas1015 - terisi;
+                  if (bakiTamat > 0) {
+                    tambahSelTeks('TAMAT', `border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest${exBdr}`, bakiTamat);
+                  }
+                } else {
+                  // Kelas tanpa PKA pada hari ini: Lajur 10:00-10:30 merentangi 2 lajur tanpa cetakan berganda Tasmik
+                  let obj1000 = null;
+                  if (rehatIdx < meta.limKelas) {
+                    obj1000 = meta.slotsHariIni[rehatIdx];
+                  } else if ((rehatIdx === meta.limKelas || rehatIdx === meta.limKelas + 1) && meta.slotsHariIni[rehatIdx] && meta.slotsHariIni[rehatIdx].subjek === 'TSMK') {
+                    obj1000 = meta.slotsHariIni[rehatIdx];
+                  }
+
+                  if (!obj1000) {
+                    tambahSelTeks('TAMAT', `border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest${exBdr}`, 2 + bilKolumPetangInduk);
+                  } else {
+                    meta.tr.appendChild(lukisSelSubjekInduk(obj1000, isEnd, 2));
+                    const senaraiPetang = [];
+                    for (let idxP = rehatIdx + 1; idxP < meta.limKelas; idxP++) {
+                      senaraiPetang.push(meta.slotsHariIni[idxP]);
+                    }
+                    if (meta.limKelas >= rehatIdx + 1 && meta.slotsHariIni[meta.limKelas] && meta.slotsHariIni[meta.limKelas].subjek === 'TSMK') {
+                      senaraiPetang.push(meta.slotsHariIni[meta.limKelas]);
+                    }
+                    if (meta.limKelas + 1 >= rehatIdx + 1 && meta.slotsHariIni[meta.limKelas + 1] && meta.slotsHariIni[meta.limKelas + 1].subjek === 'TSMK') {
+                      senaraiPetang.push(meta.slotsHariIni[meta.limKelas + 1]);
+                    }
+
+                    let terisi = 0;
+                    senaraiPetang.forEach(itemObj => {
+                      if (terisi < bilKolumPetangInduk) {
+                        meta.tr.appendChild(lukisSelSubjekInduk(itemObj, isEnd));
+                        terisi++;
+                      }
+                    });
+                    const bakiTamat = bilKolumPetangInduk - terisi;
+                    if (bakiTamat > 0) {
+                      tambahSelTeks('TAMAT', `border border-gray-300 p-2 bg-gray-200 align-middle font-bold text-gray-500 text-[10px] tracking-widest${exBdr}`, bakiTamat);
+                    }
+                  }
                 }
               }
             });
@@ -4866,6 +4990,20 @@
                 const adaKelasTanpaPKAT1TV = f2_senaraiKelasUnik.some(kls => !adalahKelasPKAT1TV(kls));
                 const mod3BarisTV = (adaPKATahap23HariIni && !isHariPerhimpunan);
 
+                let bilKolumSelepas1030TV = 0;
+                f2_senaraiKelasUnik.forEach(kls => {
+                    const lim = getLimit(kls, namaHariPilihan);
+                    const sKls = (f2_jadualSediaAda[kls] && f2_jadualSediaAda[kls][namaHariPilihan]) ? f2_jadualSediaAda[kls][namaHariPilihan] : [];
+                    const extraTsmk = (sKls[lim] && sKls[lim].subjek === 'TSMK') ? 2 : 0;
+                    let perluSelepas1030 = 0;
+                    if (adalahKelasPKAT1TV(kls) || adalahKelasPKAT23TV(kls)) {
+                        perluSelepas1030 = Math.max(0, Math.max(0, lim - rehatIndex) + extraTsmk - 1);
+                    } else {
+                        perluSelepas1030 = Math.max(0, lim + extraTsmk - (rehatIndex + 1));
+                    }
+                    if (perluSelepas1030 > bilKolumSelepas1030TV) bilKolumSelepas1030TV = perluSelepas1030;
+                });
+
                 ['tv-subthead-harian', 'tv-subthead-harian-2', 'tv-subthead-harian-3'].forEach(idSub => {
                     const elSub = document.getElementById(idSub);
                     if (elSub) elSub.remove();
@@ -4877,7 +5015,7 @@
                     // =========================================================================
                     // MOD ASAL TV LIVE: KEKAL SEPERTI SEKARANG JIKA TIADA PKA TAHAP 2 / TAHAP 3
                     // =========================================================================
-                    const perluSubHeaderRehatTV = isHariRehat && adaPKATahap1HariIni && adaKelasTanpaPKAT1TV;
+                    const perluSubHeaderRehatTV = adaPKATahap1HariIni && adaKelasTanpaPKAT1TV;
                     const attrRowspanTV = perluSubHeaderRehatTV ? ' rowspan="2"' : '';
 
                     let thHtmlMasa = `<th${attrRowspanTV} class="border-r-[2px] md:border-r-[3px] border-gray-800 px-1 py-1 text-white bg-gray-900 font-black text-xs md:text-sm lg:text-base tracking-wider text-center align-middle" style="width: 8%;">KELAS</th>`;
@@ -4912,31 +5050,37 @@
                             thHtmlMasa += `<th${attrRowspanTV} class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${currentMasa}<br>${nextMasa}</th>`;
                             currentMasa = nextMasa;
                         }
+                    } else if (adaPKATahap1HariIni) {
+                        for(let i = 0; i < rehatIndex; i++) {
+                            let nextMasa = addMinutes(currentMasa, 30);
+                            thHtmlMasa += `<th${attrRowspanTV} class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${currentMasa}<br>${nextMasa}</th>`;
+                            currentMasa = nextMasa;
+                        }
+                        mPKARehatTV = currentMasa;
+                        let tPKARehat = addMinutes(mPKARehatTV, 15);
+                        tRehatPenuhTV = addMinutes(tPKARehat, 15);
+                        thHtmlMasa += `<th class="border-r border-l-2 border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${mPKARehatTV} - ${tPKARehat}</th>`;
+                        thHtmlMasa += `<th class="border-r-[2px] md:border-r-[3px] border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${tPKARehat} - ${tRehatPenuhTV}</th>`;
+                        currentMasa = tRehatPenuhTV;
+
+                        for(let k = 0; k < bilKolumSelepas1030TV; k++) {
+                            let nextMasa = addMinutes(currentMasa, 30);
+                            thHtmlMasa += `<th${attrRowspanTV} class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${currentMasa}<br>${nextMasa}</th>`;
+                            currentMasa = nextMasa;
+                        }
                     } else {
-                        for(let i = 0; i < maxLimitPdPBiasaTV; i++) {
+                        for(let i = 0; i < maxSlotHariIni; i++) {
                             let nextMasa = addMinutes(currentMasa, 30);
                             thHtmlMasa += `<th class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${currentMasa}<br>${nextMasa}</th>`;
                             currentMasa = nextMasa;
-                        }
-                        let masaAkhirPdP = currentMasa;
-                        if (adaPKATahap1HariIni) {
-                            let tamatPKAAkhir = addMinutes(masaAkhirPdP, 15);
-                            thHtmlMasa += `<th class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm px-0.5 py-1 align-middle">${masaAkhirPdP}<br>${tamatPKAAkhir}</th>`;
-                            currentMasa = tamatPKAAkhir;
-                        }
-                        if (adaTasmikHariIniTV) {
-                            for (let tIdx = 0; tIdx < 2; tIdx++) {
-                                let nextMasa = addMinutes(currentMasa, 30);
-                                thHtmlMasa += `<th class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${currentMasa}<br>${nextMasa}</th>`;
-                                currentMasa = nextMasa;
-                            }
                         }
                     }
                     elTvThead.innerHTML = thHtmlMasa;
                     if (perluSubHeaderRehatTV) {
                         const trSubTV = document.createElement('tr');
                         trSubTV.id = 'tv-subthead-harian';
-                        trSubTV.innerHTML = `<th colspan="2" class="border-t border-r-[2px] border-l-2 md:border-r-[3px] border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm py-0.5 align-middle">${mPKARehatTV} - ${tRehatPenuhTV}</th>`;
+                        const warnaSubTV = isHariRehat ? 'bg-amber-50 text-amber-600' : 'bg-indigo-900 text-indigo-100';
+                        trSubTV.innerHTML = `<th colspan="2" class="border-t border-r-[2px] border-l-2 md:border-r-[3px] border-gray-800 ${warnaSubTV} font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm py-0.5 align-middle">${mPKARehatTV} - ${tRehatPenuhTV}</th>`;
                         elTvThead.insertAdjacentElement('afterend', trSubTV);
                     }
                 } else {
@@ -4966,24 +5110,12 @@
                             htmlPetangKongsiTV += `<th rowspan="${jumBarisTV}" class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-0.5 align-middle">${curP}<br>${nxtP}</th>`;
                             curP = nxtP;
                         }
-                    } else {
+                   } else {
                         let curP = tRehatPenuhTV;
-                        for (let i = rehatIndex + 1; i < maxLimitPdPBiasaTV; i++) {
+                        for (let k = 0; k < bilKolumSelepas1030TV; k++) {
                             let nxtP = addMinutes(curP, 30);
                             htmlPetangKongsiTV += `<th rowspan="${jumBarisTV}" class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-0.5 align-middle">${curP}<br>${nxtP}</th>`;
                             curP = nxtP;
-                        }
-                        if (adaPKATahap1HariIni) {
-                            let tamatPKAAkhir = addMinutes(curP, 15);
-                            htmlPetangKongsiTV += `<th rowspan="${jumBarisTV}" class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm px-0.5 py-0.5 align-middle">${curP}<br>${tamatPKAAkhir}</th>`;
-                            curP = tamatPKAAkhir;
-                        }
-                        if (adaTasmikHariIniTV) {
-                            for (let tIdx = 0; tIdx < 2; tIdx++) {
-                                let nxtP = addMinutes(curP, 30);
-                                htmlPetangKongsiTV += `<th rowspan="${jumBarisTV}" class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-0.5 align-middle">${curP}<br>${nxtP}</th>`;
-                                curP = nxtP;
-                            }
                         }
                     }
 
@@ -5000,7 +5132,8 @@
                                 html += `<th class="border-r border-b border-l-2 border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${mPKARehatTV} - ${tPKARehatTV}</th>`;
                                 html += `<th class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${tPKARehatTV} - ${tRehatPenuhTV}</th>`;
                             } else {
-                                html += `<th colspan="2" class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${mPKARehatTV} - ${tRehatPenuhTV}</th>`;
+                                html += `<th class="border-r border-b border-l-2 border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${mPKARehatTV} - ${tPKARehatTV}</th>`;
+                                html += `<th class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${tPKARehatTV} - ${tRehatPenuhTV}</th>`;
                             }
                         } else if (jenisB === 'T23_PKA') {
                             html += `<th class="border-r border-b border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${waktuMula}<br>${tamatPKAAwalTV}</th>`;
@@ -5159,34 +5292,87 @@
                             for (let i = rehatIndex; i < maxSlotHariIni; i++) {
                                 trHarian += lukisSelSlotTV(i);
                             }
-                        } else {
-                            for (let i = 0; i < maxLimitPdPBiasaTV; i++) {
+                       } else if (adaPKATahap1HariIni) {
+                            for (let i = 0; i < rehatIndex; i++) {
                                 trHarian += lukisSelSlotTV(i);
                             }
-                            let mAkhirPdPKelas = addMinutes(waktuMula, limitKelas * 30);
 
-                            if (adaPKATahap1HariIni) {
-                                if (isPKAT1Kelas) {
-                                    let tPKAKelas = addMinutes(mAkhirPdPKelas, 15);
-                                    trHarian += `<td class="border-r-2 border-l-2 border-purple-500 px-0.5 py-0.5 relative overflow-hidden shadow-sm text-center align-middle${exBorder}" style="background-color: ${warnaPKA};">
-                                                    <div class="relative z-10 flex flex-col items-center justify-center h-full w-full py-0.5 leading-none">
-                                                        <span class="font-black text-purple-950 text-xs md:text-base lg:text-2xl leading-none">PKA</span>
-                                                        <span class="font-extrabold text-purple-900 text-[8px] md:text-[10px] lg:text-xs uppercase mt-0.5">${kodGuruPKA}</span>
-                                                        <span class="font-bold text-purple-800 text-[7px] md:text-[8px] leading-none mt-0.5">${mAkhirPdPKelas}-${tPKAKelas}</span>
-                                                    </div>
-                                                </td>`;
-                                    mAkhirPdPKelas = tPKAKelas;
+                            if (isPKAT1Kelas) {
+                                // PKA Tahap 1 kekal tepat di lajur 10:00 - 10:15
+                                trHarian += `<td class="border-r border-l-2 border-gray-800 px-0.5 py-0.5 relative overflow-hidden shadow-sm text-center align-middle${exBorder}" style="background-color: ${warnaPKA};">
+                                                <div class="absolute inset-0 bg-white opacity-20"></div>
+                                                <div class="relative z-10 flex flex-col items-center justify-center h-full w-full py-0.5 leading-none">
+                                                    <span class="font-black text-black/85 text-xs md:text-base lg:text-2xl leading-none">PKA</span>
+                                                    <span class="font-extrabold text-black/65 text-[8px] md:text-[10px] lg:text-xs uppercase mt-0.5">${kodGuruPKA}</span>
+                                                </div>
+                                            </td>`;
+
+                                let senaraiSelepasPKATV = [];
+                                let mSemasaTV = addMinutes(waktuMula, rehatIndex * 30 + 15);
+                                for (let idxP = rehatIndex; idxP < limitKelas; idxP++) {
+                                    let mNxtTV = addMinutes(mSemasaTV, 30);
+                                    senaraiSelepasPKATV.push(lukisSelSlotTV(idxP, `${mSemasaTV}-${mNxtTV}`));
+                                    mSemasaTV = mNxtTV;
+                                }
+                                if (limitKelas >= rehatIndex && sCikguHariIni[limitKelas] && sCikguHariIni[limitKelas].subjek === 'TSMK') {
+                                    let mT1 = addMinutes(mSemasaTV, 30);
+                                    senaraiSelepasPKATV.push(lukisSelSlotTV(limitKelas, `${mSemasaTV}-${mT1}`));
+                                    mSemasaTV = mT1;
+                                }
+                                if (limitKelas >= rehatIndex && sCikguHariIni[limitKelas + 1] && sCikguHariIni[limitKelas + 1].subjek === 'TSMK') {
+                                    let mT2 = addMinutes(mSemasaTV, 30);
+                                    senaraiSelepasPKATV.push(lukisSelSlotTV(limitKelas + 1, `${mSemasaTV}-${mT2}`));
+                                    mSemasaTV = mT2;
+                                }
+
+                                const jumKolumSelepasPKATV = 1 + bilKolumSelepas1030TV;
+                                let terisiTV = 0;
+                                senaraiSelepasPKATV.forEach(htmlSel => {
+                                    if (terisiTV < jumKolumSelepasPKATV) {
+                                        trHarian += htmlSel;
+                                        terisiTV++;
+                                    }
+                                });
+                                const bakiTamatTV = jumKolumSelepasPKATV - terisiTV;
+                                if (bakiTamatTV > 0) {
+                                    trHarian += `<td${bakiTamatTV > 1 ? ` colspan="${bakiTamatTV}"` : ''} class="border-r border-gray-300 bg-gray-200 align-middle font-bold text-gray-400 text-[10px] md:text-xs lg:text-sm text-center tracking-wider${exBorder}">TAMAT</td>`;
+                                }
+                            } else {
+                                const adaSlot1000TV = (rehatIndex < limitKelas && sCikguHariIni[rehatIndex]) ||
+                                    ((rehatIndex === limitKelas || rehatIndex === limitKelas + 1) && sCikguHariIni[rehatIndex] && sCikguHariIni[rehatIndex].subjek === 'TSMK');
+
+                                if (!adaSlot1000TV) {
+                                    const jumTamatPenuh = 2 + bilKolumSelepas1030TV;
+                                    trHarian += `<td colspan="${jumTamatPenuh}" class="border-r border-gray-300 bg-gray-200 align-middle font-bold text-gray-400 text-[10px] md:text-xs lg:text-sm text-center tracking-wider${exBorder}">TAMAT</td>`;
                                 } else {
-                                    const adaTsmkKelasIni = sCikguHariIni[limitKelas] && sCikguHariIni[limitKelas].subjek === 'TSMK';
-                                    trHarian += `<td class="border-r border-gray-300 bg-gray-200 align-middle font-bold text-gray-400 text-[10px] md:text-xs text-center tracking-wider${exBorder}">${adaTsmkKelasIni ? '-' : 'TAMAT'}</td>`;
+                                    trHarian += lukisSelSlotTV(rehatIndex, '', 2);
+                                    let senaraiPetangTV = [];
+                                    for (let idxP = rehatIndex + 1; idxP < limitKelas; idxP++) {
+                                        senaraiPetangTV.push(lukisSelSlotTV(idxP));
+                                    }
+                                    if (limitKelas >= rehatIndex + 1 && sCikguHariIni[limitKelas] && sCikguHariIni[limitKelas].subjek === 'TSMK') {
+                                        senaraiPetangTV.push(lukisSelSlotTV(limitKelas));
+                                    }
+                                    if (limitKelas + 1 >= rehatIndex + 1 && sCikguHariIni[limitKelas + 1] && sCikguHariIni[limitKelas + 1].subjek === 'TSMK') {
+                                        senaraiPetangTV.push(lukisSelSlotTV(limitKelas + 1));
+                                    }
+
+                                    let terisiTV = 0;
+                                    senaraiPetangTV.forEach(htmlSel => {
+                                        if (terisiTV < bilKolumSelepas1030TV) {
+                                            trHarian += htmlSel;
+                                            terisiTV++;
+                                        }
+                                    });
+                                    const bakiTamatTV = bilKolumSelepas1030TV - terisiTV;
+                                    if (bakiTamatTV > 0) {
+                                        trHarian += `<td${bakiTamatTV > 1 ? ` colspan="${bakiTamatTV}"` : ''} class="border-r border-gray-300 bg-gray-200 align-middle font-bold text-gray-400 text-[10px] md:text-xs lg:text-sm text-center tracking-wider${exBorder}">TAMAT</td>`;
+                                    }
                                 }
                             }
-
-                            if (adaTasmikHariIniTV) {
-                                let mT1 = addMinutes(mAkhirPdPKelas, 30);
-                                let mT2 = addMinutes(mT1, 30);
-                                trHarian += lukisSelSlotTV(limitKelas, `${mAkhirPdPKelas}-${mT1}`);
-                                trHarian += lukisSelSlotTV(limitKelas + 1, `${mT1}-${mT2}`);
+                        } else {
+                            for (let i = 0; i < maxSlotHariIni; i++) {
+                                trHarian += lukisSelSlotTV(i);
                             }
                         }
                     } else {
@@ -5251,39 +5437,110 @@
                             }
                         } else {
                             // Hari Tiada Rehat (Jumaat Balik Awal) dalam Mod 3 Baris Masa
-                            if (isPKAT23Kelas) {
-                                trHarian += lukisSelSlotTV(rehatIndex, '', 1);
-                            } else {
-                                trHarian += lukisSelSlotTV(rehatIndex, '', 2);
-                            }
+                            if (isPKAT1Kelas) {
+                                // Lajur 10:00 - 10:15 ialah PKA Tahap 1
+                                trHarian += `<td class="border-r border-l-2 border-gray-800 px-0.5 py-0.5 relative overflow-hidden shadow-sm text-center align-middle${exBorder}" style="background-color: ${warnaPKA};">
+                                                <div class="absolute inset-0 bg-white opacity-20"></div>
+                                                <div class="relative z-10 flex flex-col items-center justify-center h-full w-full py-0.5 leading-none">
+                                                    <span class="font-black text-black/85 text-xs md:text-base lg:text-2xl leading-none">PKA</span>
+                                                    <span class="font-extrabold text-black/65 text-[8px] md:text-[10px] lg:text-xs uppercase mt-0.5">${kodGuruPKA}</span>
+                                                </div>
+                                            </td>`;
 
-                            for (let i = rehatIndex + 1; i < maxLimitPdPBiasaTV; i++) {
-                                trHarian += lukisSelSlotTV(i);
-                            }
-                            let mAkhirPdPKelas = addMinutes(waktuMula, limitKelas * 30 + (isPKAT23Kelas ? 15 : 0));
-
-                            if (adaPKATahap1HariIni) {
-                                if (isPKAT1Kelas) {
-                                    let tPKAKelas = addMinutes(mAkhirPdPKelas, 15);
-                                    trHarian += `<td class="border-r-2 border-l-2 border-purple-500 px-0.5 py-0.5 relative overflow-hidden shadow-sm text-center align-middle${exBorder}" style="background-color: ${warnaPKA};">
-                                                    <div class="relative z-10 flex flex-col items-center justify-center h-full w-full py-0.5 leading-none">
-                                                        <span class="font-black text-purple-950 text-xs md:text-base lg:text-2xl leading-none">PKA</span>
-                                                        <span class="font-extrabold text-purple-900 text-[8px] md:text-[10px] lg:text-xs uppercase mt-0.5">${kodGuruPKA}</span>
-                                                        <span class="font-bold text-purple-800 text-[7px] md:text-[8px] leading-none mt-0.5">${mAkhirPdPKelas}-${tPKAKelas}</span>
-                                                    </div>
-                                                </td>`;
-                                    mAkhirPdPKelas = tPKAKelas;
-                                } else {
-                                    const adaTsmkKelasIni = sCikguHariIni[limitKelas] && sCikguHariIni[limitKelas].subjek === 'TSMK';
-                                    trHarian += `<td class="border-r border-gray-300 bg-gray-200 align-middle font-bold text-gray-400 text-[10px] md:text-xs text-center tracking-wider${exBorder}">${adaTsmkKelasIni ? '-' : 'TAMAT'}</td>`;
+                                let senaraiSelepasPKATV = [];
+                                let mSemasaTV = addMinutes(waktuMula, rehatIndex * 30 + 15);
+                                for (let idxP = rehatIndex; idxP < limitKelas; idxP++) {
+                                    let mNxtTV = addMinutes(mSemasaTV, 30);
+                                    senaraiSelepasPKATV.push(lukisSelSlotTV(idxP, `${mSemasaTV}-${mNxtTV}`));
+                                    mSemasaTV = mNxtTV;
                                 }
-                            }
+                                if (limitKelas >= rehatIndex && sCikguHariIni[limitKelas] && sCikguHariIni[limitKelas].subjek === 'TSMK') {
+                                    let mT1 = addMinutes(mSemasaTV, 30);
+                                    senaraiSelepasPKATV.push(lukisSelSlotTV(limitKelas, `${mSemasaTV}-${mT1}`));
+                                    mSemasaTV = mT1;
+                                }
+                                if (limitKelas >= rehatIndex && sCikguHariIni[limitKelas + 1] && sCikguHariIni[limitKelas + 1].subjek === 'TSMK') {
+                                    let mT2 = addMinutes(mSemasaTV, 30);
+                                    senaraiSelepasPKATV.push(lukisSelSlotTV(limitKelas + 1, `${mSemasaTV}-${mT2}`));
+                                    mSemasaTV = mT2;
+                                }
 
-                            if (adaTasmikHariIniTV) {
-                                let mT1 = addMinutes(mAkhirPdPKelas, 30);
-                                let mT2 = addMinutes(mT1, 30);
-                                trHarian += lukisSelSlotTV(limitKelas, `${mAkhirPdPKelas}-${mT1}`);
-                                trHarian += lukisSelSlotTV(limitKelas + 1, `${mT1}-${mT2}`);
+                                const jumKolumSelepasPKATV = 1 + bilKolumSelepas1030TV;
+                                let terisiTV = 0;
+                                senaraiSelepasPKATV.forEach(htmlSel => {
+                                    if (terisiTV < jumKolumSelepasPKATV) {
+                                        trHarian += htmlSel;
+                                        terisiTV++;
+                                    }
+                                });
+                                const bakiTamatTV = jumKolumSelepasPKATV - terisiTV;
+                                if (bakiTamatTV > 0) {
+                                    trHarian += `<td${bakiTamatTV > 1 ? ` colspan="${bakiTamatTV}"` : ''} class="border-r border-gray-300 bg-gray-200 align-middle font-bold text-gray-400 text-[10px] md:text-xs lg:text-sm text-center tracking-wider${exBorder}">TAMAT</td>`;
+                                }
+                            } else if (isPKAT23Kelas) {
+                                // 5 slot PdP pagi berakhir pada 10:15; baki 1 + bilKolumSelepas1030TV lajur diisi tanpa ulangan Tasmik
+                                let senaraiSelepas1015TV = [];
+                                let mSemasaTV = addMinutes(waktuMula, rehatIndex * 30 + 15);
+                                for (let idxP = rehatIndex; idxP < limitKelas; idxP++) {
+                                    let mNxtTV = addMinutes(mSemasaTV, 30);
+                                    senaraiSelepas1015TV.push(lukisSelSlotTV(idxP, `${mSemasaTV}-${mNxtTV}`));
+                                    mSemasaTV = mNxtTV;
+                                }
+                                if (limitKelas >= rehatIndex && sCikguHariIni[limitKelas] && sCikguHariIni[limitKelas].subjek === 'TSMK') {
+                                    let mT1 = addMinutes(mSemasaTV, 30);
+                                    senaraiSelepas1015TV.push(lukisSelSlotTV(limitKelas, `${mSemasaTV}-${mT1}`));
+                                    mSemasaTV = mT1;
+                                }
+                                if (limitKelas >= rehatIndex && sCikguHariIni[limitKelas + 1] && sCikguHariIni[limitKelas + 1].subjek === 'TSMK') {
+                                    let mT2 = addMinutes(mSemasaTV, 30);
+                                    senaraiSelepas1015TV.push(lukisSelSlotTV(limitKelas + 1, `${mSemasaTV}-${mT2}`));
+                                    mSemasaTV = mT2;
+                                }
+
+                                const jumKolumSelepas1015TV = 1 + bilKolumSelepas1030TV;
+                                let terisiTV = 0;
+                                senaraiSelepas1015TV.forEach(htmlSel => {
+                                    if (terisiTV < jumKolumSelepas1015TV) {
+                                        trHarian += htmlSel;
+                                        terisiTV++;
+                                    }
+                                });
+                                const bakiTamatTV = jumKolumSelepas1015TV - terisiTV;
+                                if (bakiTamatTV > 0) {
+                                    trHarian += `<td${bakiTamatTV > 1 ? ` colspan="${bakiTamatTV}"` : ''} class="border-r border-gray-300 bg-gray-200 align-middle font-bold text-gray-400 text-[10px] md:text-xs lg:text-sm text-center tracking-wider${exBorder}">TAMAT</td>`;
+                                }
+                            } else {
+                                const adaSlot1000TV = (rehatIndex < limitKelas && sCikguHariIni[rehatIndex]) ||
+                                    ((rehatIndex === limitKelas || rehatIndex === limitKelas + 1) && sCikguHariIni[rehatIndex] && sCikguHariIni[rehatIndex].subjek === 'TSMK');
+
+                                if (!adaSlot1000TV) {
+                                    const jumTamatPenuh = 2 + bilKolumSelepas1030TV;
+                                    trHarian += `<td colspan="${jumTamatPenuh}" class="border-r border-gray-300 bg-gray-200 align-middle font-bold text-gray-400 text-[10px] md:text-xs lg:text-sm text-center tracking-wider${exBorder}">TAMAT</td>`;
+                                } else {
+                                    trHarian += lukisSelSlotTV(rehatIndex, '', 2);
+                                    let senaraiPetangTV = [];
+                                    for (let idxP = rehatIndex + 1; idxP < limitKelas; idxP++) {
+                                        senaraiPetangTV.push(lukisSelSlotTV(idxP));
+                                    }
+                                    if (limitKelas >= rehatIndex + 1 && sCikguHariIni[limitKelas] && sCikguHariIni[limitKelas].subjek === 'TSMK') {
+                                        senaraiPetangTV.push(lukisSelSlotTV(limitKelas));
+                                    }
+                                    if (limitKelas + 1 >= rehatIndex + 1 && sCikguHariIni[limitKelas + 1] && sCikguHariIni[limitKelas + 1].subjek === 'TSMK') {
+                                        senaraiPetangTV.push(lukisSelSlotTV(limitKelas + 1));
+                                    }
+
+                                    let terisiTV = 0;
+                                    senaraiPetangTV.forEach(htmlSel => {
+                                        if (terisiTV < bilKolumSelepas1030TV) {
+                                            trHarian += htmlSel;
+                                            terisiTV++;
+                                        }
+                                    });
+                                    const bakiTamatTV = bilKolumSelepas1030TV - terisiTV;
+                                    if (bakiTamatTV > 0) {
+                                        trHarian += `<td${bakiTamatTV > 1 ? ` colspan="${bakiTamatTV}"` : ''} class="border-r border-gray-300 bg-gray-200 align-middle font-bold text-gray-400 text-[10px] md:text-xs lg:text-sm text-center tracking-wider${exBorder}">TAMAT</td>`;
+                                    }
+                                }
                             }
                         }
                     }
@@ -8082,6 +8339,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         
         let diff = endMins - startMins;
         
+        let tempohRehatDitolak = 0;
         if (tolakRehat) { 
             let rMula = '10:00'; let rTamat = '10:15';
             if (isJumaat) {
@@ -8097,29 +8355,38 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
             // Tolak masa rehat mengikut tempoh rehat yang ditetapkan pada hari tersebut
             // (Bagi Tahap 1 yang aktif PKA pada hari ada rehat, 15m PKA + 15m Rehat sudah terkandung dalam 30m rTamat - rMula)
             if (rt > rm) {
-                diff -= (rt - rm);
+                tempohRehatDitolak = rt - rm;
+                diff -= tempohRehatDitolak;
             }
         }
 
         // Bagi kelas yang aktif PKA pada hari tersebut:
-        // - Pada hari ADA rehat (tempoh rehat penuh 30m): kelas PKA hanya berehat 15m (manakala 15m lagi ialah PdP subjek PKA), jadi pulangkan +15m kepada diff.
+        // - Pada hari ADA rehat (tempoh rehat penuh 30m): kelas PKA hanya berehat 15m (manakala 15m lagi ialah PdP subjek PKA), jadi pulangkan lebihan rehat di atas 15m kepada diff.
         // - Pada hari TIADA rehat (seperti Jumaat): 15m PKA dikekalkan dalam diff supaya dikira sebagai 0.5 masa Kapasiti Masa.
         const padananId = timeValId.match(/^waktu-(isn|sel|rab|kha|jum)-t([1-6])$/);
         if (padananId) {
             const pfxHari = padananId[1];
             const noTahun = parseInt(padananId[2], 10);
             if (adalahPKAAktifPadaHari(noTahun, pfxHari)) {
-                if (tolakRehat) diff += 15;
+                if (tolakRehat) diff += Math.min(15, Math.max(0, tempohRehatDitolak - 15));
             }
         }
         
         return diff;
     }
 
-   // Fungsi Matematik Mengira Jumlah Slot Daripada Input Masa Cikgu di Fasa 1
+   // Fungsi Matematik Mengira Jumlah Slot PdP 30-Minit Daripada Input Masa Cikgu di Fasa 1 (Tolak 15m PKA Dahulu)
     function kiraMaxSlotDinamik(timeValId, tolakRehat, isJumaat = false) {
         let diff = kiraMinitBersihSlot(timeValId, tolakRehat, isJumaat);
-        return Math.floor(diff / 30);
+        const padananId = timeValId.match(/^waktu-(isn|sel|rab|kha|jum)-t([1-6])$/);
+        if (padananId) {
+            const pfxHari = padananId[1];
+            const noTahun = parseInt(padananId[2], 10);
+            if (adalahPKAAktifPadaHari(noTahun, pfxHari)) {
+                diff -= 15;
+            }
+        }
+        return Math.max(0, Math.floor(diff / 30));
     }
 
 
@@ -8459,7 +8726,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                             const idxTunggal = indeksTeras[0];
                             const slotTunggal = slotsH[idxTunggal];
                             const pkaSlotH = slotsH[14];
-                            const idxTapakPKA = isT1SemakHC ? (hariAdaRehat[hSemak] ? (rehatIdx - 1) : (limitH - 1)) : 0;
+                            const idxTapakPKA = isT1SemakHC ? ((hariAdaRehat[hSemak] ? rehatIdx : Math.min(rehatIdx, limitH)) - 1) : 0;
                             const adalahTapakPKASah = pkaSlotH && idxTunggal === idxTapakPKA && slotTunggal && slotTunggal.kodGuru && slotTunggal.kodGuru.split(' / ').map(x => x.trim()).includes(String(pkaSlotH.kodGuru || '').trim());
                             if (!(slotTunggal && slotTunggal.wajibTunggalPKA) && !adalahTapakPKASah) {
                                 bilHariSatuMasa++;
@@ -8911,7 +9178,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
            document.body.appendChild(modalDiv); return; 
        }
 
-      // Fungsi Pengira Julat Masa Sebenar [mulaMinit, tamatMinit] Dari Waktu Mula Sekolah (Termasuk Anjakan +15m PKA)
+     // Fungsi Pengira Julat Masa Sebenar [mulaMinit, tamatMinit] Dari Waktu Mula Sekolah (Termasuk Anjakan +15m PKA)
       window.dapatkanJulatMinitSlotFasa2 = (namaKelas, hariStr, slotIdx) => {
            let noThn = 1;
            if (namaKelas.includes('2 ')) noThn = 2;
@@ -8927,12 +9194,12 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
            const isPKAT1 = isT1 && aktifPKA;
            const isPKAT23 = !isT1 && aktifPKA && (hariStr !== hariPerhimpunan);
            const limitPdP = getLimit(namaKelas, hariStr);
+           const idxMulaPKAT1 = adaRehat ? rehatIndex : Math.min(rehatIndex, limitPdP);
 
            if (slotIdx === 14) {
                if (!aktifPKA) return null;
                if (isPKAT23) return [0, 15]; // 07:30 - 07:45
-               if (adaRehat) return [rehatIndex * 30, rehatIndex * 30 + 15]; // 10:00 - 10:15
-               return [limitPdP * 30, limitPdP * 30 + 15]; // 10:30 - 10:45 (Jumaat Tanpa Rehat)
+               return [idxMulaPKAT1 * 30, idxMulaPKAT1 * 30 + 15]; // Kekal 10:00 - 10:15 (Termasuk Jumaat Tanpa Rehat)
            }
 
            if (adaRehat) {
@@ -8946,8 +9213,8 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                if (isPKAT23) {
                    return [15 + slotIdx * 30, 45 + slotIdx * 30];
                } else if (isPKAT1) {
-                   if (slotIdx < limitPdP) return [slotIdx * 30, (slotIdx + 1) * 30];
-                   return [15 + slotIdx * 30, 45 + slotIdx * 30]; // Tasmik selepas PKA Jumaat
+                   if (slotIdx < idxMulaPKAT1) return [slotIdx * 30, (slotIdx + 1) * 30]; // 07:30 - 10:00
+                   return [15 + slotIdx * 30, 45 + slotIdx * 30]; // Selepas PKA 10:00-10:15 (cth: Tasmik 10:15 - 11:15)
                }
                return [slotIdx * 30, (slotIdx + 1) * 30];
            }
@@ -9272,26 +9539,26 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
 
                    let hariBelumDiisiPKA = [...senaraiHariPKA];
 
-                    // LANGKAH A: Semak hari yang mana tapak PKA sudah sedia diisi oleh PJ milik salah seorang guru PKA kelas ini
+// LANGKAH A: Semak hari yang mana tapak PKA sudah sedia diisi oleh PJ milik salah seorang guru PKA kelas ini
                    for (let hIdx = hariBelumDiisiPKA.length - 1; hIdx >= 0; hIdx--) {
                        let hariP = hariBelumDiisiPKA[hIdx];
                        let slotsH = f2_jadualSediaAda[kelasPKA][hariP];
-                       let idxTapak = isTahap1Kelas ? (rehatIndex - 1) : 0;
-                       let slotTapak = slotsH[idxTapak];
+                       let hadSlotTapak = getLimit(kelasPKA, hariP);
+                       let idxTapak = isTahap1Kelas ? ((hariAdaRehat[hariP] ? rehatIndex : Math.min(rehatIndex, hadSlotTapak)) - 1) : 0;
+                       let slotTapak = idxTapak >= 0 ? slotsH[idxTapak] : null;
                        if (slotTapak && slotTapak.kodGuru) {
                            let kodTapakArr = slotTapak.kodGuru.split(' / ').map(x => x.trim());
                            let calonG = senaraiAgihanGuru.find(ag => ag.bakiHari > 0 && kodTapakArr.includes(ag.kodGuru) && isTeacherFree(ag.kodGuru, hariP, 14, kelasPKA));
                            if (calonG) {
                                slotTapak.kunciPKA = true;
                                if (!isTahap1Kelas && slotsH[1] && slotsH[1].kodGuru === slotTapak.kodGuru) slotsH[1].kunciPKA = true;
-                               const posisiPKA = isTahap1Kelas ? (hariAdaRehat[hariP] ? 'SEBELUM_REHAT' : 'AKHIR_PDP') : 'AWAL_PAGI';
+                               const posisiPKA = isTahap1Kelas ? 'SEBELUM_REHAT' : 'AWAL_PAGI';
                                slotsH[14] = { subjek: 'PKA', kodGuru: calonG.kodGuru, warna: 'text-purple-700', posisi: posisiPKA };
                                calonG.bakiHari--;
                                hariBelumDiisiPKA.splice(hIdx, 1);
                            }
                        }
                    }
-
                    // LANGKAH B: Susun baki hari PKA dan padankan dengan guru PKA yang masih mempunyai bakiHari > 0
                    hariBelumDiisiPKA.sort((a, b) => {
                        if (isTahap1Kelas) {
@@ -9385,19 +9652,17 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                        : [saizAsal, 2, 1];
                                    let senaraiCubaanSaiz = [...new Set(urutanCalon)].filter(sz => adalahSaizPKASah(blok, sz));
 
-                                   for (let sTry = 0; sTry < senaraiCubaanSaiz.length && !diletakHariIni; sTry++) {
+for (let sTry = 0; sTry < senaraiCubaanSaiz.length && !diletakHariIni; sTry++) {
                                        let sz = senaraiCubaanSaiz[sTry];
                                        if (blok.task.waktu < sz) continue;
 
-                                       let endSlot = hariAdaRehat[hariP]
-                                           ? (rehatIndex - 1)
-                                           : ((sz >= 2 && hadSlotH > rehatIndex) ? rehatIndex : (hadSlotH - 1));
+                                       let endSlot = (hariAdaRehat[hariP] ? rehatIndex : Math.min(rehatIndex, hadSlotH)) - 1;
                                        let startSlot = endSlot - sz + 1;
                                        let minSlotMula = (hariP === hariPerhimpunan) ? 1 : 0;
                                        if (startSlot < minSlotMula) continue;
 
-                                       let muat = true;
-                                       for (let k = startSlot; k <= endSlot; k++) {
+                                       let muat = isTeacherFree(guruPKA, hariP, 14, kelasPKA);
+                                       for (let k = startSlot; k <= endSlot && muat; k++) {
                                            if (slotsH[k] !== null || !isTeacherFree(kodB, hariP, k, kelasPKA)) {
                                                muat = false; break;
                                            }
@@ -9414,7 +9679,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                                    wajibTunggalPKA: (sz === 1)
                                                };
                                            }
-                                           const posisiPKA = hariAdaRehat[hariP] ? 'SEBELUM_REHAT' : 'AKHIR_PDP';
+                                           const posisiPKA = 'SEBELUM_REHAT';
                                            slotsH[14] = { subjek: 'PKA', kodGuru: guruPKA, warna: 'text-purple-700', posisi: posisiPKA };
                                            if (sz >= blok.saiz) blok.used = true;
                                            else blok.saiz -= sz;
@@ -9422,8 +9687,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                            ag.bakiHari--;
                                            diletakHariIni = true;
                                        }
-                                   }
-                               }
+                                   }                               }
                            } else {
                                // TAHAP 2 & TAHAP 3: Utamakan 1 masa (sz = 1) jika guru mengajar kedua-dua PKA Tahap 1 & Tahap 2/3 dan sah secara matematik
                                calonBlok.sort((a, b) => {
@@ -10386,7 +10650,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                    else if (kSemak.includes('6 ')) noThnSemak = 6;
                    const isTahap1Semak = (noThnSemak <= 2);
 
-                   ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hSemak => {
+                  ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hSemak => {
                        let slotsH = f2_jadualSediaAda[kSemak][hSemak];
                        let pkaSlot = slotsH ? slotsH[14] : null;
                        if (!pkaSlot || pkaSlot.subjek !== 'PKA' || !pkaSlot.kodGuru || pkaSlot.kodGuru === '-') return;
@@ -10398,9 +10662,9 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                            return slotObj.kodGuru.split(' / ').map(x => x.trim()).includes(guruPKASemak);
                        };
 
-                        if (isTahap1Semak) {
-                           let idxSblmPKA = hariAdaRehat[hSemak] ? (rehatIndex - 1) : (limitH - 1);
-                           if (!sepadanGuruPKA(slotsH[idxSblmPKA])) {
+                       if (isTahap1Semak) {
+                           let idxSblmPKA = (hariAdaRehat[hSemak] ? rehatIndex : Math.min(rehatIndex, limitH)) - 1;
+                           if (idxSblmPKA < 0 || !sepadanGuruPKA(slotsH[idxSblmPKA])) {
                                jadualGagal = true;
                            }
                        } else if (hSemak !== hariPerhimpunan) {
@@ -10409,6 +10673,44 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                            }
                        }
                    });
+
+                   // Semakan Mutlak Sifar Petak Kosong Sebelum Waktu Tamat & Ketepatan 2 Masa Tasmik
+                   let tugasTsmkAsal = tugasSelepasGabung.find(t => t.kelas === kSemak && t.subjek === "TSMK");
+                   let sasaranSlotTsmk = tugasTsmkAsal ? Math.round(parseFloat(tugasTsmkAsal.waktu) || 0) : 0;
+                   let jumlahSlotTsmkJumpa = 0;
+
+                   ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(hSemak => {
+                       let slotsH = f2_jadualSediaAda[kSemak][hSemak];
+                       let limitH = getLimit(kSemak, hSemak);
+                       if (!slotsH) { jadualGagal = true; return; }
+
+                       // 1. Wajib tiada sebarang selang kosong (null) dari slot 0 hingga limitH - 1 sebelum waktu balik / sebelum Tasmik
+                       for (let idx = 0; idx < limitH; idx++) {
+                           if (!slotsH[idx] || slotsH[idx].subjek === 'TSMK' || slotsH[idx].subjek === 'PKA') {
+                               jadualGagal = true;
+                           }
+                       }
+
+                       // 2. Selepas limitH: Hanya pasangan 2 masa Tasmik [limitH, limitH + 1] dibenarkan pada hari pilihan Tasmik
+                       const sT1 = slotsH[limitH];
+                       const sT2 = slotsH[limitH + 1];
+                       if (sT1 || sT2) {
+                           if (!hariTasmikBoleh[hSemak] || !sT1 || !sT2 || sT1.subjek !== 'TSMK' || sT2.subjek !== 'TSMK') {
+                               jadualGagal = true;
+                           } else {
+                               jumlahSlotTsmkJumpa += 2;
+                           }
+                       }
+                       for (let idx = limitH + 2; idx < 14; idx++) {
+                           if (slotsH[idx] !== null) {
+                               jadualGagal = true;
+                           }
+                       }
+                   });
+
+                   if (jumlahSlotTsmkJumpa !== sasaranSlotTsmk) {
+                       jadualGagal = true;
+                   }
 
                }
 
