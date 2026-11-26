@@ -2,7 +2,10 @@
 <html lang="ms" class="h-full">
  <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Sistem Guru Ganti SK Ulu Pelagus</title>
   <link rel="icon" type="image/png" href="https://iili.io/nRloUF9.png">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -92,14 +95,371 @@
     .blob-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: #a1c4fd; animation-delay: -5s; }
     .blob-3 { top: 20%; left: 30%; width: 45vw; height: 45vw; background: #fbc2eb; animation-delay: -10s; }
     
-    @keyframes float-blob {
+  @keyframes float-blob {
         0% { transform: translate(0, 0) scale(1); }
         50% { transform: translate(5%, 15%) scale(1.1); }
         100% { transform: translate(-10%, 5%) scale(0.9); }
     }
+
+    /* Sokongan Skrin Penuh TV Live pada iPhone / iOS Safari */
+    .tv-ios-fullscreen {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        z-index: 9999 !important;
+        border-radius: 0 !important;
+    }
+
+    /* =========================================================================
+       KOD BAHARU: PAPARAN KHAS TELEFON PINTAR (MOBILE WEB APP VIEW < 768px)
+       Paparan Desktop (>= 768px) & Cetakan A4 kekal 100% tidak berubah
+       ========================================================================= */
+    @media only screen and (max-width: 767px) {
+        html, body.mobile-app-ready, body.mobile-app-ready #app {
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            width: 100vw !important;
+            overflow: hidden !important;
+        }
+
+        body.mobile-app-ready main {
+            padding: 12px 12px calc(86px + env(safe-area-inset-bottom, 0px)) 12px !important;
+            overflow-x: hidden !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Buang padding berganda pada section supaya ruang kad maksimum di skrin telefon */
+        body.mobile-app-ready #tab4,
+        body.mobile-app-ready #tab5,
+        body.mobile-app-ready #tab6 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            padding-top: 4px !important;
+        }
+
+        body.mobile-app-ready .glass-card {
+            padding: 14px !important;
+            border-radius: 16px !important;
+        }
+
+        /* Elak auto-zoom mengejut pada Safari iPhone & besarkan sasaran sentuhan jari */
+        body.mobile-app-ready #input-tarikh,
+        body.mobile-app-ready #input-hari,
+        body.mobile-app-ready #input-guru,
+        body.mobile-app-ready #input-sebab,
+        body.mobile-app-ready #filter-bulan,
+        body.mobile-app-ready #filter-tahun,
+        body.mobile-app-ready #cetak-semula-tarikh,
+        body.mobile-app-ready #delete-filter-bulan,
+        body.mobile-app-ready #delete-filter-tahun,
+        body.mobile-app-ready #tetapan-perhimpunan,
+        body.mobile-app-ready #f2-nama,
+        body.mobile-app-ready #f2-kod,
+        body.mobile-app-ready #f2-jawatan,
+        body.mobile-app-ready #pilih-paparan-kelas,
+        body.mobile-app-ready #pilih-paparan-guru,
+        body.mobile-app-ready [id^="f2-tahun-"],
+        body.mobile-app-ready [id^="f2-subjek-"],
+        body.mobile-app-ready [id^="f2-waktu-"],
+        body.mobile-app-ready [id^="select-"] {
+            font-size: 16px !important;
+            min-height: 44px;
+        }
+
+        /* Toast terapung kemas di atas Bar Navigasi Bawah Telefon */
+        body.mobile-app-ready #toast {
+            bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
+            left: 12px !important;
+            right: 12px !important;
+            font-size: 12px !important;
+            border-radius: 12px !important;
+            z-index: 90 !important;
+        }
+
+        /* 1. TUKAR JADUAL GURU GANTI (PILIH MANUAL) KEPADA KAD MUDAH ALIH PENUH */
+        body.mobile-app-ready #jadual-ganti-section .overflow-x-auto {
+            overflow-x: visible !important;
+            padding-bottom: 4px !important;
+        }
+        body.mobile-app-ready #jadual-ganti-section table {
+            min-width: 0 !important;
+            width: 100% !important;
+            display: block !important;
+        }
+        body.mobile-app-ready #jadual-ganti-section thead {
+            display: none !important;
+        }
+        body.mobile-app-ready #jadual-ganti-tbody {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 12px !important;
+            width: 100% !important;
+        }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px 10px !important;
+            padding: 13px !important;
+            border-radius: 14px !important;
+            border: 1.5px solid #e2e8f0 !important;
+            background: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06) !important;
+            transform: none !important;
+        }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row td {
+            padding: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 2px !important;
+            font-size: 12.5px !important;
+            border-radius: 0 !important;
+            min-width: 0 !important;
+            word-break: break-word;
+        }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row td::before {
+            content: attr(data-label);
+            font-size: 9.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row td:nth-child(3) {
+            order: 1;
+            background: #eef2ff;
+            padding: 6px 9px !important;
+            border-radius: 9px !important;
+            font-weight: 800;
+            color: #312e81;
+        }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row td:nth-child(4) {
+            order: 2;
+            background: #ecfdf5;
+            padding: 6px 9px !important;
+            border-radius: 9px !important;
+            font-weight: 800;
+            color: #065f46;
+        }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row td:nth-child(5) { order: 3; font-weight: 800; color: #1e293b; }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row td:nth-child(6) { order: 4; }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row td:nth-child(1) { order: 5; color: #475569; font-weight: 600; }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row td:nth-child(2) { order: 6; color: #475569; font-weight: 700; }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row td:nth-child(7) { order: 7; grid-column: 1 / -1; }
+        body.mobile-app-ready #jadual-ganti-tbody tr.ganti-card-row td:nth-child(8) {
+            order: 8;
+            grid-column: 1 / -1;
+            margin-top: 4px;
+            padding-top: 10px !important;
+            border-top: 1px dashed #cbd5e1 !important;
+        }
+
+        /* 2. TUKAR SEJARAH REKOD TERPERINCI (TAB 2) KEPADA KAD MUDAH ALIH */
+        body.mobile-app-ready table.mobile-rekod-table,
+        body.mobile-app-ready #tab2 table:has(#rekod-tbody) {
+            min-width: 0 !important;
+            width: 100% !important;
+            display: block !important;
+        }
+        body.mobile-app-ready table.mobile-rekod-table thead,
+        body.mobile-app-ready #tab2 table:has(#rekod-tbody) thead {
+            display: none !important;
+        }
+        body.mobile-app-ready #rekod-tbody {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            width: 100% !important;
+        }
+        body.mobile-app-ready #rekod-tbody tr.rekod-card-row {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 7px 10px !important;
+            padding: 12px !important;
+            border-radius: 12px !important;
+            border: 1px solid #e2e8f0 !important;
+            background: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+            transform: none !important;
+        }
+        body.mobile-app-ready #rekod-tbody tr.rekod-card-row td {
+            padding: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1px !important;
+            font-size: 12px !important;
+            min-width: 0 !important;
+            word-break: break-word;
+        }
+        body.mobile-app-ready #rekod-tbody tr.rekod-card-row td::before {
+            content: attr(data-label);
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+        body.mobile-app-ready #rekod-tbody tr.rekod-card-row td:last-child {
+            grid-column: 1 / -1;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding-top: 8px !important;
+            margin-top: 2px;
+            border-top: 1px dashed #e2e8f0 !important;
+        }
+        body.mobile-app-ready #rekod-tbody tr.rekod-card-row td:last-child button {
+            margin: 0 !important;
+        }
+
+        /* Kemaskan Senarai Guru Tidak Hadir & Statistik Tab 2 / Tab 6 */
+        body.mobile-app-ready #tab1 .modern-table td,
+        body.mobile-app-ready #tab1 .modern-table th {
+            padding: 10px 10px !important;
+        }
+        body.mobile-app-ready #stat-total { font-size: 28px !important; }
+        body.mobile-app-ready #tab2 button[onclick="printDashboard()"] { width: 100% !important; justify-content: center !important; }
+        body.mobile-app-ready #subtab-analisis-1 > .grid:first-of-type {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 10px !important;
+        }
+        body.mobile-app-ready #subtab-analisis-1 > .grid:first-of-type > div {
+            padding: 12px !important;
+        }
+        body.mobile-app-ready #subtab-analisis-1 > .grid:first-of-type p.text-3xl {
+            font-size: 22px !important;
+        }
+
+        /* 3. JADUAL MATRIKS FASA 1 & JADUAL TABURAN 8 KOLUM DENGAN LAJUR MELEKAT (STICKY COLUMN) */
+        body.mobile-app-ready #tab4 table {
+            min-width: 430px !important;
+        }
+        body.mobile-app-ready #tab4 table th:first-child,
+        body.mobile-app-ready #tab4 table td:first-child {
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 15 !important;
+        }
+        body.mobile-app-ready #tab4 table thead th:first-child { background-color: #dbeafe !important; }
+        body.mobile-app-ready #tab4 table tbody td:first-child {
+            background-color: #ffffff !important;
+            box-shadow: 2px 0 5px -2px rgba(0,0,0,0.1);
+        }
+
+        body.mobile-app-ready #jadual-taburan-kelas-guru {
+            min-width: 560px !important;
+        }
+        body.mobile-app-ready #jadual-taburan-kelas-guru thead th:first-child {
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 20 !important;
+            background: #065f46 !important;
+        }
+        body.mobile-app-ready #jadual-taburan-kelas-guru tbody td:first-child {
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 15 !important;
+            background: #ffffff !important;
+            box-shadow: 2px 0 6px -2px rgba(0,0,0,0.12);
+        }
+        body.mobile-app-ready #jadual-taburan-kelas-guru tfoot td:first-child {
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 15 !important;
+            background: #ecfdf5 !important;
+        }
+
+        /* 4. FASA 2: PALET WARNA, BUTANG JANA & PRATONTON JADUAL WAKTU MESRA TELEFON */
+        body.mobile-app-ready #popup-warna {
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+        }
+        body.mobile-app-ready button[onclick="semakSebelumJana()"] {
+            width: 100% !important;
+            padding: 15px 16px !important;
+            font-size: 13px !important;
+        }
+        body.mobile-app-ready #f2-hasil-jadual > div {
+            padding: 14px 10px !important;
+        }
+        body.mobile-app-ready #paparan-induk::before,
+        body.mobile-app-ready #paparan-kelas::before,
+        body.mobile-app-ready #paparan-guru::before {
+            content: "↔ Leret jadual ke kiri / kanan untuk melihat keseluruhan waktu";
+            display: block;
+            font-size: 10px;
+            font-weight: 800;
+            color: #4f46e5;
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            border-radius: 8px;
+            padding: 6px 10px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        body.mobile-app-ready #paparan-induk table,
+        body.mobile-app-ready #paparan-kelas table,
+        body.mobile-app-ready #paparan-guru table {
+            min-width: 820px !important;
+        }
+
+        /* 5. PAPARAN TV LIVE MESRA TELEFON (TEGAK & MELINTANG) */
+        body.mobile-app-ready #tab3 {
+            height: calc(100dvh - 142px - env(safe-area-inset-bottom, 0px)) !important;
+            padding: 2px !important;
+        }
+        body.mobile-app-ready #tv-container {
+            padding: 10px !important;
+            border-radius: 16px !important;
+        }
+        body.mobile-app-ready #tv-container > div:first-child {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 8px !important;
+            margin-bottom: 10px !important;
+            padding-bottom: 8px !important;
+        }
+        body.mobile-app-ready #tv-tajuk-utama {
+            font-size: 13px !important;
+            gap: 6px !important;
+            justify-content: center !important;
+            text-align: center !important;
+            flex-wrap: wrap !important;
+        }
+        body.mobile-app-ready #tv-tajuk-utama i { font-size: 16px !important; }
+        body.mobile-app-ready #tv-container > div:first-child > div:last-child {
+            justify-content: space-between !important;
+            gap: 6px !important;
+        }
+        body.mobile-app-ready #tv-date-manual {
+            padding: 5px 8px !important;
+            font-size: 12px !important;
+        }
+        body.mobile-app-ready #tv-slide-induk > div > div:last-child {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        body.mobile-app-ready #tv-table-harian {
+            min-width: 680px !important;
+        }
+        body.mobile-app-ready #tv-slide-ganti {
+            padding: 92px 8px 24px 8px !important;
+        }
+        body.mobile-app-ready #tv-slide-ganti thead th {
+            padding: 8px 4px !important;
+            font-size: 10px !important;
+        }
+        body.mobile-app-ready #tv-tbody-ganti td {
+            padding: 4px !important;
+        }
+        body.mobile-app-ready #tv-tbody-ganti td span {
+            font-size: 11px !important;
+            padding: 4px 6px !important;
+        }
+    }
   </style>
  </head>
- <body class="h-full text-gray-800 aurora-bg overflow-hidden relative">
+ <body class="h-full text-gray-800 aurora-bg overflow-hidden relative mobile-app-ready">
   
   <!-- KOD BAHARU: Elemen Bebola Aurora Terapung di Latar Belakang -->
   <div class="aurora-blob blob-1"></div>
@@ -110,20 +470,20 @@
 
    
      <!-- KOD BAHARU: Header Kaca & Menu Terapung Berbentuk Kapsul -->
-   <header id="main-header" class="bg-white/80 backdrop-blur-md border-b border-gray-200 py-3 px-4 shadow-sm flex-shrink-0 sticky top-0 z-40 flex items-center justify-between gap-2">
-    <div class="flex items-center gap-4 min-w-0">
-     <button onclick="toggleSidebar()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 text-indigo-900 hover:bg-indigo-100 hover:text-indigo-600 transition-colors shadow-inner border border-gray-200 shrink-0">
-      <i class="fa-solid fa-bars text-xl"></i>
+  <header id="main-header" class="bg-white/90 backdrop-blur-md border-b border-gray-200 py-2.5 px-3 md:py-3 md:px-4 shadow-sm flex-shrink-0 sticky top-0 z-40 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2.5 md:gap-4 min-w-0">
+     <button onclick="toggleSidebar()" class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl bg-gray-100 text-indigo-900 hover:bg-indigo-100 hover:text-indigo-600 transition-colors shadow-inner border border-gray-200 shrink-0" aria-label="Menu">
+      <i class="fa-solid fa-bars text-lg md:text-xl"></i>
      </button>
-     <div class="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transform hover:scale-105 transition-all shrink-0">
+     <div class="w-10 h-10 md:w-16 md:h-16 flex items-center justify-center transform hover:scale-105 transition-all shrink-0">
       <img src="https://iili.io/nRloUF9.png" alt="Logo SK Ulu Pelagus" class="w-full h-full object-contain drop-shadow-md">
      </div>
     <div class="text-left min-w-0">
-      <h1 id="school-title-main" class="text-base md:text-xl font-extrabold tracking-tight text-gray-900 leading-tight truncate">SISTEM PENGURUSAN JADUAL BERSEPADU</h1>
-      <h2 id="school-title-sub" class="text-[10px] md:text-xs font-bold tracking-widest text-indigo-600 uppercase">SK ULU PELAGUS</h2>
+      <h1 id="school-title-main" class="text-xs sm:text-base md:text-xl font-extrabold tracking-tight text-gray-900 leading-tight line-clamp-2 md:truncate">SISTEM PENGURUSAN JADUAL BERSEPADU</h1>
+      <h2 id="school-title-sub" class="text-[9px] md:text-xs font-bold tracking-widest text-indigo-600 uppercase mt-0.5">SK ULU PELAGUS</h2>
      </div>
     </div>
-    <button id="btn-sync-cloud" onclick="segerakSemuaDataCloud(true)" title="Klik untuk tarik semula data terkini dari Google Sheet" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] md:text-xs font-extrabold transition-all shadow-sm shrink-0 cursor-pointer">
+    <button id="btn-sync-cloud" onclick="segerakSemuaDataCloud(true)" title="Klik untuk tarik semula data terkini dari Google Sheet" class="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] md:text-xs font-extrabold transition-all shadow-sm shrink-0 cursor-pointer">
      <i id="icon-sync-cloud" class="fa-solid fa-rotate animate-spin text-indigo-600"></i>
      <span id="teks-sync-cloud" class="hidden sm:inline">Menarik Google Sheet...</span>
     </button>
@@ -1185,7 +1545,38 @@
      </div>
     </section>
    </main>
+  </main>
    </div> <!-- KOD BAHARU: Penutup Wrapper Flex untuk Sidebar & Main Content -->
+
+   <!-- KOD BAHARU: Bar Navigasi Bawah Khas Telefon Pintar (Tersembunyi di Desktop) -->
+   <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-gray-200 shadow-[0_-6px_20px_rgba(15,23,42,0.08)] px-1.5 pt-1.5" style="padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));">
+    <div class="grid grid-cols-6 gap-1">
+     <button id="mnav-btn-1" onclick="switchTab(1)" class="flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl bg-indigo-600 text-white shadow-sm transition-all">
+      <i class="fa-solid fa-pen-to-square text-sm leading-none"></i>
+      <span class="text-[9px] font-extrabold mt-1 leading-none truncate max-w-full">Ganti</span>
+     </button>
+     <button id="mnav-btn-2" onclick="switchTab(2)" class="flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl text-gray-500 hover:bg-indigo-50 transition-all">
+      <i class="fa-solid fa-chart-pie text-sm leading-none"></i>
+      <span class="text-[9px] font-bold mt-1 leading-none truncate max-w-full">Rekod</span>
+     </button>
+     <button id="mnav-btn-4" onclick="switchTab(4)" class="flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl text-gray-500 hover:bg-indigo-50 transition-all">
+      <i class="fa-solid fa-sliders text-sm leading-none"></i>
+      <span class="text-[9px] font-bold mt-1 leading-none truncate max-w-full">Fasa 1</span>
+     </button>
+     <button id="mnav-btn-5" onclick="switchTab(5)" class="flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl text-gray-500 hover:bg-indigo-50 transition-all">
+      <i class="fa-solid fa-calendar-days text-sm leading-none"></i>
+      <span class="text-[9px] font-bold mt-1 leading-none truncate max-w-full">Jadual</span>
+     </button>
+     <button id="mnav-btn-6" onclick="switchTab(6)" class="flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl text-gray-500 hover:bg-indigo-50 transition-all">
+      <i class="fa-solid fa-chart-column text-sm leading-none"></i>
+      <span class="text-[9px] font-bold mt-1 leading-none truncate max-w-full">Analisis</span>
+     </button>
+     <button id="mnav-btn-3" onclick="switchTab(3)" class="flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl text-cyan-700 hover:bg-cyan-50 transition-all">
+      <i class="fa-solid fa-tv text-sm leading-none"></i>
+      <span class="text-[9px] font-bold mt-1 leading-none truncate max-w-full">TV Live</span>
+     </button>
+    </div>
+   </nav>
    
    <!-- Loading Overlay -->
 
@@ -5153,19 +5544,19 @@
         const badgeClass = getWorkloadColorClass(selectedWorkload);
         const badgeDisplay = c.guruGanti ? selectedWorkload : '-';
 
-        return `
-          <tr id="row-${idx}" class="hover:bg-green-50 transition-colors">
-            <td class="py-2 px-2">${c.tarikh}</td>
-            <td class="py-2 px-2">${c.hari}</td>
-            <td class="py-2 px-2">${c.masa}</td>
-            <td class="py-2 px-2">${c.kelas}</td>
-            <td class="py-2 px-2">${c.subjek}</td>
-            <td class="py-2 px-2 font-bold text-red-600">${c.guruAsal}</td>
-            <td class="py-2 px-2 font-medium text-orange-600">${c.sebab}</td>
-            <td class="py-2 px-2">
-              <div class="flex items-center gap-2">
-                <span id="badge-${idx}" class="workload-badge ${badgeClass}" title="Beban Terkini">${badgeDisplay}</span>
-                <select id="select-${idx}" onchange="updateGantiAndBadge(${idx}, this.value)" class="flex-1 px-2 py-1 border rounded text-xs bg-white font-bold text-green-600">
+return `
+          <tr id="row-${idx}" class="ganti-card-row hover:bg-green-50 transition-colors">
+            <td data-label="Tarikh" class="py-2 px-2">${c.tarikh}</td>
+            <td data-label="Hari" class="py-2 px-2">${c.hari}</td>
+            <td data-label="Masa" class="py-2 px-2">${c.masa}</td>
+            <td data-label="Kelas" class="py-2 px-2">${c.kelas}</td>
+            <td data-label="Subjek" class="py-2 px-2">${c.subjek}</td>
+            <td data-label="Guru Asal" class="py-2 px-2 font-bold text-red-600">${c.guruAsal}</td>
+            <td data-label="Sebab Tidak Hadir" class="py-2 px-2 font-medium text-orange-600">${c.sebab}</td>
+            <td data-label="Pilih Guru Ganti (Manual)" class="py-2 px-2">
+              <div class="flex items-center gap-2 w-full">
+                <span id="badge-${idx}" class="workload-badge shrink-0 ${badgeClass}" title="Beban Terkini">${badgeDisplay}</span>
+                <select id="select-${idx}" onchange="updateGantiAndBadge(${idx}, this.value)" class="flex-1 min-w-0 px-2.5 py-1.5 border rounded-lg text-xs bg-white font-bold text-green-700">
                   ${optionsHtml}
                 </select>
               </div>
@@ -5575,12 +5966,36 @@
           menuJadual.classList.add('block');
           if (iconJadual) iconJadual.classList.add('rotate-180');
         }
-        tukarSubTabAnalisis(window.subTabAnalisisAktif || 1, true);
+       tukarSubTabAnalisis(window.subTabAnalisisAktif || 1, true);
         if (typeof renderAnalisisJadualPenuh === 'function') renderAnalisisJadualPenuh();
       }
 
+      // Selaraskan status butang aktif pada Bar Navigasi Bawah Telefon
+      [1, 2, 3, 4, 5, 6].forEach(noTab => {
+        const mBtn = document.getElementById(`mnav-btn-${noTab}`);
+        if (!mBtn) return;
+        const spanLbl = mBtn.querySelector('span');
+        if (noTab === tab) {
+          mBtn.className = (noTab === 3)
+            ? 'flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl bg-gray-900 text-cyan-300 shadow-sm transition-all'
+            : 'flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl bg-indigo-600 text-white shadow-sm transition-all';
+          if (spanLbl) spanLbl.className = 'text-[9px] font-extrabold mt-1 leading-none truncate max-w-full';
+        } else {
+          mBtn.className = (noTab === 3)
+            ? 'flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl text-cyan-700 hover:bg-cyan-50 transition-all'
+            : 'flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl text-gray-500 hover:bg-indigo-50 transition-all';
+          if (spanLbl) spanLbl.className = 'text-[9px] font-bold mt-1 leading-none truncate max-w-full';
+        }
+      });
+
+      // Hanya tutup Sidebar di telefon sekiranya Sidebar memang sedang terbuka
       if (window.innerWidth < 768) {
-         toggleSidebar();
+        const sidebar = document.getElementById('main-sidebar');
+        if (sidebar && !sidebar.classList.contains('w-0')) {
+          toggleSidebar();
+        }
+        const mainArea = document.querySelector('main');
+        if (mainArea) mainArea.scrollTop = 0;
       }
     }
 
@@ -6542,14 +6957,26 @@ let selObj = null;
     // Fungsi jadikan skrin penuh tanpa sempadan putih
 
     // Fungsi jadikan skrin penuh tanpa sempadan putih
-    function toggleFullscreenTV() {
+ function toggleFullscreenTV() {
       const tvContainer = document.getElementById('tv-container');
-      if (!document.fullscreenElement) {
-        if (tvContainer.requestFullscreen) tvContainer.requestFullscreen();
-        else if (tvContainer.webkitRequestFullscreen) tvContainer.webkitRequestFullscreen();
-        else if (tvContainer.msRequestFullscreen) tvContainer.msRequestFullscreen();
+      if (!tvContainer) return;
+
+      // Sokongan penuh termasuk pelayar iPhone / iOS Safari yang tidak menyokong requestFullscreen pada div
+      if (tvContainer.classList.contains('tv-ios-fullscreen')) {
+        tvContainer.classList.remove('tv-ios-fullscreen');
+        return;
+      }
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (tvContainer.requestFullscreen) {
+          tvContainer.requestFullscreen().catch(() => tvContainer.classList.add('tv-ios-fullscreen'));
+        } else if (tvContainer.webkitRequestFullscreen) {
+          tvContainer.webkitRequestFullscreen();
+        } else {
+          tvContainer.classList.add('tv-ios-fullscreen');
+        }
       } else {
         if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       }
     }
 
@@ -6664,15 +7091,17 @@ let selObj = null;
         return;
       }
 
+     if (tbody.parentElement) tbody.parentElement.classList.add('mobile-rekod-table');
+
       tbody.innerHTML = sorted.map(r => `
-        <tr>
-          <td class="font-bold text-indigo-900">${r.tarikh}</td>
-          <td class="font-bold text-indigo-700">${r.masa}</td>
-          <td class="font-semibold text-gray-700">${r.kelas}</td>
-          <td class="font-extrabold text-rose-600">${r.guru_asal}</td>
-          <td class="font-medium text-amber-600">${r.sebab}</td>
-          <td class="font-extrabold text-emerald-600">${r.guru_ganti}</td>
-          <td class="text-center">
+        <tr class="rekod-card-row">
+          <td data-label="Tarikh" class="font-bold text-indigo-900">${r.tarikh}</td>
+          <td data-label="Masa" class="font-bold text-indigo-700">${r.masa}</td>
+          <td data-label="Kelas" class="font-semibold text-gray-700">${r.kelas}</td>
+          <td data-label="Guru Asal" class="font-extrabold text-rose-600">${r.guru_asal}</td>
+          <td data-label="Sebab" class="font-medium text-amber-600">${r.sebab}</td>
+          <td data-label="Guru Ganti" class="font-extrabold text-emerald-600">${r.guru_ganti}</td>
+          <td data-label="Tindakan" class="text-center">
             <button onclick="confirmDelete('${r.__backendId}')" class="w-8 h-8 bg-rose-100 hover:bg-rose-500 text-rose-600 hover:text-white rounded-full transition-all shadow-sm flex items-center justify-center mx-auto" title="Padam">
               <i class="fa-solid fa-trash-can text-sm"></i>
             </button>
