@@ -3090,16 +3090,26 @@
                   </td>`;
         };
 
-        const lukisSelPKAGuru = (senaraiKelasPKA, colspanVal = 1) => {
+        const lukisSelPKAGuru = (senaraiKelasPKA, colspanVal = 1, labelMasaKhas = '') => {
           const attrCS = colspanVal > 1 ? ` colspan="${colspanVal}"` : '';
           const labelKelas = senaraiKelasPKA.map(k => String(k).toUpperCase()).join(' / ');
+          const htmlMasaKhas = labelMasaKhas ? `<div class="text-[8px] font-bold text-black/60 mt-0.5 leading-none whitespace-nowrap">${labelMasaKhas}</div>` : '';
           return `<td${attrCS} class="border border-gray-300 p-2 shadow-sm relative overflow-hidden min-w-[70px] border-b-[3px] border-b-gray-800" style="background-color: ${warnaGuru} !important;">
                     <div class="absolute inset-0 bg-white opacity-[0.10] pointer-events-none"></div>
                     <div class="relative z-10 flex flex-col justify-center h-full">
                       <div class="font-black text-black/80 text-[11px] md:text-sm drop-shadow-sm leading-tight whitespace-nowrap">PKA</div>
                       <div class="text-[9px] font-extrabold text-black/60 mt-1 uppercase leading-tight whitespace-nowrap">${labelKelas}</div>
+                      ${htmlMasaKhas}
                     </div>
                   </td>`;
+        };
+
+        const kiraLabelMasaPKAT1TanpaRehat = (limSlot, perluPaparPadaRehatIdx = false) => {
+          if (limSlot < 0) return '';
+          if (limSlot === rehatIdx && !perluPaparPadaRehatIdx) return '';
+          const mMula = tambahMinitMasa(waktuMula, limSlot * 30);
+          const mTamat = tambahMinitMasa(mMula, 15);
+          return `${mMula} - ${mTamat}`;
         };
 
         // Bina jadual harian guru (sCikgu) untuk setiap hari
@@ -3194,7 +3204,7 @@
                   rowsHtml += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px] border-b-[3px] border-b-gray-800">TAMAT</td>`;
                 }
               }
-              rowsHtml += lukisSelPKAGuru(klsPKAT1);
+              rowsHtml += lukisSelPKAGuru(klsPKAT1, 1, kiraLabelMasaPKAT1TanpaRehat(limPKAT1HariIni));
 
               const jumKolumSelepasPKA = (rehatIdx - limPKAT1HariIni - 1) + 2 + bilKolumPetangGuru;
               let idxAkhirAktif = limPKAT1HariIni - 1;
@@ -3246,7 +3256,7 @@
                 }
               } else if ((klsPKAT1.length > 0 && limPKAT1HariIni === rehatIdx) || adaTsmkSelepasPKA1015) {
                 // Hari Tiada Rehat & PKA Tahap 1 diletakkan tepat pada lajur 10:00 - 10:15 (diikuti Tasmik jika ada, atau TAMAT)
-                rowsHtml += (klsPKAT1.length > 0) ? lukisSelPKAGuru(klsPKAT1) : lukisSelPdPGuru(null);
+                rowsHtml += (klsPKAT1.length > 0) ? lukisSelPKAGuru(klsPKAT1, 1, kiraLabelMasaPKAT1TanpaRehat(limPKAT1HariIni, adaHariRehatTanpaPKAT1)) : lukisSelPdPGuru(null);
 
                 const jumKolumSelepas1015 = 1 + bilKolumPetangGuru;
                 let idxAkhirAktif = rehatIdx - 1;
@@ -3275,7 +3285,11 @@
                   for (let i = rehatIdx + 1; i < limPKAT1HariIni; i++) {
                     senaraiSelepas1030.push({ jenis: 'PDP', data: sCikgu[i] });
                   }
-                  senaraiSelepas1030.push({ jenis: 'PKA', data: klsPKAT1 });
+                  senaraiSelepas1030.push({
+                    jenis: 'PKA',
+                    data: klsPKAT1,
+                    labelMasa: kiraLabelMasaPKAT1TanpaRehat(limPKAT1HariIni)
+                  });
                   let idxAkhir = limPKAT1HariIni - 1;
                   for (let i = limPKAT1HariIni; i < 14; i++) {
                     if (i < maksSlotSekolahHariIni || sCikgu[i]) idxAkhir = i;
@@ -3296,7 +3310,7 @@
                 let terisi = 0;
                 senaraiSelepas1030.forEach(item => {
                   if (terisi < bilKolumPetangGuru) {
-                    if (item.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(item.data);
+                    if (item.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(item.data, 1, item.labelMasa || '');
                     else rowsHtml += lukisSelPdPGuru(item.data);
                     terisi++;
                   }
@@ -3426,7 +3440,7 @@
                 if (i === 0) {
                   rowsHtml += `<td class="border border-gray-300 p-2 bg-indigo-50 font-black text-indigo-900 tracking-widest uppercase align-middle border-b-[3px] border-b-gray-800">PERH</td>`;
                 } else if (!adaRehatH && klsPKAT1.length > 0 && limPKAT1HariIni >= 0 && i === limPKAT1HariIni) {
-                  rowsHtml += lukisSelPKAGuru(klsPKAT1);
+                  rowsHtml += lukisSelPKAGuru(klsPKAT1, 1, kiraLabelMasaPKAT1TanpaRehat(limPKAT1HariIni));
                 } else if (i < maksSlotSekolahHariIni || sCikgu[i]) {
                   rowsHtml += lukisSelPdPGuru(sCikgu[i]);
                 } else {
@@ -3441,7 +3455,7 @@
                   rowsHtml += `<td colspan="2" class="border border-gray-300 p-2 bg-amber-50 font-black text-amber-600 tracking-widest align-middle border-b-[3px] border-b-gray-800">REHAT</td>`;
                 }
               } else if ((klsPKAT1.length > 0 && limPKAT1HariIni === rehatIdx) || adaTsmkSelepasPKA1015) {
-                rowsHtml += (klsPKAT1.length > 0) ? lukisSelPKAGuru(klsPKAT1) : lukisSelPdPGuru(null);
+                rowsHtml += (klsPKAT1.length > 0) ? lukisSelPKAGuru(klsPKAT1, 1, kiraLabelMasaPKAT1TanpaRehat(limPKAT1HariIni, true)) : lukisSelPdPGuru(null);
                 if (rehatIdx < maksSlotSekolahHariIni || sCikgu[rehatIdx]) rowsHtml += lukisSelPdPGuru(sCikgu[rehatIdx]);
                 else rowsHtml += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px] border-b-[3px] border-b-gray-800">TAMAT</td>`;
               } else {
@@ -3471,23 +3485,31 @@
               }
               if (klsPKAT1.length > 0) {
                 if (adaRehatH || limPKAT1HariIni === rehatIdx) {
-                  kolumPagi[rehatIdx] = { jenis: 'PKA', data: klsPKAT1 };
+                  kolumPagi[rehatIdx] = {
+                    jenis: 'PKA',
+                    data: klsPKAT1,
+                    labelMasa: !adaRehatH ? kiraLabelMasaPKAT1TanpaRehat(limPKAT1HariIni, true) : ''
+                  };
                 } else if (limPKAT1HariIni >= 0 && limPKAT1HariIni < rehatIdx) {
-                  kolumPagi[limPKAT1HariIni] = { jenis: 'PKA', data: klsPKAT1 };
+                  kolumPagi[limPKAT1HariIni] = {
+                    jenis: 'PKA',
+                    data: klsPKAT1,
+                    labelMasa: !adaRehatH ? kiraLabelMasaPKAT1TanpaRehat(limPKAT1HariIni) : ''
+                  };
                 }
               }
 
               for (let c = 0; c < rehatIdx; c++) {
                 const itemK = kolumPagi[c];
                 if (!itemK) rowsHtml += lukisSelPdPGuru(null);
-                else if (itemK.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(itemK.data);
+                else if (itemK.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(itemK.data, 1, itemK.labelMasa || '');
                 else rowsHtml += lukisSelPdPGuru(itemK.data);
               }
 
               if (adaRehatH) {
                 const itemKolum6 = kolumPagi[rehatIdx];
                 if (itemKolum6) {
-                  if (itemKolum6.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(itemKolum6.data);
+                  if (itemKolum6.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(itemKolum6.data, 1, itemKolum6.labelMasa || '');
                   else rowsHtml += lukisSelPdPGuru(itemKolum6.data);
                   rowsHtml += `<td class="border border-gray-300 p-2 bg-amber-50 font-black text-amber-600 tracking-widest align-middle border-b-[3px] border-b-gray-800">REHAT</td>`;
                 } else if (adaSlotT23HariIni) {
@@ -3499,7 +3521,7 @@
               } else {
                 const itemKolum6 = kolumPagi[rehatIdx];
                 if (itemKolum6) {
-                  if (itemKolum6.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(itemKolum6.data);
+                  if (itemKolum6.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(itemKolum6.data, 1, itemKolum6.labelMasa || '');
                   else rowsHtml += lukisSelPdPGuru(itemKolum6.data);
                   if (rehatIdx < maksSlotSekolahHariIni || sCikgu[rehatIdx]) rowsHtml += lukisSelPdPGuru(sCikgu[rehatIdx]);
                   else rowsHtml += `<td class="border border-gray-300 p-2 bg-gray-200 text-gray-400 font-bold text-[10px] border-b-[3px] border-b-gray-800">TAMAT</td>`;
@@ -3535,7 +3557,11 @@
                 for (let i = rehatIdx + 1; i < limPKAT1HariIni; i++) {
                   senaraiSelepas1030.push({ jenis: 'PDP', data: sCikgu[i] });
                 }
-                senaraiSelepas1030.push({ jenis: 'PKA', data: klsPKAT1 });
+                senaraiSelepas1030.push({
+                  jenis: 'PKA',
+                  data: klsPKAT1,
+                  labelMasa: kiraLabelMasaPKAT1TanpaRehat(limPKAT1HariIni)
+                });
                 let idxAkhir = limPKAT1HariIni - 1;
                 for (let i = limPKAT1HariIni; i < 14; i++) {
                   if (i < maksSlotSekolahHariIni || sCikgu[i]) idxAkhir = i;
@@ -3556,7 +3582,7 @@
               let terisi = 0;
               senaraiSelepas1030.forEach(item => {
                 if (terisi < bilKolumPetangGuru) {
-                  if (item.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(item.data);
+                  if (item.jenis === 'PKA') rowsHtml += lukisSelPKAGuru(item.data, 1, item.labelMasa || '');
                   else rowsHtml += lukisSelPdPGuru(item.data);
                   terisi++;
                 }
