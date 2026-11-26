@@ -962,8 +962,12 @@
                 <button id="btn-paparan-guru" onclick="tukarPaparanJadual('guru')" class="flex-1 py-3 text-[10px] md:text-xs font-bold rounded-xl transition-all hover:bg-rose-50 text-rose-700 bg-white border border-rose-100"><i class="fa-solid fa-user-tie mr-2"></i> Paparan Individu Guru</button>
             </div>
 
-            <!-- KOD BAHARU: Butang Cetak A4 Melintang Pintar -->
-            <div class="flex justify-center md:justify-end mb-4 relative z-10">
+            <!-- KOD BAHARU: Butang Segerak Sheet Jadual Induk (Guru Ganti) & Cetak A4 Melintang -->
+            <div class="flex flex-wrap justify-center md:justify-end gap-3 mb-4 relative z-10">
+                <button id="btn-sync-jadual-ganti" onclick="segerakJadualIndukKeSheetGanti(true)" title="Hantar susunan jadual semasa terus ke tab Google Sheet 'Jadual Induk' untuk kegunaan Guru Ganti" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black px-5 py-3 rounded-xl shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-2.5 text-xs md:text-sm">
+                    <i id="ikon-sync-jadual-ganti" class="fa-solid fa-cloud-arrow-up text-base"></i>
+                    <span id="teks-sync-jadual-ganti">SEGERAK KE GURU GANTI (SHEET JADUAL INDUK)</span>
+                </button>
                 <button onclick="cetakJadualAktifA4()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black px-6 py-3 rounded-xl shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-3 text-xs md:text-sm">
                     <i class="fa-solid fa-print text-lg"></i> CETAK JADUAL A4 (MELINTANG)
                 </button>
@@ -1267,7 +1271,7 @@
     }
 
    // KOD BAHARU: Pembolehubah Induk & Enjin Pangkalan Data Google Sheet
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyqXIZOHo4gfm-a9pcrEmtEOUFpG1OwZBXP7sapd_j43ZImJAp-lj96KgDjO6e_T4m/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCpIma63ba1TUXnwnIqsYLJV5AjAwRy3PjI5kfsnXEhxy8RAwp_Rk64ffqmM9dMIXD/exec";
 
     function kemaskiniStatusSyncUI(mod, mesej) {
       const btn = document.getElementById('btn-sync-cloud');
@@ -1726,23 +1730,342 @@
         } catch(e) { console.warn("Simpanan latar belakang Fasa 2 ditangguhkan (Mod Luar Talian / Sandbox):", e); }
     }
 
+    // =========================================================================
+    // KOD BAHARU (BAHAGIAN 1): ENJIN PENUKAR FORMAT & PENAPISAN JADUAL INDUK
+    // Header Google Sheet 'Jadual Induk': HARI | MASA | KELAS | SUBJEK | GURU ASAL
+    // =========================================================================
+    function parseMasaKeMinitInduk(masaStr, lalaiMinit = 450) {
+      if (!masaStr || typeof masaStr !== 'string' || !masaStr.includes(':')) return lalaiMinit;
+      const [h, m] = masaStr.split(':').map(Number);
+      return (isNaN(h) || isNaN(m)) ? lalaiMinit : (h * 60 + m);
+    }
+
+    function formatMinitKeHHMMTanpaTitik(jumlahMinit) {
+      const mBersih = ((Math.round(jumlahMinit) % 1440) + 1440) % 1440;
+      const hh = String(Math.floor(mBersih / 60)).padStart(2, '0');
+      const mm = String(mBersih % 60).padStart(2, '0');
+      return `${hh}${mm}`;
+    }
+
+    function kiraJulatMinitSebenarSlotInduk(namaKelas, hariStr, slotIdx, adaSebarangPKASekolah) {
+      const mulaSekolahStr = document.getElementById('waktu-mula-sekolah') ? document.getElementById('waktu-mula-sekolah').value : '07:30';
+      const wRehatBiasaMulaStr = document.getElementById('waktu-rehat-mula') ? document.getElementById('waktu-rehat-mula').value : '10:00';
+      const wRehatBiasaTamatStr = document.getElementById('waktu-rehat-tamat') ? document.getElementById('waktu-rehat-tamat').value : '10:15';
+      const wRehatJumMulaStr = document.getElementById('waktu-rehat-jum-mula') ? document.getElementById('waktu-rehat-jum-mula').value : wRehatBiasaMulaStr;
+      const wRehatJumTamatStr = document.getElementById('waktu-rehat-jum-tamat') ? document.getElementById('waktu-rehat-jum-tamat').value : wRehatBiasaTamatStr;
+      const hariPerhimpunan = (document.getElementById('tetapan-perhimpunan') ? document.getElementById('tetapan-perhimpunan').value : 'RABU').toUpperCase();
+
+      const mulaSekolahMinit = parseMasaKeMinitInduk(mulaSekolahStr, 450);
+      const isJum = (hariStr === 'JUMAAT');
+      const rMulaMinit = parseMasaKeMinitInduk(isJum ? wRehatJumMulaStr : wRehatBiasaMulaStr, 600);
+      const rTamatAsalMinit = parseMasaKeMinitInduk(isJum ? wRehatJumTamatStr : wRehatBiasaTamatStr, 615);
+      const rTamatEfektifMinit = adaSebarangPKASekolah ? (rMulaMinit + 30) : Math.max(rMulaMinit + 15, rTamatAsalMinit);
+
+      let rehatIdx = Math.floor((rMulaMinit - mulaSekolahMinit) / 30);
+      if (isNaN(rehatIdx) || rehatIdx <= 0) rehatIdx = 5;
+
+      const cbRehat = document.getElementById('rehat-' + hariStr.toLowerCase());
+      const adaRehat = cbRehat ? cbRehat.checked : (hariStr !== 'JUMAAT');
+
+      let noThn = 1;
+      for (let t = 1; t <= 6; t++) {
+        if (String(namaKelas).includes(`${t} `) || String(namaKelas).trim().endsWith(`${t}`)) {
+          noThn = t;
+          break;
+        }
+      }
+
+      const isT1 = (noThn <= 2);
+      const pkaSlot = (f2_jadualSediaAda[namaKelas] && f2_jadualSediaAda[namaKelas][hariStr]) ? f2_jadualSediaAda[namaKelas][hariStr][14] : null;
+      const aktifPKAHariIni = Boolean(
+        (pkaSlot && pkaSlot.subjek === 'PKA') ||
+        (typeof adalahPKAAktifPadaHari === 'function' && adalahPKAAktifPadaHari(noThn, hariStr) && (isT1 || hariStr !== hariPerhimpunan))
+      );
+      const isPKAT23 = !isT1 && aktifPKAHariIni && (hariStr !== hariPerhimpunan);
+
+      const pfx = hariStr === 'ISNIN' ? 'isn' : (hariStr === 'SELASA' ? 'sel' : (hariStr === 'RABU' ? 'rab' : (hariStr === 'KHAMIS' ? 'kha' : 'jum')));
+      const limitPdP = kiraMaxSlotDinamik(`waktu-${pfx}-t${noThn}`, adaRehat, isJum);
+
+      // Slot 14: Sesi Pembentukan Karakter (PKA - 15 Minit)
+      if (slotIdx === 14) {
+        if (!aktifPKAHariIni) return null;
+        if (isPKAT23) return [mulaSekolahMinit, mulaSekolahMinit + 15]; // Contoh: 0730 - 0745
+        if (adaRehat) return [rMulaMinit, rMulaMinit + 15]; // Contoh: 1000 - 1015
+        return [mulaSekolahMinit + limitPdP * 30, mulaSekolahMinit + limitPdP * 30 + 15]; // Jumaat tiada rehat
+      }
+
+      // Abaikan slot di luar waktu tamat PdP biasa (seperti Tasmik / TAMAT)
+      if (slotIdx < 0 || slotIdx >= limitPdP) return null;
+
+      if (adaRehat) {
+        if (slotIdx < rehatIdx) {
+          if (isPKAT23) return [mulaSekolahMinit + 15 + slotIdx * 30, mulaSekolahMinit + 45 + slotIdx * 30];
+          return [mulaSekolahMinit + slotIdx * 30, mulaSekolahMinit + (slotIdx + 1) * 30];
+        }
+        return [rTamatEfektifMinit + (slotIdx - rehatIdx) * 30, rTamatEfektifMinit + (slotIdx - rehatIdx + 1) * 30];
+      } else {
+        if (isPKAT23) return [mulaSekolahMinit + 15 + slotIdx * 30, mulaSekolahMinit + 45 + slotIdx * 30];
+        return [mulaSekolahMinit + slotIdx * 30, mulaSekolahMinit + (slotIdx + 1) * 30];
+      }
+    }
+
+    function ekstrakSlotSahUntukGuruGanti(namaKelas, objSlot) {
+      if (!objSlot || !objSlot.subjek || !objSlot.kodGuru || objSlot.kodGuru === '-') return [];
+      const subUpper = String(objSlot.subjek).trim().toUpperCase();
+
+      // 1. Kecualikan Perhimpunan, Rehat, Tamat & Tasmik (TSMK)
+      if (subUpper === 'PERHIMPUNAN' || subUpper === 'REHAT' || subUpper === 'TAMAT' || subUpper.includes('TSMK') || subUpper.includes('TASMIK')) {
+        return [];
+      }
+
+      // 2. Kecualikan Pendidikan Islam (PI) tunggal
+      if (subUpper === 'PI' || subUpper === 'PENDIDIKAN ISLAM' || (subUpper.includes('ISLAM') && !subUpper.includes('MORAL') && !subUpper.includes('PM'))) {
+        return [];
+      }
+
+      // 3. Bagi slot serentak PI / PM: Kecualikan PI, ambil subjek PM & Kod Guru PM sahaja
+      if (subUpper === 'PI / PM' || subUpper === 'PM / PI' || (subUpper.includes('PI') && subUpper.includes('PM'))) {
+        const senaraiKod = String(objSlot.kodGuru).split(/\s*\/\s*/).map(k => k.trim().toUpperCase()).filter(k => k && k !== '-');
+        let kodGuruPM = '';
+
+        for (const kodUji of senaraiKod) {
+          const profilG = (f2_senaraiGuruPenuh || []).find(g => String(g.kod || '').trim().toUpperCase() === kodUji);
+          if (profilG && Array.isArray(profilG.senaraiTugas)) {
+            const ajarPM = profilG.senaraiTugas.some(t =>
+              String(t.tahun || '').trim().toUpperCase() === String(namaKelas || '').trim().toUpperCase() &&
+              ((typeof window.ekstrakKodSubjekF1F2 === 'function' && window.ekstrakKodSubjekF1F2(t.subjek) === 'PM') || String(t.subjek || '').toUpperCase().includes('MORAL'))
+            );
+            if (ajarPM) {
+              kodGuruPM = kodUji;
+              break;
+            }
+          }
+        }
+
+        if (!kodGuruPM && senaraiKod.length >= 2) {
+          kodGuruPM = (subUpper.indexOf('PM') < subUpper.indexOf('PI')) ? senaraiKod[0] : senaraiKod[1];
+        }
+        return kodGuruPM ? [{ subjek: 'PM', kodGuru: kodGuruPM }] : [];
+      }
+
+      // 4. Masukkan PKA & semua subjek PdP lain (pecahkan kepada baris individu jika 2 guru mengajar bersama seperti AM)
+      const labelSubjek = (subUpper.includes('PEMBENTUKAN KARAKTER') || subUpper === 'PKA') ? 'PKA' : subUpper;
+      const senaraiKodGuru = String(objSlot.kodGuru).split(/\s*\/\s*/).map(k => k.trim().toUpperCase()).filter(k => k && k !== '-');
+      return senaraiKodGuru.map(kod => ({ subjek: labelSubjek, kodGuru: kod }));
+    }
+
+    function binaSenaraiJadualIndukUntukGuruGanti() {
+      const rowsSheet = [["HARI", "MASA", "KELAS", "SUBJEK", "GURU ASAL"]];
+      const rekodMemori = [];
+
+      const senaraiKelas = (Array.isArray(f2_senaraiKelasUnik) && f2_senaraiKelasUnik.length > 0)
+        ? [...f2_senaraiKelasUnik].sort()
+        : Object.keys(f2_jadualSediaAda || {}).sort();
+
+      if (senaraiKelas.length === 0) return { rowsSheet, rekodMemori };
+
+      const senaraiHari = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'];
+      const hariPerhimpunan = (document.getElementById('tetapan-perhimpunan') ? document.getElementById('tetapan-perhimpunan').value : 'RABU').toUpperCase();
+
+      // Semak sama ada mana-mana tahun di sekolah mengaktifkan PKA bagi penyelarasan masa selepas rehat
+      let adaSebarangPKASekolah = [1, 2, 3, 4, 5, 6].some(t => document.getElementById(`pka-t${t}`) && document.getElementById(`pka-t${t}`).checked);
+      if (!adaSebarangPKASekolah) {
+        adaSebarangPKASekolah = senaraiKelas.some(kls =>
+          senaraiHari.some(h => f2_jadualSediaAda[kls] && f2_jadualSediaAda[kls][h] && f2_jadualSediaAda[kls][h][14])
+        );
+      }
+
+      senaraiHari.forEach(hari => {
+        senaraiKelas.forEach(kelas => {
+          const slotsHari = (f2_jadualSediaAda[kelas] && f2_jadualSediaAda[kelas][hari]) ? f2_jadualSediaAda[kelas][hari] : null;
+          if (!slotsHari) return;
+
+          let kumpulSlotKelas = [];
+
+          // A. Kumpul slot PdP biasa (Indeks 0..13 dalam had waktu kelas; Perhimpunan, TSMK & PI ditapis automatik)
+          for (let s = 0; s < 14; s++) {
+            if (hari === hariPerhimpunan && s === 0) continue;
+            const obj = slotsHari[s];
+            if (!obj) continue;
+
+            const julatMinit = kiraJulatMinitSebenarSlotInduk(kelas, hari, s, adaSebarangPKASekolah);
+            if (!julatMinit) continue;
+
+            const senaraiItem = ekstrakSlotSahUntukGuruGanti(kelas, obj);
+            senaraiItem.forEach(item => {
+              kumpulSlotKelas.push({
+                mulaMinit: julatMinit[0],
+                tamatMinit: julatMinit[1],
+                masa: `${formatMinitKeHHMMTanpaTitik(julatMinit[0])} - ${formatMinitKeHHMMTanpaTitik(julatMinit[1])}`,
+                subjek: item.subjek,
+                kodGuru: item.kodGuru
+              });
+            });
+          }
+
+          // B. Kumpul slot PKA (Indeks 14) jika wujud pada hari tersebut
+          if (slotsHari[14] && slotsHari[14].subjek === 'PKA') {
+            const julatPKA = kiraJulatMinitSebenarSlotInduk(kelas, hari, 14, adaSebarangPKASekolah);
+            if (julatPKA) {
+              const senaraiPKA = ekstrakSlotSahUntukGuruGanti(kelas, slotsHari[14]);
+              senaraiPKA.forEach(item => {
+                kumpulSlotKelas.push({
+                  mulaMinit: julatPKA[0],
+                  tamatMinit: julatPKA[1],
+                  masa: `${formatMinitKeHHMMTanpaTitik(julatPKA[0])} - ${formatMinitKeHHMMTanpaTitik(julatPKA[1])}`,
+                  subjek: 'PKA',
+                  kodGuru: item.kodGuru
+                });
+              });
+            }
+          }
+
+          // Susun ikut urutan masa sebenar dari awal pagi hingga tamat persekolahan
+          kumpulSlotKelas.sort((a, b) => a.mulaMinit - b.mulaMinit || a.tamatMinit - b.tamatMinit);
+
+          kumpulSlotKelas.forEach(rek => {
+            rowsSheet.push([hari, rek.masa, kelas, rek.subjek, rek.kodGuru]);
+            rekodMemori.push({
+              'HARI': hari,
+              'MASA': rek.masa,
+              'KELAS': kelas,
+              'SUBJEK': rek.subjek,
+              'GURU ASAL': rek.kodGuru
+            });
+          });
+        });
+      });
+
+      return { rowsSheet, rekodMemori };
+    }
+
+    // =========================================================================
+    // KOD BAHARU (BAHAGIAN 2): PENGHANTARAN AUTO KE GOOGLE SHEET 'Jadual Induk'
+    // =========================================================================
+    function kemaskiniMemoriJadualIndukTempatan() {
+      const hasil = binaSenaraiJadualIndukUntukGuruGanti();
+      if (hasil.rekodMemori.length > 0) {
+        jadualInduk = hasil.rekodMemori;
+        try {
+          localStorage.setItem('jadualIndukAutoCache', JSON.stringify(hasil.rekodMemori));
+        } catch (err) {
+          console.warn('Gagal menyimpan cache tempatan Jadual Induk:', err);
+        }
+        // Sandaran sekiranya senarai dropdown guru belum dimuatkan semasa luar talian
+        if ((!Array.isArray(guruList) || guruList.length === 0) && hasil.rekodMemori.length > 0) {
+          guruList = [...new Set(hasil.rekodMemori.map(r => r['GURU ASAL']).filter(Boolean))].sort();
+          populateDropdown('input-guru', guruList, '-- Pilih Guru --');
+        }
+      }
+      return hasil;
+    }
+
+    async function segerakJadualIndukKeSheetGanti(manual = false) {
+      const hasil = kemaskiniMemoriJadualIndukTempatan();
+      if (hasil.rekodMemori.length === 0) {
+        if (manual) showToast('Tiada jadual terjana untuk dihantar ke Sheet Jadual Induk!', 'error');
+        return false;
+      }
+
+      const btn = document.getElementById('btn-sync-jadual-ganti');
+      const ikon = document.getElementById('ikon-sync-jadual-ganti');
+      const teks = document.getElementById('teks-sync-jadual-ganti');
+
+      if (btn && ikon && teks) {
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-wait');
+        ikon.className = 'fa-solid fa-rotate animate-spin text-base';
+        teks.textContent = 'MENGHANTAR KE SHEET JADUAL INDUK...';
+      }
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'saveJadualInduk',
+            sheet_name: 'Jadual Induk',
+            jadual_induk: hasil.rowsSheet
+          })
+        });
+
+        const rawText = await response.text();
+        let result = null;
+        try { result = JSON.parse(rawText); } catch (_) {}
+
+        if (result && result.status === 'berjaya') {
+          showToast(`Auto-Sync Berjaya: ${hasil.rekodMemori.length} slot dikemas kini ke Sheet 'Jadual Induk'!`, 'success');
+          return true;
+        } else {
+          if (manual) {
+            showToast('Pastikan kod Google Apps Script (Bahagian 4) telah dikemas kini & Deploy.', 'error');
+          }
+          return false;
+        }
+      } catch (err) {
+        console.error('Ralat menghantar ke Sheet Jadual Induk:', err);
+        if (manual) {
+          showToast('Gagal menghubungi Google Sheet. Memori Guru Ganti dalam aplikasi tetap aktif.', 'error');
+        }
+        return false;
+      } finally {
+        if (btn && ikon && teks) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-75', 'cursor-wait');
+          ikon.className = 'fa-solid fa-cloud-arrow-up text-base';
+          teks.textContent = 'SEGERAK KE GURU GANTI (SHEET JADUAL INDUK)';
+        }
+      }
+    }
+
+    // =========================================================================
+    // KOD BAHARU (BAHAGIAN 3): PENGESAN PERTINDIHAN MINIT MASA GURU GANTI
+    // Menyokong format '0730 - 0800', '0730 - 0745' (PKA) & '0745 - 0815'
+    // =========================================================================
+    function ekstrakJulatMinitMasaGanti(masaStr) {
+      if (!masaStr || typeof masaStr !== 'string') return null;
+      const padanan = masaStr.match(/(\d{1,2})[:.]?(\d{2})\s*[-–—]\s*(\d{1,2})[:.]?(\d{2})/);
+      if (!padanan) return null;
+      const mula = parseInt(padanan[1], 10) * 60 + parseInt(padanan[2], 10);
+      const tamat = parseInt(padanan[3], 10) * 60 + parseInt(padanan[4], 10);
+      return (isNaN(mula) || isNaN(tamat)) ? null : [mula, tamat];
+    }
+
+    function adalahMasaBertindihGanti(masaA, masaB) {
+      const aBersih = String(masaA || '').trim();
+      const bBersih = String(masaB || '').trim();
+      if (!aBersih || !bBersih) return false;
+      if (aBersih === bBersih) return true;
+
+      const julatA = ekstrakJulatMinitMasaGanti(aBersih);
+      const julatB = ekstrakJulatMinitMasaGanti(bBersih);
+      if (julatA && julatB) {
+        return julatA[0] < julatB[1] && julatB[0] < julatA[1];
+      }
+      return false;
+    }
+
     function timeToMinutes(timeStr) {
       if (!timeStr || typeof timeStr !== 'string') return 0;
-      const match = timeStr.match(/(\d{1,2})(\d{2})/);
+      const match = timeStr.match(/(\d{1,2})[:.]?(\d{2})/);
       if (!match) return 0;
-      return parseInt(match[1]) * 60 + parseInt(match[2]);
+      return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
     }
 
     function calculateTeacherWorkload(teacherName, hari) {
+      const sasaranGuru = String(teacherName || '').trim().toUpperCase();
+      const sasaranHari = String(hari || '').trim().toUpperCase();
+
       // 1. Kira Beban Hakiki Hari Ini (Dari Jadual Induk)
       const hakiki = jadualInduk.filter(j => {
-        const jHari = (j['HARI'] || '').toUpperCase();
-        const jGuru = (j['GURU ASAL'] || j['Guru Asal'] || '').toUpperCase();
-        return jHari === hari && jGuru === teacherName.toUpperCase();
+        const jHari = String(j['HARI'] || '').trim().toUpperCase();
+        const senaraiGuruSlot = String(j['GURU ASAL'] || j['Guru Asal'] || '').split(/\s*\/\s*/).map(g => g.trim().toUpperCase());
+        return jHari === sasaranHari && senaraiGuruSlot.includes(sasaranGuru);
       }).length;
 
       // 2. Kira Beban Ganti Semasa (Jika guru sudah dipilih secara manual dalam sesi ini)
-      const gantiHariIni = cadanganGanti.filter(c => c.guruGanti === teacherName).length;
+      const gantiHariIni = cadanganGanti.filter(c => String(c.guruGanti || '').trim().toUpperCase() === sasaranGuru).length;
 
       return hakiki + gantiHariIni;
     }
@@ -1777,29 +2100,30 @@
     }
 
     function hasConflicts() {
-      const timeSlots = {};
-      
-      for (let i = 0; i < cadanganGanti.length; i++) {
-        const c = cadanganGanti[i];
-        const key = `${c.hari}-${c.masa}-${c.guruGanti}`;
-        
-        if (!timeSlots[key]) {
-          timeSlots[key] = [];
-        }
-        timeSlots[key].push(i);
-      }
+      const conflictSet = new Set();
 
-      for (const key in timeSlots) {
-        if (timeSlots[key].length > 1) {
-          const indices = timeSlots[key];
-          const kelas = new Set(indices.map(i => cadanganGanti[i].kelas));
-          if (kelas.size > 1) {
-            return { hasConflict: true, conflictIndices: indices };
+      // Semak pertindihan masa antara dua kelas ganti berbeza yang diberikan kepada guru ganti yang sama
+      for (let i = 0; i < cadanganGanti.length; i++) {
+        const c1 = cadanganGanti[i];
+        if (!c1.guruGanti) continue;
+
+        for (let j = i + 1; j < cadanganGanti.length; j++) {
+          const c2 = cadanganGanti[j];
+          if (!c2.guruGanti) continue;
+
+          const samaHari = String(c1.hari || '').trim().toUpperCase() === String(c2.hari || '').trim().toUpperCase();
+          const samaGuru = String(c1.guruGanti || '').trim().toUpperCase() === String(c2.guruGanti || '').trim().toUpperCase();
+          const berbezaKelas = String(c1.kelas || '').trim().toUpperCase() !== String(c2.kelas || '').trim().toUpperCase();
+
+          if (samaHari && samaGuru && berbezaKelas && adalahMasaBertindihGanti(c1.masa, c2.masa)) {
+            conflictSet.add(i);
+            conflictSet.add(j);
           }
         }
       }
-      
-      return { hasConflict: false, conflictIndices: [] };
+
+      const conflictIndices = Array.from(conflictSet).sort((a, b) => a - b);
+      return { hasConflict: conflictIndices.length > 0, conflictIndices };
     }
 
     function allGantiSelected() {
@@ -2640,18 +2964,17 @@
       }, 250);
     }
 
-    async function segerakSemuaDataCloud(manual = false) {
+   async function segerakSemuaDataCloud(manual = false) {
       if (window._sedangSyncCloud) return;
       window._sedangSyncCloud = true;
       kemaskiniStatusSyncUI('loading', 'Menarik Google Sheet...');
 
       try {
-        // Tarik kesemua sumber Google Sheet & CSV secara SERENTAK (3x lebih pantas)
+        // 1. Tarik data pangkalan utama & senarai rujukan terlebih dahulu
         const [resRead, resF1, resF2] = await Promise.allSettled([
           tarikJsonGoogleSheet('read'),
           tarikJsonGoogleSheet('readFasa1'),
           tarikJsonGoogleSheet('readFasa2'),
-          loadJadualInduk(),
           loadGuruSebab(),
           loadSignatureData()
         ]);
@@ -2660,10 +2983,13 @@
         const dataF1 = resF1.status === 'fulfilled' ? resF1.value : null;
         const dataF2 = resF2.status === 'fulfilled' ? resF2.value : null;
 
-        // Kekalkan urutan kemas kini: Fasa 1 dahulu -> kemudian Fasa 2 -> kemudian Rekod Ganti
+        // 2. Kemas kini Fasa 1 -> Fasa 2 -> Rekod Ganti mengikut urutan
         const okRead = dataRead ? await fetchDatabase(dataRead) : false;
         const okF1 = dataF1 ? await fetchFasa1Data(dataF1) : false;
         const okF2 = dataF2 ? await fetchFasa2Data(dataF2) : false;
+
+        // 3. Tarik tab 'Jadual Induk' secara khusus selepas Fasa 1 & 2 sedia (elak timpaan CSV lama)
+        await loadJadualInduk(true);
 
         const tab3 = document.getElementById('tab3');
         if (tab3 && !tab3.classList.contains('hidden') && typeof updateTVScreen === 'function') {
@@ -4458,16 +4784,129 @@
       return `${d}/${m}/${y}`;
     }
 
-    async function loadJadualInduk() {
-      try {
-        const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVHsEfF5rJ6M3unRSPNJ_Ie6sRnBowigSD-PB46QShkyY95xRr8oYoKCcTRYQ3ktlP3zaUV_pV4Qka/pub?gid=0&single=true&output=csv';
-        const response = await fetch(url);
-        const text = await response.text();
-        jadualInduk = parseCSV(text);
-      } catch (error) {
-        console.error('Error loading jadual induk:', error);
-        showToast('Gagal memuatkan jadual induk', 'error');
+   function normalisasiRekodJadualInduk(rawData) {
+      if (!Array.isArray(rawData) || rawData.length === 0) return [];
+
+      // Sokong format Array 2D terus dari Google Apps Script (Baris 0 = Header)
+      if (Array.isArray(rawData[0])) {
+        if (rawData.length < 2) return [];
+        const headers = rawData[0].map(h => String(h || '').trim().toUpperCase());
+        const idxHari = headers.indexOf('HARI') !== -1 ? headers.indexOf('HARI') : 0;
+        const idxMasa = headers.indexOf('MASA') !== -1 ? headers.indexOf('MASA') : 1;
+        const idxKelas = headers.indexOf('KELAS') !== -1 ? headers.indexOf('KELAS') : 2;
+        const idxSubjek = headers.indexOf('SUBJEK') !== -1 ? headers.indexOf('SUBJEK') : 3;
+        const idxGuru = headers.indexOf('GURU ASAL') !== -1 ? headers.indexOf('GURU ASAL') : 4;
+
+        return rawData.slice(1).map(row => ({
+          'HARI': String(row[idxHari] || '').trim().toUpperCase(),
+          'MASA': String(row[idxMasa] || '').trim(),
+          'KELAS': String(row[idxKelas] || '').trim(),
+          'SUBJEK': String(row[idxSubjek] || '').trim().toUpperCase(),
+          'GURU ASAL': String(row[idxGuru] || '').trim().toUpperCase()
+        })).filter(r => r['HARI'] && r['MASA'] && r['KELAS'] && r['GURU ASAL'] && r['GURU ASAL'] !== '-');
       }
+
+      // Sokong format Array Objek (daripada cache tempatan atau parseCSV)
+      return rawData.map(r => ({
+        'HARI': String(r['HARI'] || r['Hari'] || r['hari'] || '').trim().toUpperCase(),
+        'MASA': String(r['MASA'] || r['Masa'] || r['masa'] || '').trim(),
+        'KELAS': String(r['KELAS'] || r['Kelas'] || r['kelas'] || '').trim(),
+        'SUBJEK': String(r['SUBJEK'] || r['Subjek'] || r['subjek'] || '').trim().toUpperCase(),
+        'GURU ASAL': String(r['GURU ASAL'] || r['Guru Asal'] || r['guru_asal'] || '').trim().toUpperCase()
+      })).filter(r => r['HARI'] && r['MASA'] && r['KELAS'] && r['GURU ASAL'] && r['GURU ASAL'] !== '-');
+    }
+
+   // Pastikan semua Kod Guru dalam tab 'Jadual Induk' (termasuk PKA, tanpa PI/TSMK) wujud dalam pilihan Tab 1
+    function selaraskanSenaraiGuruTab1() {
+      const petaKodUnik = new Map();
+
+      (guruList || []).forEach(g => {
+        const bersih = String(g || '').trim();
+        if (bersih) petaKodUnik.set(bersih.toUpperCase(), bersih.toUpperCase());
+      });
+
+      (jadualInduk || []).forEach(j => {
+        const guruRaw = String(j['GURU ASAL'] || j['Guru Asal'] || '').trim();
+        if (!guruRaw || guruRaw === '-') return;
+        guruRaw.split(/\s*\/\s*/).forEach(kod => {
+          const bersih = kod.trim().toUpperCase();
+          if (bersih && bersih !== '-' && !petaKodUnik.has(bersih)) {
+            petaKodUnik.set(bersih, bersih);
+          }
+        });
+      });
+
+      const senaraiGabung = Array.from(petaKodUnik.values());
+      if (senaraiGabung.length > 0) {
+        guruList = senaraiGabung;
+        const selectGuru = document.getElementById('input-guru');
+        const nilaiSemasa = selectGuru ? selectGuru.value : '';
+        populateDropdown('input-guru', guruList, '-- Pilih Guru --');
+        if (selectGuru && nilaiSemasa && guruList.includes(nilaiSemasa)) {
+          selectGuru.value = nilaiSemasa;
+        }
+      }
+    }
+
+    async function loadJadualInduk(utamakanLiveSheet = true) {
+      // 1. KEUTAMAAN MUTLAK: Baca terus dari tab Google Sheet 'Jadual Induk' menerusi Apps Script
+      if (utamakanLiveSheet) {
+        try {
+          const resSheet = await tarikJsonGoogleSheet('readJadualInduk');
+          if (resSheet && resSheet.status === 'berjaya' && Array.isArray(resSheet.data)) {
+            const dataBersih = normalisasiRekodJadualInduk(resSheet.data);
+            if (dataBersih.length > 0) {
+              jadualInduk = dataBersih;
+              try { localStorage.setItem('jadualIndukAutoCache', JSON.stringify(dataBersih)); } catch (_) {}
+              selaraskanSenaraiGuruTab1();
+              return true;
+            }
+          }
+        } catch (err) {
+          console.warn('Bacaan terus readJadualInduk tertangguh, semak memori tempatan:', err);
+        }
+      }
+
+      // 2. SANDARAN KEDUA: Bina terus daripada jadual Fasa 2 dalam aplikasi (lengkap dengan PKA 15 minit)
+      if (typeof kemaskiniMemoriJadualIndukTempatan === 'function' && Object.keys(f2_jadualSediaAda || {}).length > 0) {
+        const hasilTempatan = kemaskiniMemoriJadualIndukTempatan();
+        if (hasilTempatan && hasilTempatan.rekodMemori.length > 0) {
+          selaraskanSenaraiGuruTab1();
+          return true;
+        }
+      }
+
+      // 3. SANDARAN KETIGA: Guna cache tempatan terkini (JANGAN sesekali ditimpa oleh CSV lama!)
+      try {
+        const cacheLokal = localStorage.getItem('jadualIndukAutoCache');
+        if (cacheLokal) {
+          const parsedCache = normalisasiRekodJadualInduk(JSON.parse(cacheLokal));
+          if (parsedCache.length > 0) {
+            jadualInduk = parsedCache;
+            selaraskanSenaraiGuruTab1();
+            return true;
+          }
+        }
+      } catch (_) {}
+
+      // 4. HANYA jika jadualInduk benar-benar kosong (0 rekod), barulah rujuk CSV asal
+      if (!Array.isArray(jadualInduk) || jadualInduk.length === 0) {
+        try {
+          const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVHsEfF5rJ6M3unRSPNJ_Ie6sRnBowigSD-PB46QShkyY95xRr8oYoKCcTRYQ3ktlP3zaUV_pV4Qka/pub?gid=0&single=true&output=csv';
+          const response = await fetch(url, { cache: 'no-store' });
+          const text = await response.text();
+          const parsedCSV = normalisasiRekodJadualInduk(parseCSV(text));
+          if (parsedCSV.length > 0) {
+            jadualInduk = parsedCSV;
+            selaraskanSenaraiGuruTab1();
+            return true;
+          }
+        } catch (error) {
+          console.error('Error loading jadual induk:', error);
+          showToast('Gagal memuatkan jadual induk', 'error');
+        }
+      }
+      return false;
     }
 
     async function loadGuruSebab() {
@@ -4477,13 +4916,14 @@
         const text = await response.text();
         const data = parseCSV(text);
         
-        guruList = [...new Set(data.map(r => r['Guru Asal'] || r['GURU ASAL']).filter(Boolean))];
+        guruList = [...new Set(data.map(r => String(r['Guru Asal'] || r['GURU ASAL'] || '').trim().toUpperCase()).filter(Boolean))];
         sebabList = [...new Set(data.map(r => r['Sebab Tidak Hadir'] || r['SEBAB TIDAK HADIR']).filter(Boolean))];
         
-        populateDropdown('input-guru', guruList, '-- Pilih Guru --');
+        selaraskanSenaraiGuruTab1();
         populateDropdown('input-sebab', sebabList, '-- Pilih Sebab --');
       } catch (error) {
         console.error('Error loading guru/sebab:', error);
+        selaraskanSenaraiGuruTab1();
         showToast('Gagal memuatkan senarai guru', 'error');
       }
     }
@@ -4607,16 +5047,19 @@
         return;
       }
 
-      showLoading('Menjana slot dengan Algoritma Keadilan AI...');
+      showLoading('Menyemak Jadual Induk terkini & menjana Guru Ganti...');
+      // Paksa tarik rekod terkini terus dari tab Google Sheet 'Jadual Induk' supaya slot PKA wajib masuk
+      await loadJadualInduk(true);
       cadanganGanti = [];
 
-      const hari = currentHari.toUpperCase();
+      const hari = currentHari.trim().toUpperCase();
 
       for (const item of senaraiTidakHadir) {
+        const kodTidakHadir = String(item.guru || '').trim().toUpperCase();
         const slots = jadualInduk.filter(j => {
-          const jHari = (j['HARI'] || '').toUpperCase();
-          const jGuru = (j['GURU ASAL'] || j['Guru Asal'] || '').toUpperCase();
-          return jHari === hari && jGuru === item.guru.toUpperCase();
+          const jHari = String(j['HARI'] || '').trim().toUpperCase();
+          const senaraiGuruSlot = String(j['GURU ASAL'] || j['Guru Asal'] || '').split(/\s*\/\s*/).map(g => g.trim().toUpperCase());
+          return jHari === hari && senaraiGuruSlot.includes(kodTidakHadir);
         });
 
         for (const slot of slots) {
@@ -4624,18 +5067,19 @@
           const kelas = slot['KELAS'] || slot['Kelas'] || '';
           const subjek = slot['SUBJEK'] || slot['Subjek'] || '';
 
+          // Semak semua guru yang mempunyai sebarang slot bertindih minit (termasuk PKA & waktu anjakan)
           const busyTeachers = jadualInduk
             .filter(j => {
-              const jHari = (j['HARI'] || '').toUpperCase();
+              const jHari = String(j['HARI'] || '').trim().toUpperCase();
               const jMasa = j['MASA'] || j['Masa'] || '';
-              return jHari === hari && jMasa === masa;
+              return jHari === hari && adalahMasaBertindihGanti(jMasa, masa);
             })
-            .map(j => (j['GURU ASAL'] || j['Guru Asal'] || '').toUpperCase());
+            .flatMap(j => String(j['GURU ASAL'] || j['Guru Asal'] || '').split(/\s*\/\s*/).map(g => g.trim().toUpperCase()).filter(Boolean));
 
-          const absentTeachers = senaraiTidakHadir.map(s => s.guru.toUpperCase());
+          const absentTeachers = senaraiTidakHadir.map(s => String(s.guru || '').trim().toUpperCase());
           const allBusy = [...new Set([...busyTeachers, ...absentTeachers])];
 
-          const availableTeachers = guruList.filter(g => !allBusy.includes(g.toUpperCase()));
+          const availableTeachers = guruList.filter(g => !allBusy.includes(String(g || '').trim().toUpperCase()));
 
           // KOD BAHARU: Implementasi Algoritma Keadilan AI Pintar
           const candidatesWithWorkload = availableTeachers.map(teacher => {
@@ -4737,11 +5181,13 @@
       // 1. KIRA SEMULA KESELURUHAN BEBAN MASA MENGIKUT URUTAN (RUNNING TOTAL DARI ATAS KE BAWAH)
       cadanganGanti.forEach((c, i) => {
         c.candidatesWithWorkload.forEach(cand => {
-           // A. Kira beban hakiki (Jadual Asal tanpa kelas ganti hari ini)
+          // A. Kira beban hakiki (Jadual Asal tanpa kelas ganti hari ini)
+           const sasaranCand = String(cand.name || '').trim().toUpperCase();
+           const sasaranHariRow = String(c.hari || '').trim().toUpperCase();
            const hakiki = jadualInduk.filter(j => {
-             const jHari = (j['HARI'] || '').toUpperCase();
-             const jGuru = (j['GURU ASAL'] || j['Guru Asal'] || '').toUpperCase();
-             return jHari === c.hari && jGuru === cand.name.toUpperCase();
+             const jHari = String(j['HARI'] || '').trim().toUpperCase();
+             const senaraiGuruSlot = String(j['GURU ASAL'] || j['Guru Asal'] || '').split(/\s*\/\s*/).map(g => g.trim().toUpperCase());
+             return jHari === sasaranHariRow && senaraiGuruSlot.includes(sasaranCand);
            }).length;
 
            // B. Kira beban ganti TERKUMPUL dari baris teratas (0) sehingga ke baris ini (i)
@@ -13150,7 +13596,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
        }
 
        hideLoading();
-       if (jadualKualitiTerbaik) {
+    if (jadualKualitiTerbaik) {
            f2_jadualSediaAda = jadualKualitiTerbaik;
            showToast(`Jadual Terbaik Berjaya Dijana! (Skor: ${markahTertinggi}%)`, 'success');
            
@@ -13161,6 +13607,8 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
            renderJadualUI();
            simpanLocalState();
            simpanFasa2Database(); 
+           // KOD BAHARU: Hantar terus secara automatik ke Google Sheet 'Jadual Induk' & kemas kini Guru Ganti
+           setTimeout(() => { segerakJadualIndukKeSheetGanti(false); }, 400);
            
            hasilDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
        } else {
