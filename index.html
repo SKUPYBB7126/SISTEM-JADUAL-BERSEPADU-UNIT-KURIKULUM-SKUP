@@ -13416,7 +13416,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         tukarPaparanJadual('induk');
     }
 
-   // KOD BAHARU: Fungsi Cetakan Jadual A4 Melintang Pintar
+   // KOD BAHARU: Fungsi Cetakan Jadual A4 Melintang Pintar (Kunci Mutlak 1 Muka Surat A4 Untuk Jadual Induk)
     function cetakJadualAktifA4() {
         let activeTabId = '';
         if (!document.getElementById('paparan-induk').classList.contains('hidden')) activeTabId = 'paparan-induk';
@@ -13428,6 +13428,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
             return;
         }
 
+        const isInduk = (activeTabId === 'paparan-induk');
         const jadualHTML = document.getElementById(activeTabId).innerHTML;
         const tajukUtama = document.getElementById('tajuk-jadual-utama').innerText;
         const subTajukEl = document.getElementById('subtajuk-jadual-guru');
@@ -13437,24 +13438,69 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         const parentStyles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('\n');
 
         let scaleCss = '';
-        if (activeTabId === 'paparan-induk') {
+        if (isInduk) {
             scaleCss = `
-                /* PAKSA MUAT 1 MUKA SURAT A4 (Shrink-to-fit) UNTUK JADUAL INDUK */
-                table { width: 100% !important; min-width: 0 !important; border-collapse: collapse !important; table-layout: fixed !important; margin-bottom: 0 !important; }
-                th { font-size: 8px !important; min-width: 0 !important; padding: 3px !important; border: 1px solid #6b7280 !important; }
-                td { font-size: 8px !important; min-width: 0 !important; padding: 2px !important; border: 1px solid #6b7280 !important; height: auto !important; }
-                td div { font-size: 8px !important; margin: 0 !important; line-height: 1.1 !important; }
+                /* KUNCI MUTLAK 1 MUKA SURAT A4 MELINTANG UNTUK JADUAL INDUK KESELURUHAN */
+                @page { size: A4 landscape; margin: 4mm; }
+                html, body { width: 100% !important; height: auto !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+                #ukur-kertas-induk { position: fixed; top: 0; left: 0; width: 289mm; height: 192mm; visibility: hidden; pointer-events: none; z-index: -1; }
+                @media screen {
+                    #bingkai-satu-muka { width: 289mm !important; margin: 0 auto; overflow: hidden !important; }
+                }
+                @media print {
+                    #ukur-kertas-induk { display: none !important; }
+                    #bingkai-satu-muka { width: 100% !important; max-height: 193mm !important; overflow: hidden !important; page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: avoid !important; break-after: avoid !important; }
+                }
+                .header-cetak { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 3px !important; border-bottom: 1.5px solid #cbd5e1 !important; padding-bottom: 3px !important; }
+                .header-cetak img { height: 26px !important; width: auto; object-fit: contain; }
+                .header-teks h1 { font-size: 11.5px !important; font-weight: 900; color: #1e3a8a; margin: 0; line-height: 1.1 !important; text-transform: uppercase; }
+                .header-teks h2 { font-size: 8.5px !important; font-weight: 700; color: #e11d48; margin: 1px 0 0 0; line-height: 1.1 !important; }
+                .kandungan-jadual-cetak > div { border: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
+                table { width: 100% !important; min-width: 0 !important; border-collapse: collapse !important; table-layout: fixed !important; margin: 0 !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+                thead { position: static !important; display: table-row-group !important; box-shadow: none !important; }
+                tr, th, td { page-break-inside: avoid !important; break-inside: avoid !important; }
+                th.w-20 { width: 42px !important; }
+                th.w-24 { width: 60px !important; }
+                th { font-size: 7.5px !important; line-height: 1.05 !important; min-width: 0 !important; padding: 1.5px 1px !important; border: 1px solid #4b5563 !important; }
+                th div { font-size: 6.5px !important; line-height: 1.05 !important; margin: 0 !important; }
+                td { font-size: 7.5px !important; line-height: 1.05 !important; min-width: 0 !important; padding: 1px 1px !important; border: 1px solid #4b5563 !important; height: auto !important; }
+                td div { margin: 0 !important; line-height: 1.05 !important; }
+                td .font-black { font-size: 8px !important; line-height: 1.05 !important; }
+                td .font-extrabold { font-size: 6.5px !important; line-height: 1.0 !important; margin-top: 0.5px !important; }
+                td .font-bold { font-size: 6px !important; line-height: 1.0 !important; margin-top: 0.5px !important; }
             `;
         } else {
             scaleCss = `
                 /* SAIZ NORMAL UNTUK KELAS DAN GURU (Muat Penuh Lebar A4 Melintang Tanpa Terpotong) */
+                @page { size: A4 landscape; margin: 5mm; }
+                html, body { height: auto !important; margin: 0 !important; padding: 0 !important; }
+                .header-cetak { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 5px; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px; }
+                .header-cetak img { height: 40px; width: auto; object-fit: contain; }
+                .header-teks h1 { font-size: 14px; font-weight: 900; color: #1e3a8a; margin: 0; text-transform: uppercase; }
+                .header-teks h2 { font-size: 10px; font-weight: 700; color: #e11d48; margin: 2px 0 0 0; }
                 table { width: 100% !important; min-width: 0 !important; border-collapse: collapse !important; table-layout: fixed !important; margin-bottom: 16px !important; }
+                thead { position: static !important; }
                 th { font-size: 10px !important; min-width: 0 !important; padding: 5px 3px !important; border: 1px solid #6b7280 !important; }
                 td { font-size: 10px !important; min-width: 0 !important; padding: 5px 3px !important; border: 1px solid #6b7280 !important; }
                 td div { font-size: 10px !important; line-height: 1.25 !important; }
                 .page-break-inside-avoid { page-break-inside: avoid; margin-top: 14px; }
             `;
         }
+
+        const kandunganDalamanHTML = `
+            <div class="header-cetak">
+                <img src="https://iili.io/nRloUF9.png" alt="Logo Sekolah">
+                <div class="header-teks">
+                    <h1>${tajukUtama}</h1>
+                    ${subTajuk ? '<h2>' + subTajuk + '</h2>' : ''}
+                </div>
+            </div>
+            <div class="kandungan-jadual-cetak w-full">${jadualHTML}</div>
+        `;
+
+        const bodyHTML = isInduk
+            ? `<div id="ukur-kertas-induk"></div><div id="bingkai-satu-muka"><div id="kandungan-skala-induk">${kandunganDalamanHTML}</div></div>`
+            : kandunganDalamanHTML;
 
         const printWindow = window.open('', '_blank');
         
@@ -13467,47 +13513,68 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                 <title>Cetakan Jadual A4 Melintang</title>
                 ${parentStyles}
                 <style>
-                    * { font-family: 'Plus Jakarta Sans', sans-serif !important; }
-                    @page { size: A4 landscape; margin: 5mm; }
-                    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background-color: white !important; margin: 0; padding: 0; }
+                    * { font-family: 'Plus Jakarta Sans', sans-serif !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    body { background-color: white !important; }
                     
                     /* SEMBUNYIKAN MENU & SCROLLBAR, PAKSA JADUAL MUNCUL PENUH */
                     div:has(> select), .bg-emerald-50.p-3, .bg-rose-50.p-3, label, select, button { display: none !important; }
                     .overflow-x-auto, .scroll-container { overflow: visible !important; max-height: none !important; }
+                    .header-teks { text-align: left; display: flex; flex-direction: column; justify-content: center; }
                     
                     ${scaleCss}
-                    
-                    /* REKA LETAK HEADER - DIKECILKAN UNTUK JIMAT RUANG */
-                    .header-cetak { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 5px; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px; }
-                    .header-cetak img { height: 40px; width: auto; object-fit: contain; }
-                    .header-teks { text-align: left; display: flex; flex-direction: column; justify-content: center; }
-                    .header-teks h1 { font-size: 14px; font-weight: 900; color: #1e3a8a; margin: 0; text-transform: uppercase; }
-                    .header-teks h2 { font-size: 10px; font-weight: 700; color: #e11d48; margin: 2px 0 0 0; }
 
                     /* PENGUKUHAN GARISAN PEMISAH HARI (TEBAL) */
-                    .border-b-[3px] { border-bottom: 2.5px solid #111827 !important; }
+                    .border-b-\\[3px\\] { border-bottom: 2px solid #111827 !important; }
                 </style>
             </head>
             <body class="bg-white text-gray-900">
-                <div class="header-cetak">
-                    <img src="https://iili.io/nRloUF9.png" alt="Logo Sekolah">
-                    <div class="header-teks">
-                        <h1>${tajukUtama}</h1>
-                        ${subTajuk ? '<h2>' + subTajuk + '</h2>' : ''}
-                    </div>
-                </div>
-                <div class="kandungan-jadual-cetak w-full">${jadualHTML}</div>
+                ${bodyHTML}
             </body>
             </html>
         `;
 
         printWindow.document.write(htmlContent);
         printWindow.document.close();
-        
-        // Masa menunggu tambahan 800ms untuk browser bersedia memeluk saiz penuh tanpa ralat potong
-        setTimeout(() => {
+
+        // Enjin Pengukur Auto-Fit: Kira nisbah tinggi sebenar vs tinggi 1 helai A4 melintang sebelum cetak
+        let sudahCetak = false;
+        const jalankanAutoMuatDanCetak = () => {
+            if (sudahCetak) return;
+            sudahCetak = true;
+            try {
+                if (isInduk && printWindow && printWindow.document) {
+                    const doc = printWindow.document;
+                    const ukurEl = doc.getElementById('ukur-kertas-induk');
+                    const bingkai = doc.getElementById('bingkai-satu-muka');
+                    const panel = doc.getElementById('kandungan-skala-induk');
+                    if (ukurEl && bingkai && panel) {
+                        const hadTinggiPx = ukurEl.getBoundingClientRect().height;
+                        const tinggiAsalPx = panel.scrollHeight;
+                        if (hadTinggiPx > 0 && tinggiAsalPx > hadTinggiPx) {
+                            let skala = (hadTinggiPx / tinggiAsalPx) * 0.985;
+                            panel.style.width = (100 / skala).toFixed(3) + '%';
+                            const tinggiSemakPx = panel.scrollHeight;
+                            if (tinggiSemakPx * skala > hadTinggiPx) {
+                                skala = (hadTinggiPx / tinggiSemakPx) * 0.985;
+                                panel.style.width = (100 / skala).toFixed(3) + '%';
+                            }
+                            panel.style.transformOrigin = 'top left';
+                            panel.style.transform = `scale(${skala.toFixed(4)})`;
+                            bingkai.style.height = Math.ceil(panel.scrollHeight * skala) + 'px';
+                        } else if (tinggiAsalPx > 0) {
+                            bingkai.style.height = Math.ceil(tinggiAsalPx) + 'px';
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Pelarasan skala cetakan:', err);
+            }
+            printWindow.focus();
             printWindow.print();
-        }, 800);
+        };
+
+        printWindow.onload = () => setTimeout(jalankanAutoMuatDanCetak, 250);
+        setTimeout(jalankanAutoMuatDanCetak, 900);
     }
 
     initApp();
