@@ -163,6 +163,7 @@
             <div id="menu-jadual" class="px-3 pb-3 space-y-1 hidden">
               <button id="tab4-btn" onclick="switchTab(4)" class="w-full tab-inactive px-4 py-3 rounded-xl font-bold text-xs transition-all duration-300 flex items-center gap-3 justify-start"><i class="fa-solid fa-cogs w-4 text-center"></i> 1. Tetapan Asas Jadual</button>
               <button id="tab5-btn" onclick="switchTab(5)" class="w-full tab-inactive px-4 py-3 rounded-xl font-bold text-xs transition-all duration-300 flex items-center gap-3 justify-start"><i class="fa-solid fa-clipboard-user w-4 text-center"></i> 2. Profil & Agihan Tugas Guru</button>
+              <button id="tab6-btn" onclick="switchTab(6)" class="w-full tab-inactive px-4 py-3 rounded-xl font-bold text-xs transition-all duration-300 flex items-center gap-3 justify-start"><i class="fa-solid fa-chart-column w-4 text-center"></i> 3. Analisis Jadual</button>
             </div>
           </div>
 
@@ -1009,7 +1010,7 @@
                     <label class="text-[10px] md:text-xs font-black text-rose-900 uppercase tracking-widest shrink-0"><i class="fa-solid fa-filter text-rose-500 mr-2"></i> Pilih Guru:</label>
                     <select id="pilih-paparan-guru" onchange="renderPaparanGuru()" class="flex-1 px-4 py-2 border-2 border-rose-200 rounded-lg text-xs md:text-sm font-bold text-rose-900 outline-none focus:ring-2 focus:ring-rose-400 bg-white shadow-sm cursor-pointer"></select>
                 </div>
-                <div class="overflow-x-auto rounded-lg border border-gray-300" style="scrollbar-width: thin;">
+               <div class="overflow-x-auto rounded-lg border border-gray-300" style="scrollbar-width: thin;">
                    <table class="w-full text-[10px] md:text-xs border-collapse text-center min-w-[1200px] bg-white shadow-sm">
                      <thead class="bg-rose-50 sticky top-0 z-20 shadow-md">
                          <tr id="jadual-header-masa-guru"></tr>
@@ -1020,6 +1021,161 @@
             </div>
 
          </div>
+      </div>
+
+     </div>
+    </section>
+
+    <!-- KOD BAHARU: TAB 6 - Analisis Jadual (Bawah Profil & Agihan Tugas Guru) -->
+    <section id="tab6" class="p-4 md:p-6 fade-in hidden max-w-7xl mx-auto pb-12">
+     <div class="glass-card rounded-2xl p-5 md:p-8 mb-6 border-t-4 border-emerald-500 shadow-xl">
+      
+      <!-- Kepala Utama Tab Analisis Jadual -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-gray-200 pb-4">
+       <div>
+        <h2 class="text-xl md:text-2xl font-black text-emerald-950 flex items-center gap-3">
+         <i class="fa-solid fa-chart-column text-emerald-600"></i> ANALISIS JADUAL WAKTU P&amp;P
+        </h2>
+        <p class="text-xs md:text-sm font-semibold text-gray-500 mt-1">
+         Dijana secara automatik &amp; disimpan kekal berdasarkan <span class="text-indigo-700 font-bold">Profil &amp; Agihan Tugas Guru</span> serta <span class="text-emerald-700 font-bold">Penjanaan Jadual Induk</span>.
+        </p>
+       </div>
+       <div id="analisis-status-sumber" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-extrabold uppercase tracking-wider shrink-0 shadow-sm">
+        <i class="fa-solid fa-database text-emerald-600"></i> Data Kekal Aktif
+       </div>
+      </div>
+
+      <!-- Butang Penukar 2 Sub-Tab Kecil -->
+      <div class="flex flex-col sm:flex-row gap-2.5 bg-gray-100/90 p-2 rounded-2xl mb-6 shadow-inner border border-gray-200">
+       <button id="btn-subtab-analisis-1" onclick="tukarSubTabAnalisis(1)" class="flex-1 py-3.5 px-4 text-xs md:text-sm font-black rounded-xl transition-all shadow-md bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center gap-2">
+        <i class="fa-solid fa-id-card-clip"></i> 1. Analisis Waktu Mengajar Guru
+       </button>
+       <button id="btn-subtab-analisis-2" onclick="tukarSubTabAnalisis(2)" class="flex-1 py-3.5 px-4 text-xs md:text-sm font-bold rounded-xl transition-all bg-white text-emerald-800 hover:bg-emerald-50 border border-emerald-100 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-table-cells"></i> 2. Taburan Waktu Mengikut Kelas SK Ulu Pelagus
+       </button>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- SUB-TAB 1: ANALISIS WAKTU MENGAJAR GURU                   -->
+      <!-- ========================================================= -->
+      <div id="subtab-analisis-1" class="fade-in space-y-6">
+       
+       <!-- Bar Tajuk Kecil & Butang Cetak Sub-Tab 1 -->
+       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-indigo-50/70 p-4 rounded-xl border border-indigo-100">
+        <div>
+         <h3 class="text-sm md:text-base font-black text-indigo-950 uppercase tracking-wide flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-indigo-600"></i> Analisis Waktu Mengajar Guru SK Ulu Pelagus
+         </h3>
+         <p class="text-[11px] font-semibold text-gray-500">Merangkumi semua waktu subjek termasuk Teras, Elektif, PKA, Pendidikan Islam &amp; Tasmik.</p>
+        </div>
+        <button onclick="cetakAnalisisWaktuGuru()" class="btn-print px-5 py-2.5 rounded-xl text-white font-extrabold text-xs md:text-sm flex items-center justify-center gap-2 shadow-md shrink-0">
+         <i class="fa-solid fa-print"></i> Cetak Analisis Guru
+        </button>
+       </div>
+
+       <!-- Bahagian Atas: 4 Kad Ringkasan Utama -->
+       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-5 border border-indigo-100 border-b-4 border-b-indigo-600 shadow-sm relative overflow-hidden">
+         <i class="fa-solid fa-users text-5xl text-indigo-500/10 absolute -right-2 -bottom-2"></i>
+         <p class="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-1">Jumlah Guru</p>
+         <p id="stat-analisis-jumlah-guru" class="text-3xl font-black text-indigo-950">0</p>
+         <p class="text-[10px] font-bold text-indigo-600 mt-1">Orang Guru Berdaftar</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-emerald-100 border-b-4 border-b-emerald-600 shadow-sm relative overflow-hidden">
+         <i class="fa-solid fa-clock text-5xl text-emerald-500/10 absolute -right-2 -bottom-2"></i>
+         <p class="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-1">Jumlah Waktu Keseluruhan Tahun</p>
+         <p id="stat-analisis-jumlah-waktu" class="text-3xl font-black text-emerald-950">0</p>
+         <p class="text-[10px] font-bold text-emerald-600 mt-1">Waktu Mengajar (Tahun 1 – 6)</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-amber-100 border-b-4 border-b-amber-500 shadow-sm relative overflow-hidden">
+         <i class="fa-solid fa-scale-balanced text-5xl text-amber-500/10 absolute -right-2 -bottom-2"></i>
+         <p class="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-1">Purata Waktu Guru</p>
+         <p id="stat-analisis-purata-waktu" class="text-3xl font-black text-amber-900">0</p>
+         <p class="text-[10px] font-bold text-amber-600 mt-1">Waktu Dalam 1 Minggu</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-rose-100 border-b-4 border-b-rose-600 shadow-sm relative overflow-hidden">
+         <i class="fa-solid fa-fire-flame-curved text-5xl text-rose-500/10 absolute -right-2 -bottom-2"></i>
+         <p class="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest mb-1">Beban Tertinggi</p>
+         <p id="stat-analisis-beban-tertinggi" class="text-3xl font-black text-rose-900">0</p>
+         <p id="stat-analisis-nama-tertinggi" class="text-[10px] font-extrabold text-rose-600 mt-1 truncate" title="-">-</p>
+        </div>
+       </div>
+
+       <!-- Bahagian Tengah: Taburan Jumlah Waktu Setiap Guru -->
+       <div class="bg-white/90 rounded-2xl p-5 border border-purple-100 shadow-sm">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+         <h4 class="text-xs md:text-sm font-black text-purple-950 uppercase tracking-wider flex items-center gap-2">
+          <i class="fa-solid fa-layer-group text-purple-600"></i> Taburan Jumlah Waktu Setiap Guru
+         </h4>
+         <span class="text-[10px] font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">Kiraan Kumpulan Waktu</span>
+        </div>
+        <div id="bekas-taburan-waktu-guru" class="flex flex-wrap gap-2.5">
+         <p class="text-xs text-gray-400 italic py-2">Tiada data guru buat masa ini.</p>
+        </div>
+       </div>
+
+       <!-- Bahagian Bawah: Ringkasan Mengikut Guru (Versi Kadboard Rapi) -->
+       <div class="bg-gray-50/80 rounded-2xl p-5 border border-gray-200 shadow-inner">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 pb-3 mb-5">
+         <h4 class="text-xs md:text-sm font-black text-gray-800 uppercase tracking-wider flex items-center gap-2">
+          <i class="fa-solid fa-address-card text-indigo-600"></i> Ringkasan Mengikut Guru
+         </h4>
+         <span id="label-bil-guru-kadboard" class="text-[10px] font-extrabold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200 uppercase tracking-wider">0 Kad Guru</span>
+        </div>
+        <div id="grid-kadboard-analisis-guru" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+         <div class="col-span-full py-10 text-center text-gray-400 font-medium italic">
+          <i class="fa-solid fa-folder-open text-3xl mb-2 block opacity-30"></i>Sila lengkapkan Profil &amp; Agihan Tugas Guru terlebih dahulu.
+         </div>
+        </div>
+       </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- SUB-TAB 2: TABURAN WAKTU MENGAJAR GURU MENGIKUT KELAS     -->
+      <!-- ========================================================= -->
+      <div id="subtab-analisis-2" class="fade-in hidden space-y-6">
+       
+       <!-- Bar Tajuk Kecil & Butang Cetak Sub-Tab 2 -->
+       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emerald-50/70 p-4 rounded-xl border border-emerald-100">
+        <div>
+         <h3 class="text-sm md:text-base font-black text-emerald-950 uppercase tracking-wide flex items-center gap-2">
+          <i class="fa-solid fa-table-list text-emerald-600"></i> Taburan Waktu Mengajar Guru Mengikut Kelas SK Ulu Pelagus
+         </h3>
+         <p class="text-[11px] font-semibold text-gray-500">Matriks 8 kolum rasmi mengikut Tahun 1 hingga Tahun 6 dan jumlah waktu setiap guru.</p>
+        </div>
+        <button onclick="cetakTaburanKelasGuru()" class="btn-print px-5 py-2.5 rounded-xl text-white font-extrabold text-xs md:text-sm flex items-center justify-center gap-2 shadow-md shrink-0">
+         <i class="fa-solid fa-print"></i> Cetak Jadual Taburan
+        </button>
+       </div>
+
+       <!-- Jadual 8 Kolum Melintang -->
+       <div class="overflow-x-auto rounded-2xl border border-gray-300 shadow-sm bg-white">
+        <table id="jadual-taburan-kelas-guru" class="w-full text-xs md:text-sm border-collapse min-w-[780px]">
+         <thead>
+          <tr class="bg-gradient-to-r from-emerald-800 to-teal-700 text-white uppercase tracking-wider text-[11px] md:text-xs">
+           <th class="py-3.5 px-4 text-left font-black border border-emerald-900 w-[30%]">Nama Guru</th>
+           <th class="py-3.5 px-2 text-center font-black border border-emerald-900 w-[10%]">Tahun 1</th>
+           <th class="py-3.5 px-2 text-center font-black border border-emerald-900 w-[10%]">Tahun 2</th>
+           <th class="py-3.5 px-2 text-center font-black border border-emerald-900 w-[10%]">Tahun 3</th>
+           <th class="py-3.5 px-2 text-center font-black border border-emerald-900 w-[10%]">Tahun 4</th>
+           <th class="py-3.5 px-2 text-center font-black border border-emerald-900 w-[10%]">Tahun 5</th>
+           <th class="py-3.5 px-2 text-center font-black border border-emerald-900 w-[10%]">Tahun 6</th>
+           <th class="py-3.5 px-3 text-center font-black border border-emerald-900 bg-emerald-950/60 w-[10%]">Jumlah</th>
+          </tr>
+         </thead>
+         <tbody id="tbody-taburan-kelas-guru" class="divide-y divide-gray-200 text-gray-800 font-semibold">
+          <tr>
+           <td colspan="8" class="py-10 text-center text-gray-400 italic">Tiada data agihan guru untuk dipaparkan.</td>
+          </tr>
+         </tbody>
+         <tfoot id="tfoot-taburan-kelas-guru" class="bg-emerald-50 font-black text-emerald-950 border-t-2 border-emerald-700"></tfoot>
+        </table>
+       </div>
+
       </div>
 
      </div>
@@ -4864,17 +5020,51 @@
       }
     }
 
+    window.subTabAnalisisAktif = 1;
+    window.dataAnalisisJadualKekal = null;
+
+    function tukarSubTabAnalisis(noSubTab, abaikanSimpan = false) {
+      const sub1 = document.getElementById('subtab-analisis-1');
+      const sub2 = document.getElementById('subtab-analisis-2');
+      const btnSub1 = document.getElementById('btn-subtab-analisis-1');
+      const btnSub2 = document.getElementById('btn-subtab-analisis-2');
+      if (!sub1 || !sub2 || !btnSub1 || !btnSub2) return;
+
+      window.subTabAnalisisAktif = (noSubTab === 2) ? 2 : 1;
+
+      if (window.subTabAnalisisAktif === 1) {
+        sub1.classList.remove('hidden');
+        sub2.classList.add('hidden');
+        btnSub1.className = 'flex-1 py-3.5 px-4 text-xs md:text-sm font-black rounded-xl transition-all shadow-md bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center gap-2';
+        btnSub2.className = 'flex-1 py-3.5 px-4 text-xs md:text-sm font-bold rounded-xl transition-all bg-white text-emerald-800 hover:bg-emerald-50 border border-emerald-100 flex items-center justify-center gap-2';
+      } else {
+        sub1.classList.add('hidden');
+        sub2.classList.remove('hidden');
+        btnSub1.className = 'flex-1 py-3.5 px-4 text-xs md:text-sm font-bold rounded-xl transition-all bg-white text-indigo-800 hover:bg-indigo-50 border border-indigo-100 flex items-center justify-center gap-2';
+        btnSub2.className = 'flex-1 py-3.5 px-4 text-xs md:text-sm font-black rounded-xl transition-all shadow-md bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex items-center justify-center gap-2';
+      }
+
+      if (!abaikanSimpan) {
+        localStorage.setItem('subTabAnalisisAktifSKUP', String(window.subTabAnalisisAktif));
+      }
+      if (typeof renderAnalisisJadualPenuh === 'function') {
+        renderAnalisisJadualPenuh();
+      }
+    }
+
     function switchTab(tab) {
       const tab1 = document.getElementById('tab1');
       const tab2 = document.getElementById('tab2');
       const tab3 = document.getElementById('tab3');
       const tab4 = document.getElementById('tab4'); 
-      const tab5 = document.getElementById('tab5'); // KOD BAHARU
+      const tab5 = document.getElementById('tab5');
+      const tab6 = document.getElementById('tab6'); // KOD BAHARU: Analisis Jadual
       const btn1 = document.getElementById('tab1-btn');
       const btn2 = document.getElementById('tab2-btn');
       const btn3 = document.getElementById('tab3-btn');
       const btn4 = document.getElementById('tab4-btn'); 
-      const btn5 = document.getElementById('tab5-btn'); // KOD BAHARU
+      const btn5 = document.getElementById('tab5-btn');
+      const btn6 = document.getElementById('tab6-btn'); // KOD BAHARU: Butang Analisis Jadual
 
       const activeClass = 'w-full tab-active px-4 py-3 rounded-xl font-bold text-xs transition-all duration-300 flex items-center gap-3 justify-start shadow-sm';
       const inactiveClass = 'w-full tab-inactive px-4 py-3 rounded-xl font-bold text-xs transition-all duration-300 flex items-center gap-3 justify-start';
@@ -4884,15 +5074,17 @@
       tab2.classList.add('hidden');
       if (tab3) tab3.classList.add('hidden');
       if (tab4) tab4.classList.add('hidden'); 
-      if (tab5) tab5.classList.add('hidden'); // KOD BAHARU
+      if (tab5) tab5.classList.add('hidden');
+      if (tab6) tab6.classList.add('hidden');
       
       btn1.className = inactiveClass;
       btn2.className = inactiveClass;
       if (btn3) btn3.className = inactiveClass;
       if (btn4) btn4.className = inactiveClass; 
-      if (btn5) btn5.className = inactiveClass; // KOD BAHARU
+      if (btn5) btn5.className = inactiveClass;
+      if (btn6) btn6.className = inactiveClass;
 
-    // Paparkan tab yang ditekan
+      // Paparkan tab yang ditekan
       if (tab === 1) {
         tab1.classList.remove('hidden');
         btn1.className = activeClass;
@@ -4924,9 +5116,21 @@
       } else if (tab === 4) { 
         if (tab4) tab4.classList.remove('hidden');
         if (btn4) btn4.className = activeClass;
-      } else if (tab === 5) { // KOD BAHARU
+      } else if (tab === 5) {
         if (tab5) tab5.classList.remove('hidden');
         if (btn5) btn5.className = activeClass;
+      } else if (tab === 6) {
+        if (tab6) tab6.classList.remove('hidden');
+        if (btn6) btn6.className = activeClass;
+        const menuJadual = document.getElementById('menu-jadual');
+        const iconJadual = document.getElementById('icon-jadual');
+        if (menuJadual && menuJadual.classList.contains('hidden')) {
+          menuJadual.classList.remove('hidden');
+          menuJadual.classList.add('block');
+          if (iconJadual) iconJadual.classList.add('rotate-180');
+        }
+        tukarSubTabAnalisis(window.subTabAnalisisAktif || 1, true);
+        if (typeof renderAnalisisJadualPenuh === 'function') renderAnalisisJadualPenuh();
       }
 
       if (window.innerWidth < 768) {
@@ -6307,9 +6511,12 @@ let selObj = null;
             f1_subjekT4: arraySubjekTahap4, f1_subjekT5: arraySubjekTahap5, f1_subjekT6: arraySubjekTahap6,
             f2_guru: f2_senaraiGuruPenuh,
             f2_jadual: f2_jadualSediaAda,
-            f2_kelas: f2_senaraiKelasUnik
+            f2_kelas: f2_senaraiKelasUnik,
+            analisis_subtab: window.subTabAnalisisAktif || 1,
+            f2_analisis_kekal: (typeof binaDataAnalisisJadual === 'function') ? binaDataAnalisisJadual() : (window.dataAnalisisJadualKekal || null)
         };
         localStorage.setItem('sistemJadualData', JSON.stringify(state));
+        if (typeof renderAnalisisJadualPenuh === 'function') renderAnalisisJadualPenuh();
     }
 
     function muatLocalState() {
@@ -6392,15 +6599,21 @@ let selObj = null;
                     renderGridGuru();
                 }
 
-                if(state.f2_jadual && state.f2_kelas && state.f2_kelas.length > 0) {
+               if(state.f2_jadual && state.f2_kelas && state.f2_kelas.length > 0) {
                     f2_jadualSediaAda = state.f2_jadual;
                     f2_senaraiKelasUnik = state.f2_kelas;
                     document.getElementById('f2-hasil-jadual').classList.remove('hidden');
                     setTimeout(() => {
                         jalankanHealthCheck(true);
                         renderJadualUI();
+                        if (typeof renderAnalisisJadualPenuh === 'function') renderAnalisisJadualPenuh();
                     }, 100);
                 }
+                if (state.f2_analisis_kekal) {
+                    window.dataAnalisisJadualKekal = state.f2_analisis_kekal;
+                }
+                const subTabTersimpan = parseInt(localStorage.getItem('subTabAnalisisAktifSKUP') || state.analisis_subtab || '1', 10);
+                window.subTabAnalisisAktif = (subTabTersimpan === 2) ? 2 : 1;
             }
         } catch (err) {
             console.warn("Memori tempatan versi lama dibersihkan secara automatik:", err);
@@ -6409,6 +6622,8 @@ let selObj = null;
         renderSubjekFasa1(); 
         if(typeof kawalInputRehat === 'function') kawalInputRehat(true);
         if(typeof selaraskanMatriksDanSubjekPKA === 'function') selaraskanMatriksDanSubjekPKA(true);
+        if(typeof tukarSubTabAnalisis === 'function') tukarSubTabAnalisis(window.subTabAnalisisAktif || 1, true);
+        if(typeof renderAnalisisJadualPenuh === 'function') renderAnalisisJadualPenuh();
     }
 
 
@@ -7918,10 +8133,11 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
       showToast('Profil Cikgu ' + nama + ' berjaya disimpan!');
     }
 
-    // Fungsi 7: Paparkan Kad-Kad Guru + Kemas Kini Papan Radar Status Subjek
+  // Fungsi 7: Paparkan Kad-Kad Guru + Kemas Kini Papan Radar Status Subjek & Analisis Jadual
     function renderGridGuru() {
       if (typeof renderRadarSubjekFasa2 === 'function') renderRadarSubjekFasa2();
       if (typeof segarkanSemuaDropdownSubjekFasa2 === 'function') segarkanSemuaDropdownSubjekFasa2();
+      if (typeof renderAnalisisJadualPenuh === 'function') renderAnalisisJadualPenuh();
 
       const grid = document.getElementById('f2-grid-guru');
       if (f2_senaraiGuruPenuh.length === 0) {
@@ -13575,6 +13791,768 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
 
         printWindow.onload = () => setTimeout(jalankanAutoMuatDanCetak, 250);
         setTimeout(jalankanAutoMuatDanCetak, 900);
+    }
+
+    // =========================================================================
+    // KOD BAHARU: ENJIN ANALISIS JADUAL (SUB-TAB 1 KADBOARD & SUB-TAB 2 JADUAL)
+    // =========================================================================
+    function escHtmlAnalisis(teks) {
+        return String(teks || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function formatAngkaWaktuAnalisis(nilai) {
+        const num = Math.round((parseFloat(nilai) || 0) * 100) / 100;
+        return Number.isInteger(num) ? String(num) : String(num);
+    }
+
+    function ekstrakNoTahunAnalisis(teksKelas) {
+        const padanan = String(teksKelas || '').match(/([1-6])/);
+        return padanan ? parseInt(padanan[1], 10) : null;
+    }
+
+    function kemaskanNamaSubjekAnalisis(namaSubjek) {
+        const asal = String(namaSubjek || '').trim();
+        if (!asal) return '-';
+        if (asal.toUpperCase() === 'PKA' || asal.toUpperCase().includes('PEMBENTUKAN KARAKTER')) {
+            return 'Pembentukan Karakter (PKA)';
+        }
+        return asal;
+    }
+
+    function kiraWaktuJadualDijanaMengikutGuru() {
+        const petaGuru = {};
+        const senaraiHari = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'];
+        const senaraiKelas = Object.keys(f2_jadualSediaAda || {});
+        if (senaraiKelas.length === 0) return { adaJadual: false, petaGuru };
+
+        let jumlahSlotTerisi = 0;
+        senaraiKelas.forEach(namaKelas => {
+            const noTahun = ekstrakNoTahunAnalisis(namaKelas);
+            if (!noTahun) return;
+            const jadualKelas = f2_jadualSediaAda[namaKelas];
+            if (!jadualKelas) return;
+
+            senaraiHari.forEach(hari => {
+                const slots = jadualKelas[hari];
+                if (!Array.isArray(slots)) return;
+
+                // Slot 0..13: PdP Biasa, PI/PM, AM (2 Guru) & Tasmik (TSMK) = 1 waktu setiap slot
+                for (let s = 0; s < 14; s++) {
+                    const obj = slots[s];
+                    if (!obj || !obj.kodGuru || obj.kodGuru === '-' || obj.subjek === 'PERHIMPUNAN') continue;
+                    jumlahSlotTerisi++;
+                    obj.kodGuru.split(' / ').map(k => k.trim().toUpperCase()).filter(Boolean).forEach(kodG => {
+                        if (!petaGuru[kodG]) petaGuru[kodG] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, jumlah: 0 };
+                        petaGuru[kodG][noTahun] = Math.round((petaGuru[kodG][noTahun] + 1) * 100) / 100;
+                        petaGuru[kodG].jumlah = Math.round((petaGuru[kodG].jumlah + 1) * 100) / 100;
+                    });
+                }
+
+                // Slot 14: Pembentukan Karakter (PKA - 15 Minit) = 0.5 waktu setiap sesi
+                const slotPKA = slots[14];
+                if (slotPKA && slotPKA.subjek === 'PKA' && slotPKA.kodGuru && slotPKA.kodGuru !== '-') {
+                    jumlahSlotTerisi++;
+                    slotPKA.kodGuru.split(' / ').map(k => k.trim().toUpperCase()).filter(Boolean).forEach(kodG => {
+                        if (!petaGuru[kodG]) petaGuru[kodG] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, jumlah: 0 };
+                        petaGuru[kodG][noTahun] = Math.round((petaGuru[kodG][noTahun] + 0.5) * 100) / 100;
+                        petaGuru[kodG].jumlah = Math.round((petaGuru[kodG].jumlah + 0.5) * 100) / 100;
+                    });
+                }
+            });
+        });
+
+        return { adaJadual: jumlahSlotTerisi > 0, petaGuru };
+    }
+
+    function binaDataAnalisisJadual() {
+        const semakanJadual = kiraWaktuJadualDijanaMengikutGuru();
+        const senaraiAsalGuru = Array.isArray(f2_senaraiGuruPenuh) ? f2_senaraiGuruPenuh : [];
+
+        // Jika senarai guru aktif wujud, bina analisis lengkap daripada Profil & Agihan Tugas Guru serta semak silang Jadual Induk
+        let senaraiGuruAnalisis = [];
+        let selariDenganJadual = semakanJadual.adaJadual;
+
+        senaraiAsalGuru.forEach((g, idx) => {
+            if (!g) return;
+            const kodBersih = String(g.kod || '').trim().toUpperCase();
+            const namaBersih = String(g.nama || 'TANPA NAMA').trim().toUpperCase();
+            const jawatanBersih = String(g.jawatan || 'Guru Akademik Biasa (GAB)').trim();
+            const warnaBersih = g.warna || '#c7d2fe';
+
+            const waktuMengikutTahun = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+            const petaSubjekTahun = new Map();
+            let jumlahWaktuGuru = 0;
+
+            if (Array.isArray(g.senaraiTugas)) {
+                g.senaraiTugas.forEach(t => {
+                    const noTahun = ekstrakNoTahunAnalisis(t.tahun);
+                    const padananF1 = (typeof window.cariSubjekPadananFasa1 === 'function') ? window.cariSubjekPadananFasa1(t.tahun, t.subjek) : null;
+                    const namaSubAsal = padananF1 ? padananF1.nama : (t.subjek || '-');
+                    const isPKA = namaSubAsal.toUpperCase().includes('(PKA)') || namaSubAsal.toUpperCase().includes('PEMBENTUKAN KARAKTER') || namaSubAsal.trim().toUpperCase() === 'PKA';
+
+                    let w = parseFloat(String(t.waktu).replace(',', '.')) || 0;
+                    if (!isPKA && padananF1 && (parseFloat(padananF1.waktu) || 0) > 0) {
+                        w = parseFloat(padananF1.waktu);
+                    }
+                    w = Math.round(w * 100) / 100;
+                    if (w <= 0) return;
+
+                    if (noTahun && waktuMengikutTahun[noTahun] !== undefined) {
+                        waktuMengikutTahun[noTahun] = Math.round((waktuMengikutTahun[noTahun] + w) * 100) / 100;
+                    }
+                    jumlahWaktuGuru = Math.round((jumlahWaktuGuru + w) * 100) / 100;
+
+                    const namaSubPaparan = kemaskanNamaSubjekAnalisis(namaSubAsal);
+                    const kunciItem = `${noTahun || 0}|${namaSubPaparan.toUpperCase()}`;
+                    if (petaSubjekTahun.has(kunciItem)) {
+                        const sedia = petaSubjekTahun.get(kunciItem);
+                        sedia.waktu = Math.round((sedia.waktu + w) * 100) / 100;
+                    } else {
+                        petaSubjekTahun.set(kunciItem, {
+                            subjek: namaSubPaparan,
+                            noTahun: noTahun || 0,
+                            labelTahun: noTahun ? `Tahun ${noTahun}` : String(t.tahun || '-'),
+                            waktu: w
+                        });
+                    }
+                });
+            }
+
+            // Semak keselarasan dengan Jadual Induk yang telah dijana
+            if (semakanJadual.adaJadual) {
+                const rekodJadualG = semakanJadual.petaGuru[kodBersih];
+                const jumJadualG = rekodJadualG ? rekodJadualG.jumlah : 0;
+                if (Math.abs(jumJadualG - jumlahWaktuGuru) > 0.01) {
+                    selariDenganJadual = false;
+                }
+            }
+
+            // Susun senarai subjek mengikut Tahun 1 -> Tahun 6, kemudian abjad subjek
+            const senaraiSubjekTahun = Array.from(petaSubjekTahun.values()).sort((a, b) => {
+                if (a.noTahun !== b.noTahun) return a.noTahun - b.noTahun;
+                return a.subjek.localeCompare(b.subjek);
+            });
+
+            senaraiGuruAnalisis.push({
+                bil: idx + 1,
+                kod: kodBersih,
+                nama: namaBersih,
+                jawatan: jawatanBersih,
+                warna: warnaBersih,
+                waktuTahun: waktuMengikutTahun,
+                jumlahWaktu: jumlahWaktuGuru,
+                senaraiSubjekTahun
+            });
+        });
+
+        const jumlahGuru = senaraiGuruAnalisis.length;
+        const jumlahTahun = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+        let jumlahWaktuKeseluruhan = 0;
+        let bebanTertinggi = 0;
+
+        senaraiGuruAnalisis.forEach(g => {
+            for (let t = 1; t <= 6; t++) {
+                jumlahTahun[t] = Math.round((jumlahTahun[t] + (g.waktuTahun[t] || 0)) * 100) / 100;
+            }
+            jumlahWaktuKeseluruhan = Math.round((jumlahWaktuKeseluruhan + g.jumlahWaktu) * 100) / 100;
+            if (g.jumlahWaktu > bebanTertinggi) {
+                bebanTertinggi = g.jumlahWaktu;
+            }
+        });
+
+        const purataWaktu = jumlahGuru > 0 ? (Math.round((jumlahWaktuKeseluruhan / jumlahGuru) * 10) / 10) : 0;
+        const guruBebanTertinggi = (jumlahGuru > 0 && bebanTertinggi > 0)
+            ? senaraiGuruAnalisis.filter(g => Math.abs(g.jumlahWaktu - bebanTertinggi) < 0.01).map(g => g.nama)
+            : [];
+
+        // Bina Taburan Jumlah Waktu Setiap Guru (Cth: 29 waktu : 5 guru) disusun dari waktu tertinggi ke terendah
+        const petaTaburan = new Map();
+        senaraiGuruAnalisis.forEach(g => {
+            const kunciW = g.jumlahWaktu;
+            if (!petaTaburan.has(kunciW)) {
+                petaTaburan.set(kunciW, { waktu: kunciW, bilangan: 0, senaraiNama: [] });
+            }
+            const itemT = petaTaburan.get(kunciW);
+            itemT.bilangan++;
+            itemT.senaraiNama.push(g.nama);
+        });
+
+        const senaraiTaburanWaktu = Array.from(petaTaburan.values()).sort((a, b) => b.waktu - a.waktu);
+
+        const hasilAnalisis = {
+            dikemaskiniPada: new Date().toISOString(),
+            adaJadualInduk: semakanJadual.adaJadual,
+            selariDenganJadual,
+            jumlahGuru,
+            jumlahWaktuKeseluruhan,
+            purataWaktu,
+            bebanTertinggi,
+            guruBebanTertinggi,
+            senaraiTaburanWaktu,
+            jumlahTahun,
+            senaraiGuru: senaraiGuruAnalisis
+        };
+
+        window.dataAnalisisJadualKekal = hasilAnalisis;
+        return hasilAnalisis;
+    }
+
+    function renderAnalisisJadualPenuh() {
+        const elSeksyen = document.getElementById('tab6');
+        if (!elSeksyen) return;
+
+        let data = binaDataAnalisisJadual();
+        // Jika memori guru belum dimuatkan tetapi salinan analisis kekal wujud, guna salinan kekal sementara menunggu
+        if (data.jumlahGuru === 0 && window.dataAnalisisJadualKekal && window.dataAnalisisJadualKekal.jumlahGuru > 0 && (!Array.isArray(f2_senaraiGuruPenuh) || f2_senaraiGuruPenuh.length === 0)) {
+            data = window.dataAnalisisJadualKekal;
+        }
+
+        // 1. Kemas Kini Lencana Status Sumber Data & Penyimpanan Kekal
+        const badgeSumber = document.getElementById('analisis-status-sumber');
+        if (badgeSumber) {
+            if (data.jumlahGuru === 0) {
+                badgeSumber.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-100 border border-gray-200 text-gray-500 text-[11px] font-extrabold uppercase tracking-wider shrink-0 shadow-sm';
+                badgeSumber.innerHTML = '<i class="fa-solid fa-circle-info text-gray-400"></i> Menunggu Data Profil Guru';
+            } else if (data.adaJadualInduk && data.selariDenganJadual) {
+                badgeSumber.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-extrabold uppercase tracking-wider shrink-0 shadow-sm';
+                badgeSumber.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i> Disegerak: Profil Guru &amp; Jadual Induk';
+            } else if (data.adaJadualInduk && !data.selariDenganJadual) {
+                badgeSumber.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-[11px] font-extrabold uppercase tracking-wider shrink-0 shadow-sm';
+                badgeSumber.innerHTML = '<i class="fa-solid fa-rotate text-amber-600"></i> Profil Dikemas Kini (Sedia Jana Semula Jadual)';
+            } else {
+                badgeSumber.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-800 text-[11px] font-extrabold uppercase tracking-wider shrink-0 shadow-sm';
+                badgeSumber.innerHTML = '<i class="fa-solid fa-database text-indigo-600"></i> Disimpan Kekal (Profil &amp; Agihan Guru)';
+            }
+        }
+
+        // 2. Kemas Kini 4 Kad Ringkasan Utama (Sub-Tab 1)
+        const elJumGuru = document.getElementById('stat-analisis-jumlah-guru');
+        const elJumWaktu = document.getElementById('stat-analisis-jumlah-waktu');
+        const elPurata = document.getElementById('stat-analisis-purata-waktu');
+        const elTinggi = document.getElementById('stat-analisis-beban-tertinggi');
+        const elNamaTinggi = document.getElementById('stat-analisis-nama-tertinggi');
+
+        if (elJumGuru) elJumGuru.textContent = data.jumlahGuru;
+        if (elJumWaktu) elJumWaktu.textContent = formatAngkaWaktuAnalisis(data.jumlahWaktuKeseluruhan);
+        if (elPurata) elPurata.textContent = formatAngkaWaktuAnalisis(data.purataWaktu);
+        if (elTinggi) {
+            elTinggi.innerHTML = `${formatAngkaWaktuAnalisis(data.bebanTertinggi)} <span class="text-xs font-extrabold text-rose-600 uppercase">Waktu</span>`;
+        }
+        if (elNamaTinggi) {
+            const teksNamaTinggi = (data.guruBebanTertinggi && data.guruBebanTertinggi.length > 0)
+                ? data.guruBebanTertinggi.join(', ')
+                : '-';
+            elNamaTinggi.className = 'text-[10px] font-extrabold text-rose-600 mt-1 leading-snug line-clamp-2';
+            elNamaTinggi.textContent = teksNamaTinggi;
+            elNamaTinggi.title = teksNamaTinggi;
+        }
+
+        // 3. Kemas Kini Taburan Jumlah Waktu Setiap Guru (Cth: 29 waktu : 5 guru)
+        const bekasTaburan = document.getElementById('bekas-taburan-waktu-guru');
+        if (bekasTaburan) {
+            if (!data.senaraiTaburanWaktu || data.senaraiTaburanWaktu.length === 0) {
+                bekasTaburan.innerHTML = '<p class="text-xs text-gray-400 italic py-2">Tiada data guru buat masa ini.</p>';
+            } else {
+                bekasTaburan.innerHTML = data.senaraiTaburanWaktu.map(item => `
+                    <div title="${escHtmlAnalisis(item.senaraiNama.join(', '))}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 shadow-sm hover:shadow-md hover:border-purple-300 transition-all">
+                        <span class="text-xs md:text-sm font-black text-indigo-950">${formatAngkaWaktuAnalisis(item.waktu)} waktu</span>
+                        <span class="text-gray-400 font-black">:</span>
+                        <span class="px-2.5 py-0.5 rounded-lg bg-indigo-600 text-white text-xs font-extrabold">${item.bilangan} guru</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 4. Kemas Kini Ringkasan Mengikut Guru (Versi Kadboard Rapi)
+        const labelBilKad = document.getElementById('label-bil-guru-kadboard');
+        if (labelBilKad) labelBilKad.textContent = `${data.jumlahGuru} Kad Guru`;
+
+        const gridKadboard = document.getElementById('grid-kadboard-analisis-guru');
+        if (gridKadboard) {
+            if (!data.senaraiGuru || data.senaraiGuru.length === 0) {
+                gridKadboard.innerHTML = `
+                    <div class="col-span-full py-10 text-center text-gray-400 font-medium italic bg-white rounded-xl border border-dashed border-gray-200">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2 block opacity-30"></i>Sila lengkapkan Profil &amp; Agihan Tugas Guru terlebih dahulu.
+                    </div>
+                `;
+            } else {
+                gridKadboard.innerHTML = data.senaraiGuru.map((g, idx) => {
+                    const senaraiSubjekHTML = g.senaraiSubjekTahun.length > 0
+                        ? g.senaraiSubjekTahun.map(item => `
+                            <div class="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-gray-50 hover:bg-indigo-50/50 border border-gray-100 transition-colors">
+                                <div class="min-w-0 flex-1">
+                                    <span class="text-xs font-extrabold text-gray-800">${escHtmlAnalisis(item.subjek)}</span>
+                                    <span class="mx-1 text-gray-400 font-bold">•</span>
+                                    <span class="inline-block text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">${escHtmlAnalisis(item.labelTahun)}</span>
+                                </div>
+                                <span class="text-[11px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 shrink-0">${formatAngkaWaktuAnalisis(item.waktu)} waktu</span>
+                            </div>
+                        `).join('')
+                        : `<p class="text-xs text-gray-400 italic py-2 text-center">Tiada subjek ditugaskan</p>`;
+
+                    return `
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between overflow-hidden">
+                            <div>
+                                <div class="h-2 w-full" style="background-color: ${escHtmlAnalisis(g.warna)};"></div>
+                                <div class="p-4 pb-3 border-b border-gray-100 flex items-start justify-between gap-3">
+                                    <div class="flex items-start gap-3 min-w-0">
+                                        <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs text-gray-900 border border-gray-300 shadow-sm shrink-0" style="background-color: ${escHtmlAnalisis(g.warna)};">
+                                            ${escHtmlAnalisis(g.kod || (idx + 1))}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <span class="text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest block">Guru #${idx + 1}</span>
+                                            <h5 class="font-black text-sm text-gray-900 uppercase leading-snug break-words">${escHtmlAnalisis(g.nama)}</h5>
+                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">${escHtmlAnalisis(g.jawatan)}</p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-1.5 text-center shrink-0">
+                                        <span class="block text-lg font-black text-indigo-900 leading-none">${formatAngkaWaktuAnalisis(g.jumlahWaktu)}</span>
+                                        <span class="block text-[9px] font-extrabold text-indigo-600 uppercase tracking-wider mt-0.5">Waktu</span>
+                                    </div>
+                                </div>
+                                <div class="p-4 space-y-2">
+                                    <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Subjek Diajar &amp; Tahun:</p>
+                                    ${senaraiSubjekHTML}
+                                </div>
+                            </div>
+                            <div class="px-4 py-2.5 bg-gray-50/90 border-t border-gray-100 flex items-center justify-between text-[10px] font-bold text-gray-500">
+                                <span>Bil. Tugasan: <strong class="text-gray-800">${g.senaraiSubjekTahun.length}</strong></span>
+                                <span>Jumlah Mingguan: <strong class="text-indigo-700">${formatAngkaWaktuAnalisis(g.jumlahWaktu)} waktu</strong></span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // 5. Kemas Kini Jadual 8 Kolum Taburan Waktu Mengikut Kelas SK Ulu Pelagus (Sub-Tab 2)
+        const tbodyTaburan = document.getElementById('tbody-taburan-kelas-guru');
+        const tfootTaburan = document.getElementById('tfoot-taburan-kelas-guru');
+        if (tbodyTaburan && tfootTaburan) {
+            if (!data.senaraiGuru || data.senaraiGuru.length === 0) {
+                tbodyTaburan.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="py-10 text-center text-gray-400 italic">Tiada data agihan guru untuk dipaparkan.</td>
+                    </tr>
+                `;
+                tfootTaburan.innerHTML = '';
+            } else {
+                tbodyTaburan.innerHTML = data.senaraiGuru.map((g, idx) => {
+                    let selTahunHTML = '';
+                    for (let t = 1; t <= 6; t++) {
+                        const nilaiT = g.waktuTahun[t] || 0;
+                        selTahunHTML += nilaiT > 0
+                            ? `<td class="py-3 px-2 text-center font-extrabold text-gray-900 border border-gray-200 bg-emerald-50/30">${formatAngkaWaktuAnalisis(nilaiT)}</td>`
+                            : `<td class="py-3 px-2 text-center font-medium text-gray-300 border border-gray-200">-</td>`;
+                    }
+                    return `
+                        <tr class="hover:bg-emerald-50/40 transition-colors ${idx % 2 === 1 ? 'bg-gray-50/50' : 'bg-white'}">
+                            <td class="py-3 px-4 text-left border border-gray-200">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-[11px] font-black text-gray-400 w-5 shrink-0">${idx + 1}.</span>
+                                    <span class="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0" style="background-color: ${escHtmlAnalisis(g.warna)};"></span>
+                                    <span class="font-extrabold text-gray-900 uppercase text-xs md:text-sm">${escHtmlAnalisis(g.nama)}</span>
+                                </div>
+                            </td>
+                            ${selTahunHTML}
+                            <td class="py-3 px-3 text-center font-black text-emerald-900 bg-emerald-100/60 border border-gray-200 text-xs md:text-sm">${formatAngkaWaktuAnalisis(g.jumlahWaktu)}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                let selJumlahTahunHTML = '';
+                for (let t = 1; t <= 6; t++) {
+                    selJumlahTahunHTML += `<td class="py-3.5 px-2 text-center font-black text-emerald-950 border border-emerald-300">${formatAngkaWaktuAnalisis(data.jumlahTahun[t] || 0)}</td>`;
+                }
+               tfootTaburan.innerHTML = `
+                    <tr>
+                        <td class="py-3.5 px-4 text-right font-black uppercase tracking-wider text-xs border border-emerald-300">Jumlah Keseluruhan Waktu</td>
+                        ${selJumlahTahunHTML}
+                        <td class="py-3.5 px-3 text-center font-black text-white bg-emerald-800 border border-emerald-900 text-sm">${formatAngkaWaktuAnalisis(data.jumlahWaktuKeseluruhan)}</td>
+                    </tr>
+                `;
+            }
+        }
+    }
+
+    // =========================================================================
+    // KOD BAHARU: ENJIN CETAKAN RASMI A4 (SUB-TAB 1 & SUB-TAB 2 ANALISIS JADUAL)
+    // =========================================================================
+    function dapatkanTahunSesiAnalisis() {
+        const elTahun = document.getElementById('tahun-jadual-global');
+        const teks = elTahun ? elTahun.innerText.trim() : '';
+        return teks || (typeof tahunJadualGlobal !== 'undefined' ? tahunJadualGlobal : String(new Date().getFullYear()));
+    }
+
+    // 1. Cetakan Rasmi Sub-Tab 1: Analisis Waktu Mengajar Guru (Ringkasan + Taburan + Kadboard)
+    function cetakAnalisisWaktuGuru() {
+        let data = binaDataAnalisisJadual();
+        if (data.jumlahGuru === 0 && window.dataAnalisisJadualKekal && window.dataAnalisisJadualKekal.jumlahGuru > 0) {
+            data = window.dataAnalisisJadualKekal;
+        }
+        if (!data || data.jumlahGuru === 0) {
+            showToast('Tiada data Analisis Waktu Mengajar Guru untuk dicetak!', 'error');
+            return;
+        }
+
+        const tahunSesi = dapatkanTahunSesiAnalisis();
+        const tarikhCetak = formatDate(new Date());
+        const namaTertinggi = (data.guruBebanTertinggi && data.guruBebanTertinggi.length > 0)
+            ? data.guruBebanTertinggi.join(', ')
+            : '-';
+
+        const htmlTaburan = data.senaraiTaburanWaktu.map(item => `
+            <div class="chip-taburan">
+                <span class="chip-waktu">${formatAngkaWaktuAnalisis(item.waktu)} waktu</span>
+                <span class="chip-titik">:</span>
+                <span class="chip-guru">${item.bilangan} guru</span>
+            </div>
+        `).join('');
+
+        const htmlKadboard = data.senaraiGuru.map((g, idx) => {
+            const senaraiSubjek = g.senaraiSubjekTahun.length > 0
+                ? g.senaraiSubjekTahun.map(s => `
+                    <div class="subjek-item">
+                        <span class="subjek-nama">${escHtmlAnalisis(s.subjek)} <strong>• ${escHtmlAnalisis(s.labelTahun)}</strong></span>
+                        <span class="subjek-waktu">${formatAngkaWaktuAnalisis(s.waktu)} waktu</span>
+                    </div>
+                `).join('')
+                : `<div class="subjek-kosong">Tiada subjek ditugaskan</div>`;
+
+            return `
+                <div class="guru-card">
+                    <div class="guru-jalur" style="background: ${escHtmlAnalisis(g.warna)};"></div>
+                    <div class="guru-card-body">
+                        <div class="guru-header">
+                            <div class="guru-identiti">
+                                <div class="guru-kod" style="background: ${escHtmlAnalisis(g.warna)};">${escHtmlAnalisis(g.kod || (idx + 1))}</div>
+                                <div>
+                                    <div class="guru-nama">${escHtmlAnalisis(g.nama)}</div>
+                                    <div class="guru-jawatan">${escHtmlAnalisis(g.jawatan)}</div>
+                                </div>
+                            </div>
+                            <div class="guru-jumlah">
+                                <span class="nombor">${formatAngkaWaktuAnalisis(g.jumlahWaktu)}</span>
+                                <span class="unit">WAKTU</span>
+                            </div>
+                        </div>
+                        <div class="subjek-list">
+                            ${senaraiSubjek}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const namaPK = (signatureData && signatureData.pkKurikulum && signatureData.pkKurikulum.nama) ? signatureData.pkKurikulum.nama : 'PENOLONG KANAN KURIKULUM';
+        const jawatanPK = (signatureData && signatureData.pkKurikulum && signatureData.pkKurikulum.jabatan) ? signatureData.pkKurikulum.jabatan : 'Penolong Kanan Kurikulum';
+        const namaGB = (signatureData && signatureData.guruBesar && signatureData.guruBesar.nama) ? signatureData.guruBesar.nama : 'GURU BESAR';
+        const jawatanGB = (signatureData && signatureData.guruBesar && signatureData.guruBesar.jabatan) ? signatureData.guruBesar.jabatan : 'Guru Besar';
+
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            showToast('Sila benarkan pop-up pada pelayar untuk mencetak dokumen.', 'error');
+            return;
+        }
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="ms">
+            <head>
+                <meta charset="UTF-8">
+                <title>Analisis Waktu Mengajar Guru - SK Ulu Pelagus</title>
+                <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+                <style>
+                    @page { size: A4 portrait; margin: 12mm; }
+                    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    body { background: #ffffff; color: #111827; font-size: 11px; line-height: 1.35; }
+                    .header-rasmi { display: flex; align-items: center; justify-content: center; gap: 14px; border-bottom: 2.5px solid #312e81; padding-bottom: 10px; margin-bottom: 14px; }
+                    .header-rasmi img { width: 56px; height: 56px; object-fit: contain; }
+                    .header-teks { text-align: left; }
+                    .header-teks h1 { font-size: 15px; font-weight: 800; color: #1e1b4b; text-transform: uppercase; letter-spacing: 0.4px; }
+                    .header-teks h2 { font-size: 12px; font-weight: 700; color: #4338ca; text-transform: uppercase; margin-top: 2px; }
+                    .header-teks p { font-size: 9.5px; font-weight: 600; color: #6b7280; margin-top: 2px; }
+                    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+                    .stat-box { border: 1px solid #cbd5e1; border-top: 3.5px solid #4f46e5; border-radius: 8px; padding: 8px 10px; background: #f8fafc; }
+                    .stat-box.emerald { border-top-color: #059669; }
+                    .stat-box.amber { border-top-color: #d97706; }
+                    .stat-box.rose { border-top-color: #e11d48; }
+                    .stat-label { font-size: 8.5px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.4px; }
+                    .stat-val { font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 2px; }
+                    .stat-sub { font-size: 8.5px; font-weight: 700; color: #475569; margin-top: 2px; word-break: break-word; }
+                    .seksyen-kotak { border: 1px solid #cbd5e1; border-radius: 8px; padding: 9px 11px; margin-bottom: 14px; background: #ffffff; page-break-inside: avoid; break-inside: avoid; }
+                    .seksyen-tajuk { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #312e81; letter-spacing: 0.5px; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+                    .taburan-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+                    .chip-taburan { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 6px; background: #eef2ff; border: 1px solid #c7d2fe; font-size: 10px; }
+                    .chip-waktu { font-weight: 800; color: #1e1b4b; }
+                    .chip-titik { font-weight: 800; color: #64748b; }
+                    .chip-guru { font-weight: 800; background: #4f46e5; color: #ffffff; padding: 1px 6px; border-radius: 4px; font-size: 9.5px; }
+                    .kadboard-tajuk { font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #1e293b; letter-spacing: 0.5px; margin-bottom: 8px; }
+                    .kadboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+                    .guru-card { border: 1px solid #94a3b8; border-radius: 9px; overflow: hidden; background: #ffffff; page-break-inside: avoid; break-inside: avoid; }
+                    .guru-jalur { height: 6px; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.08); }
+                    .guru-card-body { padding: 9px 10px; }
+                    .guru-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 7px; margin-bottom: 7px; }
+                    .guru-identiti { display: flex; align-items: flex-start; gap: 7px; min-width: 0; flex: 1; }
+                    .guru-kod { min-width: 28px; height: 28px; padding: 0 5px; border-radius: 6px; border: 1px solid #64748b; display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 800; color: #111827; flex-shrink: 0; }
+                    .guru-nama { font-size: 10.5px; font-weight: 800; color: #0f172a; text-transform: uppercase; line-height: 1.2; }
+                    .guru-jawatan { font-size: 8.5px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-top: 2px; }
+                    .guru-jumlah { background: #eef2ff; border: 1px solid #a5b4fc; border-radius: 6px; padding: 3px 7px; text-align: center; flex-shrink: 0; }
+                    .guru-jumlah .nombor { display: block; font-size: 13px; font-weight: 800; color: #1e1b4b; line-height: 1.05; }
+                    .guru-jumlah .unit { display: block; font-size: 7.5px; font-weight: 800; color: #4338ca; margin-top: 1px; }
+                    .subjek-list { display: flex; flex-direction: column; gap: 4px; }
+                    .subjek-item { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 5px; padding: 3.5px 7px; font-size: 9.5px; }
+                    .subjek-nama { color: #1e293b; font-weight: 600; }
+                    .subjek-nama strong { color: #3730a3; font-weight: 800; }
+                    .subjek-waktu { font-weight: 800; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 1px 5px; border-radius: 4px; white-space: nowrap; font-size: 8.5px; }
+                    .subjek-kosong { font-size: 9px; color: #94a3b8; font-style: italic; text-align: center; }
+                    .tandatangan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 26px; page-break-inside: avoid; break-inside: avoid; }
+                    .tt-blok { text-align: center; }
+                    .tt-label { font-size: 10px; font-weight: 600; color: #475569; margin-bottom: 42px; }
+                    .tt-garisan { border-top: 1px solid #1e293b; padding-top: 6px; }
+                    .tt-nama { font-size: 10.5px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+                    .tt-jawatan { font-size: 9px; font-weight: 600; color: #475569; margin-top: 1px; }
+                </style>
+            </head>
+            <body>
+                <div class="header-rasmi">
+                    <img src="https://iili.io/nRloUF9.png" alt="Logo SK Ulu Pelagus" onerror="this.style.display='none'">
+                    <div class="header-teks">
+                        <h1>ANALISIS WAKTU MENGAJAR GURU</h1>
+                        <h2>SEKOLAH KEBANGSAAN ULU PELAGUS • SESI ${escHtmlAnalisis(tahunSesi)}</h2>
+                        <p>Tarikh Cetakan: ${escHtmlAnalisis(tarikhCetak)}</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Jumlah Guru</div>
+                        <div class="stat-val">${data.jumlahGuru}</div>
+                        <div class="stat-sub">Orang Guru</div>
+                    </div>
+                    <div class="stat-box emerald">
+                        <div class="stat-label">Jumlah Waktu Keseluruhan</div>
+                        <div class="stat-val">${formatAngkaWaktuAnalisis(data.jumlahWaktuKeseluruhan)}</div>
+                        <div class="stat-sub">Waktu (Tahun 1 – Tahun 6)</div>
+                    </div>
+                    <div class="stat-box amber">
+                        <div class="stat-label">Purata Waktu Guru</div>
+                        <div class="stat-val">${formatAngkaWaktuAnalisis(data.purataWaktu)}</div>
+                        <div class="stat-sub">Waktu Seminggu</div>
+                    </div>
+                    <div class="stat-box rose">
+                        <div class="stat-label">Beban Tertinggi</div>
+                        <div class="stat-val">${formatAngkaWaktuAnalisis(data.bebanTertinggi)} Waktu</div>
+                        <div class="stat-sub">${escHtmlAnalisis(namaTertinggi)}</div>
+                    </div>
+                </div>
+
+                <div class="seksyen-kotak">
+                    <div class="seksyen-tajuk">Taburan Jumlah Waktu Setiap Guru</div>
+                    <div class="taburan-wrap">${htmlTaburan}</div>
+                </div>
+
+                <div class="kadboard-tajuk">Ringkasan Mengikut Guru (${data.jumlahGuru} Orang Guru)</div>
+                <div class="kadboard-grid">
+                    ${htmlKadboard}
+                </div>
+
+                <div class="tandatangan-grid">
+                    <div class="tt-blok">
+                        <div class="tt-label">Disediakan oleh:</div>
+                        <div class="tt-garisan">
+                            <div class="tt-nama">${escHtmlAnalisis(namaPK)}</div>
+                            <div class="tt-jawatan">${escHtmlAnalisis(jawatanPK)} • SK Ulu Pelagus</div>
+                        </div>
+                    </div>
+                    <div class="tt-blok">
+                        <div class="tt-label">Disahkan oleh:</div>
+                        <div class="tt-garisan">
+                            <div class="tt-nama">${escHtmlAnalisis(namaGB)}</div>
+                            <div class="tt-jawatan">${escHtmlAnalisis(jawatanGB)} • SK Ulu Pelagus</div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+
+        let sudahCetak = false;
+        const laksanaCetak = () => {
+            if (sudahCetak) return;
+            sudahCetak = true;
+            printWindow.focus();
+            printWindow.print();
+        };
+        printWindow.onload = () => setTimeout(laksanaCetak, 250);
+        setTimeout(laksanaCetak, 800);
+    }
+
+    // 2. Cetakan Rasmi Sub-Tab 2: Taburan Waktu Mengajar Guru Mengikut Kelas SK Ulu Pelagus (8 Kolum)
+    function cetakTaburanKelasGuru() {
+        let data = binaDataAnalisisJadual();
+        if (data.jumlahGuru === 0 && window.dataAnalisisJadualKekal && window.dataAnalisisJadualKekal.jumlahGuru > 0) {
+            data = window.dataAnalisisJadualKekal;
+        }
+        if (!data || data.jumlahGuru === 0) {
+            showToast('Tiada data Taburan Waktu Mengikut Kelas untuk dicetak!', 'error');
+            return;
+        }
+
+        const tahunSesi = dapatkanTahunSesiAnalisis();
+        const tarikhCetak = formatDate(new Date());
+
+        const barisGuruHTML = data.senaraiGuru.map((g, idx) => {
+            let selTahun = '';
+            for (let t = 1; t <= 6; t++) {
+                const nilai = g.waktuTahun[t] || 0;
+                selTahun += nilai > 0
+                    ? `<td class="sel-angka isi">${formatAngkaWaktuAnalisis(nilai)}</td>`
+                    : `<td class="sel-angka kosong">-</td>`;
+            }
+            return `
+                <tr>
+                    <td class="sel-nama"><span class="bil">${idx + 1}.</span> ${escHtmlAnalisis(g.nama)}</td>
+                    ${selTahun}
+                    <td class="sel-jumlah">${formatAngkaWaktuAnalisis(g.jumlahWaktu)}</td>
+                </tr>
+            `;
+        }).join('');
+
+        let selJumlahBawah = '';
+        for (let t = 1; t <= 6; t++) {
+            selJumlahBawah += `<td class="kaki-angka">${formatAngkaWaktuAnalisis(data.jumlahTahun[t] || 0)}</td>`;
+        }
+
+        const namaPK = (signatureData && signatureData.pkKurikulum && signatureData.pkKurikulum.nama) ? signatureData.pkKurikulum.nama : 'PENOLONG KANAN KURIKULUM';
+        const jawatanPK = (signatureData && signatureData.pkKurikulum && signatureData.pkKurikulum.jabatan) ? signatureData.pkKurikulum.jabatan : 'Penolong Kanan Kurikulum';
+        const namaGB = (signatureData && signatureData.guruBesar && signatureData.guruBesar.nama) ? signatureData.guruBesar.nama : 'GURU BESAR';
+        const jawatanGB = (signatureData && signatureData.guruBesar && signatureData.guruBesar.jabatan) ? signatureData.guruBesar.jabatan : 'Guru Besar';
+
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            showToast('Sila benarkan pop-up pada pelayar untuk mencetak dokumen.', 'error');
+            return;
+        }
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="ms">
+            <head>
+                <meta charset="UTF-8">
+                <title>Taburan Waktu Mengajar Guru Mengikut Kelas - SK Ulu Pelagus</title>
+                <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+                <style>
+                    @page { size: A4 portrait; margin: 14mm; }
+                    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    body { background: #ffffff; color: #111827; font-size: 11px; }
+                    .header-rasmi { display: flex; align-items: center; justify-content: center; gap: 14px; border-bottom: 2.5px solid #065f46; padding-bottom: 10px; margin-bottom: 16px; }
+                    .header-rasmi img { width: 56px; height: 56px; object-fit: contain; }
+                    .header-teks { text-align: left; }
+                    .header-teks h1 { font-size: 14.5px; font-weight: 800; color: #064e3b; text-transform: uppercase; letter-spacing: 0.3px; }
+                    .header-teks h2 { font-size: 12px; font-weight: 700; color: #047857; text-transform: uppercase; margin-top: 2px; }
+                    .header-teks p { font-size: 9.5px; font-weight: 600; color: #6b7280; margin-top: 2px; }
+                    table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 24px; }
+                    thead th { background: #065f46; color: #ffffff; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; border: 1px solid #064e3b; padding: 8px 4px; text-align: center; }
+                    thead th.th-nama { width: 36%; text-align: left; padding-left: 10px; }
+                    thead th.th-tahun { width: 9%; }
+                    thead th.th-jumlah { width: 10%; background: #022c22; }
+                    tbody tr:nth-child(even) { background: #f8fafc; }
+                    tbody tr { page-break-inside: avoid; break-inside: avoid; }
+                    td { border: 1px solid #64748b; padding: 7px 5px; font-size: 10.5px; }
+                    td.sel-nama { font-weight: 800; color: #0f172a; text-transform: uppercase; padding-left: 10px; word-break: break-word; }
+                    td.sel-nama .bil { color: #64748b; font-weight: 700; margin-right: 4px; }
+                    td.sel-angka { text-align: center; }
+                    td.sel-angka.isi { font-weight: 800; color: #064e3b; background: #ecfdf5; }
+                    td.sel-angka.kosong { color: #cbd5e1; font-weight: 600; }
+                    td.sel-jumlah { text-align: center; font-weight: 800; color: #064e3b; background: #d1fae5; font-size: 11px; }
+                    tfoot td { border: 1.5px solid #064e3b; padding: 8px 5px; background: #ecfdf5; font-weight: 800; color: #064e3b; }
+                    tfoot td.kaki-label { text-align: right; padding-right: 10px; text-transform: uppercase; font-size: 10px; letter-spacing: 0.4px; }
+                    tfoot td.kaki-angka { text-align: center; font-size: 11px; }
+                    tfoot td.kaki-besar { text-align: center; background: #065f46; color: #ffffff; font-size: 11.5px; }
+                    .tandatangan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 30px; page-break-inside: avoid; break-inside: avoid; }
+                    .tt-blok { text-align: center; }
+                    .tt-label { font-size: 10px; font-weight: 600; color: #475569; margin-bottom: 44px; }
+                    .tt-garisan { border-top: 1px solid #1e293b; padding-top: 6px; }
+                    .tt-nama { font-size: 10.5px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+                    .tt-jawatan { font-size: 9px; font-weight: 600; color: #475569; margin-top: 1px; }
+                </style>
+            </head>
+            <body>
+                <div class="header-rasmi">
+                    <img src="https://iili.io/nRloUF9.png" alt="Logo SK Ulu Pelagus" onerror="this.style.display='none'">
+                    <div class="header-teks">
+                        <h1>TABURAN WAKTU MENGAJAR GURU MENGIKUT KELAS</h1>
+                        <h2>SEKOLAH KEBANGSAAN ULU PELAGUS • SESI ${escHtmlAnalisis(tahunSesi)}</h2>
+                        <p>Tarikh Cetakan: ${escHtmlAnalisis(tarikhCetak)} • Jumlah Guru: ${data.jumlahGuru} Orang</p>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="th-nama">Nama Guru</th>
+                            <th class="th-tahun">Tahun 1</th>
+                            <th class="th-tahun">Tahun 2</th>
+                            <th class="th-tahun">Tahun 3</th>
+                            <th class="th-tahun">Tahun 4</th>
+                            <th class="th-tahun">Tahun 5</th>
+                            <th class="th-tahun">Tahun 6</th>
+                            <th class="th-jumlah">Jumlah</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${barisGuruHTML}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="kaki-label">Jumlah Keseluruhan Waktu</td>
+                            ${selJumlahBawah}
+                            <td class="kaki-besar">${formatAngkaWaktuAnalisis(data.jumlahWaktuKeseluruhan)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="tandatangan-grid">
+                    <div class="tt-blok">
+                        <div class="tt-label">Disediakan oleh:</div>
+                        <div class="tt-garisan">
+                            <div class="tt-nama">${escHtmlAnalisis(namaPK)}</div>
+                            <div class="tt-jawatan">${escHtmlAnalisis(jawatanPK)} • SK Ulu Pelagus</div>
+                        </div>
+                    </div>
+                    <div class="tt-blok">
+                        <div class="tt-label">Disahkan oleh:</div>
+                        <div class="tt-garisan">
+                            <div class="tt-nama">${escHtmlAnalisis(namaGB)}</div>
+                            <div class="tt-jawatan">${escHtmlAnalisis(jawatanGB)} • SK Ulu Pelagus</div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+
+        let sudahCetak = false;
+        const laksanaCetak = () => {
+            if (sudahCetak) return;
+            sudahCetak = true;
+            printWindow.focus();
+            printWindow.print();
+        };
+        printWindow.onload = () => setTimeout(laksanaCetak, 250);
+        setTimeout(laksanaCetak, 800);
     }
 
     initApp();
