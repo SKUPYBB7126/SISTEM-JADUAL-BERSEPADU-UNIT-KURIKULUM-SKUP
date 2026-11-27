@@ -9891,14 +9891,16 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
             let jumlahSlotPJKelas = 0;
             let rekodHariPJKelas = [];
 
-            senaraiHari.forEach(hari => {
+          senaraiHari.forEach(hari => {
+                let adaRehatPJHC = document.getElementById('rehat-' + hari.toLowerCase()) ? document.getElementById('rehat-' + hari.toLowerCase()).checked : (hari !== 'JUMAAT');
+                let hadPagiPJHC = adaRehatPJHC ? rehatIdx : (rehatIdx + 1);
                 let indeksPJ = [];
                 if (f2_jadualSediaAda[kelas] && f2_jadualSediaAda[kelas][hari]) {
                     for (let idx = 0; idx < 14; idx++) {
                         let petak = f2_jadualSediaAda[kelas][hari][idx];
                         if (petak && petak.subjek && petak.subjek.includes('PJ')) {
                             indeksPJ.push(idx);
-                            if (idx >= rehatIdx) pjPetang = true;
+                            if (idx >= hadPagiPJHC) pjPetang = true;
                             if (!hariPJBoleh[hari]) pjLuarHari = true;
                         }
                     }
@@ -9978,6 +9980,11 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
            return kiraMaxSlotDinamik(`waktu-${h}-${t}`, hariAdaRehat[hariStr], hariStr === 'JUMAAT');
         };
 
+        let maksLimitHarianHC = {};
+        senaraiHari.forEach(h => {
+            maksLimitHarianHC[h] = Math.max(0, ...f2_senaraiKelasUnik.map(k => getLimitLocal(k, h)));
+        });
+
         f2_senaraiKelasUnik.forEach(kelas => {
             senaraiHari.forEach(hari => {
                 let limit = getLimitLocal(kelas, hari);
@@ -9986,8 +9993,10 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                     let checkSubjekHujung = (petak) => {
                         return petak && (petak.subjek.includes('MT') || petak.subjek.includes('SN') || petak.subjek.includes('BM') || petak.subjek.includes('BI'));
                     };
-                    
-                    if (checkSubjekHujung(petakAkhir)) {
+                    let kecualiHujungAwal = (!hariAdaRehat[hari] && limit <= rehatIdx + 1) ||
+                        (hariAdaRehat[hari] && limit < (maksLimitHarianHC[hari] || 0) && (limit - rehatIdx) <= 4);
+
+                    if (!kecualiHujungAwal && checkSubjekHujung(petakAkhir)) {
                         isuWaktuHujung++;
                     }
                     if (petakAkhir) {
@@ -10950,9 +10959,18 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
            }
        }
 
+      const dapatkanHadSlotPagiPJ = (kelasUji, hariUji) => {
+           const hadKelas = getLimit(kelasUji, hariUji);
+           return hariAdaRehat[hariUji] ? Math.min(rehatIndex, hadKelas) : Math.min(rehatIndex + 1, hadKelas);
+       };
+
        const senaraiSemakPJ = tugasSelepasGabung.filter(t => t.subjek.includes("PJ") && (parseFloat(t.waktu) || 0) > 0);
        if (senaraiSemakPJ.length > 0) {
-           const kapPadangMingguan = hariPJPilihan.reduce((jum, hP) => jum + ((hP === hariPerhimpunan ? Math.max(0, rehatIndex - 1) : rehatIndex) * 2), 0);
+           const kapPadangMingguan = hariPJPilihan.reduce((jum, hP) => {
+               let maksPagiH = Math.max(rehatIndex, ...f2_senaraiKelasUnik.map(k => dapatkanHadSlotPagiPJ(k, hP)));
+               let slotSedia = (hP === hariPerhimpunan) ? Math.max(0, maksPagiH - 1) : maksPagiH;
+               return jum + (slotSedia * 2);
+           }, 0);
            const jumWaktuPJSekolah = senaraiSemakPJ.reduce((jum, t) => jum + Math.round(parseFloat(t.waktu) || 0), 0);
            if (jumWaktuPJSekolah > kapPadangMingguan) {
                hideLoading();
@@ -10967,7 +10985,8 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                });
            });
            const kapPagiGuruPJ = hariPJPilihan.reduce((jum, hP) => {
-               let sp = (hP === hariPerhimpunan) ? Math.max(0, rehatIndex - 1) : rehatIndex;
+               let maksPagiH = Math.max(rehatIndex, ...f2_senaraiKelasUnik.map(k => dapatkanHadSlotPagiPJ(k, hP)));
+               let sp = (hP === hariPerhimpunan) ? Math.max(0, maksPagiH - 1) : maksPagiH;
                let maksH = sp <= 4 ? sp : (sp - Math.floor(sp / 5));
                return jum + maksH;
            }, 0);
@@ -11221,16 +11240,18 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                    });
                });
 
-               // Pengesan kepadatan guru 5-hari (Cth: BM/BI dwi-kelas) & kelas balik awal (Cth: 1 Sopan)
+               // Pengesan kepadatan guru 5-hari (BM/BI), beban harian wajib guru PJ & kelas balik awal
                let bilSubjek5HariGuruPJ = {};
                let jumlahWaktuGuruPJ = {};
+               let wajibHarianGuruPJ = {};
                tugasSelepasGabung.forEach(t => {
                    let w = parseFloat(t.waktu) || 0;
                    if (w <= 0 || t.subjek === "TSMK") return;
                    (t.kodGuru || '').split(' / ').map(x => x.trim()).filter(Boolean).forEach(kodG => {
                        jumlahWaktuGuruPJ[kodG] = (jumlahWaktuGuruPJ[kodG] || 0) + w;
-                       if (w >= 9 && t.subjek !== "PKA") {
+                       if (w >= 9 && t.subjek !== "PKA" && !t.subjek.includes("PJ")) {
                            bilSubjek5HariGuruPJ[kodG] = (bilSubjek5HariGuruPJ[kodG] || 0) + 1;
+                           wajibHarianGuruPJ[kodG] = (wajibHarianGuruPJ[kodG] || 0) + (w >= 10 ? 2 : 1);
                        }
                    });
                });
@@ -11249,6 +11270,25 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                    if (getLimit(kls, 'JUMAAT') <= 5) skorJ += 6;
                    skorPadatJumaatKelas[kls] = skorJ;
                });
+
+               const bolehMuatHariPJ = (klsUji, szUji, hUji, guruUji = '') => {
+                   let wajibH = tugasSelepasGabung
+                       .filter(t => t.kelas === klsUji && t.subjek !== "PKA" && t.subjek !== "TSMK" && !t.subjek.includes("PJ") && (parseFloat(t.waktu) || 0) >= 9)
+                       .reduce((jum, t) => jum + ((parseFloat(t.waktu) || 0) >= 10 ? 2 : 1), 0);
+                   let kapH = getLimit(klsUji, hUji) - (hUji === hariPerhimpunan ? 1 : 0);
+                   if (kapH < (wajibH + szUji)) return false;
+
+                   // Elakkan guru yang sudah mengajar >=4 masa wajib harian (cth: Cikgu UBAI / Cikgu SAB) daripada diberi PJ pada hari tanpa rehat (Jumaat)
+                   if (guruUji && !hariAdaRehat[hUji]) {
+                       let maksSlotH = Math.max(rehatIndex, ...f2_senaraiKelasUnik.map(k => getLimit(k, hUji)));
+                       let hadTanpaRehat = maksSlotH <= 4 ? maksSlotH : (maksSlotH - Math.floor(maksSlotH / 5));
+                       let melebihiHad = guruUji.split(' / ').map(x => x.trim()).filter(Boolean).some(kodG =>
+                           ((wajibHarianGuruPJ[kodG] || 0) + szUji) > hadTanpaRehat
+                       );
+                       if (melebihiHad) return false;
+                   }
+                   return true;
+               };
 
                // Kira sama ada seseorang guru PJ memerlukan blok PJ sebagai tapak wajib PKA di kelas berkenaan
                const semakPerluTapakPKAPJ = (kelasUji, guruUji, bakiKetulSelepasIni = 0) => {
@@ -11277,42 +11317,41 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                    return (hariMampuSubjekLain + bakiKetulSelepasIni) < bakiHariPKAPerlu;
                };
 
-              const libatJumaatPJ = hariPJPilihan.includes('JUMAAT');
+               giliranKetulanPJ.forEach(item => {
+                   let hSah = hariPJPilihan.filter(h => bolehMuatHariPJ(item.pjTask.kelas, item.saizPJ, h, item.pjTask.kodGuru));
+                   item.hariSah = hSah.length > 0 ? hSah : [...hariPJPilihan];
+               });
+
+               const libatJumaatPJ = hariPJPilihan.includes('JUMAAT');
                const hadPadatGuruPJ = hariPJPilihan.length * 2;
                giliranKetulanPJ.sort((a, b) => {
                    let aPerluPKA = semakPerluTapakPKAPJ(a.pjTask.kelas, a.pjTask.kodGuru, 0) ? 0 : 1;
                    let bPerluPKA = semakPerluTapakPKAPJ(b.pjTask.kelas, b.pjTask.kodGuru, 0) ? 0 : 1;
                    if (aPerluPKA !== bPerluPKA) return aPerluPKA - bPerluPKA;
+
+                   // WAJIB UTAMA: Kelas yang hanya muat pada 1 hari PJ (cth: T1-T3 5-slot Jumaat & guru 4m harian) jalan dahulu sebelum kelas 6-slot (T4-T6)
+                   if (a.hariSah.length !== b.hariSah.length) return a.hariSah.length - b.hariSah.length;
+
                    if (b.saizPJ !== a.saizPJ) return b.saizPJ - a.saizPJ;
 
-                   // Utamakan guru PJ yang memegang >= 3 kelas (cth: Cikgu CLARE = 6 masa) supaya kuota padang pagi tidak dirampas guru 1-kelas dahulu
                    let bebanA = bebanPagiGuruPJ[a.pjTask.kodGuru] || 0;
                    let bebanB = bebanPagiGuruPJ[b.pjTask.kodGuru] || 0;
                    let aGuruPadat = (bebanA > hadPadatGuruPJ || (hariPJPilihan.length <= 2 && bebanA >= 5)) ? 0 : 1;
                    let bGuruPadat = (bebanB > hadPadatGuruPJ || (hariPJPilihan.length <= 2 && bebanB >= 5)) ? 0 : 1;
                    if (aGuruPadat !== bGuruPadat) return aGuruPadat - bGuruPadat;
 
-                   if (percubaanKasar % 5 !== 0) {
-                       if (libatJumaatPJ) {
-                           let padatDiff = (skorPadatJumaatKelas[b.pjTask.kelas] || 0) - (skorPadatJumaatKelas[a.pjTask.kelas] || 0);
-                           if (Math.abs(padatDiff) >= 5) return padatDiff;
-                       }
-                       let slotDiff = (slotMingguanKelasPJ[a.pjTask.kelas] || 99) - (slotMingguanKelasPJ[b.pjTask.kelas] || 99);
-                       if (slotDiff !== 0) return slotDiff;
-                   }
+                   let slotDiff = (slotMingguanKelasPJ[a.pjTask.kelas] || 99) - (slotMingguanKelasPJ[b.pjTask.kelas] || 99);
+                   if (slotDiff !== 0 && percubaanKasar % 4 !== 0) return slotDiff;
 
                    if (bebanB !== bebanA) return bebanB - bebanA;
                    if (a.urutan !== b.urutan) return a.urutan - b.urutan;
                    return Math.random() - 0.5;
                });
 
-               const bolehMuatHariPJ = (klsUji, szUji, hUji) => {
-                   let wajibH = tugasSelepasGabung
-                       .filter(t => t.kelas === klsUji && t.subjek !== "PKA" && t.subjek !== "TSMK" && !t.subjek.includes("PJ") && (parseFloat(t.waktu) || 0) >= 9)
-                       .reduce((jum, t) => jum + ((parseFloat(t.waktu) || 0) >= 10 ? 2 : 1), 0);
-                   let kapH = getLimit(klsUji, hUji) - (hUji === hariPerhimpunan ? 1 : 0);
-                   return kapH >= (wajibH + szUji);
-               };
+               const kiraSesiPJGuruPadaHari = (kodG, hUji) => f2_senaraiKelasUnik.filter(kL =>
+                   f2_jadualSediaAda[kL][hUji] &&
+                   f2_jadualSediaAda[kL][hUji].slice(0, 14).some(st => st && st.subjek && st.subjek.includes("PJ") && st.kodGuru === kodG)
+               ).length;
 
                for (let idxKetul = 0; idxKetul < giliranKetulanPJ.length; idxKetul++) {
                    let itemPJ = giliranKetulanPJ[idxKetul];
@@ -11322,17 +11361,14 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                    let guruPJ = pjTask.kodGuru;
                    let placedPJ = false;
 
-                   let hariMuatKapasiti = hariPJPilihan.filter(h => bolehMuatHariPJ(kelasPJ, saizPJ, h));
-                   let senaraiHariAsasPJ = hariMuatKapasiti.length > 0 ? hariMuatKapasiti : [...hariPJPilihan];
-
+                   let senaraiHariAsasPJ = itemPJ.hariSah;
                    let bakiKetulPJ = giliranKetulanPJ.length - idxKetul;
                    let bilHariPJMasihKosong = hariPJPilihan.filter(h => rekodHariPJTerisi[h] === 0).length;
-                   let kuotaHariBiasaSebelumJumaat = (percubaanKasar % 3 === 0) ? 3 : 4;
 
                    const perluPaksaHariKosong = (hUji) => {
                        if (rekodHariPJTerisi[hUji] > 0) return false;
                        if (bakiKetulPJ <= bilHariPJMasihKosong) return true;
-                       return !giliranKetulanPJ.slice(idxKetul + 1).some(x => bolehMuatHariPJ(x.pjTask.kelas, x.saizPJ, hUji));
+                       return !giliranKetulanPJ.slice(idxKetul + 1).some(x => x.hariSah.includes(hUji));
                    };
 
                    let calonHariPJ = [...senaraiHariAsasPJ].sort((a, b) => {
@@ -11340,17 +11376,14 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                        let paksaB = perluPaksaHariKosong(b);
                        if (paksaA !== paksaB) return paksaA ? -1 : 1;
 
-                       // Dahulukan hari penuh (Isnin-Khamis) sebelum Jumaat selagi kuota pagi belum penuh supaya guru padat (BM/BI) tidak tersekat di Jumaat
-                       if (a === 'JUMAAT' && b !== 'JUMAAT') {
-                           if ((skorPadatJumaatKelas[kelasPJ] || 0) > 0 || rekodHariPJTerisi[b] < kuotaHariBiasaSebelumJumaat) return 1;
-                       }
-                       if (b === 'JUMAAT' && a !== 'JUMAAT') {
-                           if ((skorPadatJumaatKelas[kelasPJ] || 0) > 0 || rekodHariPJTerisi[a] < kuotaHariBiasaSebelumJumaat) return -1;
-                       }
-
                        let aKosong = rekodHariPJTerisi[a] === 0;
                        let bKosong = rekodHariPJTerisi[b] === 0;
                        if (aKosong !== bKosong) return aKosong ? -1 : 1;
+
+                       // Imbangkan sesi PJ guru sendiri merentas hari pilihan (cth: Cikgu Clare 1 kelas di Isnin/Rabu + 2 kelas di Jumaat)
+                       let sesiGuruA = kiraSesiPJGuruPadaHari(guruPJ, a);
+                       let sesiGuruB = kiraSesiPJGuruPadaHari(guruPJ, b);
+                       if (sesiGuruA !== sesiGuruB) return sesiGuruA - sesiGuruB;
 
                        if (rekodHariPJTerisi[a] !== rekodHariPJTerisi[b]) return rekodHariPJTerisi[a] - rekodHariPJTerisi[b];
 
@@ -11364,29 +11397,18 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
 
                    let bakiKetulSamaKelas = giliranKetulanPJ.slice(idxKetul + 1).filter(x => x.pjTask.kelas === kelasPJ && x.pjTask.kodGuru === guruPJ).length;
                    let perluWajibTapakPKA = semakPerluTapakPKAPJ(kelasPJ, guruPJ, bakiKetulSamaKelas);
-                   let adaHariPenuhSebelumJumaat = libatJumaatPJ && calonHariPJ.some(h => h !== 'JUMAAT') && calonHariPJ[0] !== 'JUMAAT';
-                   let utamakanHariPenuhPJ = adaHariPenuhSebelumJumaat && ((bebanPagiGuruPJ[guruPJ] || 0) > hadPadatGuruPJ || (skorPadatJumaatKelas[kelasPJ] || 0) > 0);
-
-                   let senaraiModAsasPJ = perluWajibTapakPKA
+                   let senaraiModCubaanPJ = perluWajibTapakPKA
                        ? [{ had: 3, paksaTapakPKA: true }, { had: 4, paksaTapakPKA: true }, { had: 3, paksaTapakPKA: false }, { had: 4, paksaTapakPKA: false }]
                        : [{ had: 3, paksaTapakPKA: false }, { had: 4, paksaTapakPKA: false }];
-
-                   let senaraiModCubaanPJ = utamakanHariPenuhPJ
-                       ? [
-                           ...senaraiModAsasPJ.map(m => ({ ...m, elakJumaat: true })),
-                           ...senaraiModAsasPJ.map(m => ({ ...m, elakJumaat: false }))
-                         ]
-                       : senaraiModAsasPJ.map(m => ({ ...m, elakJumaat: false }));
 
                    for (let modPJ of senaraiModCubaanPJ) {
                        if (placedPJ) break;
                        let hadRentetanPJ = modPJ.had;
                        for (let h = 0; h < calonHariPJ.length && !placedPJ; h++) {
                            let hariPJ = calonHariPJ[h];
-                           if (modPJ.elakJumaat && hariPJ === 'JUMAAT') continue;
                            let slotsPJ = f2_jadualSediaAda[kelasPJ][hariPJ];
                            let hadSlotPJ = getLimit(kelasPJ, hariPJ);
-                           let limitPagiPJ = Math.min(rehatIndex, hadSlotPJ);
+                           let limitPagiPJ = dapatkanHadSlotPagiPJ(kelasPJ, hariPJ);
 
                            if (slotsPJ.slice(0, hadSlotPJ).some(st => st && st.subjek && st.subjek.includes("PJ"))) continue;
 
@@ -11478,8 +11500,8 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                } else if (saizPJ === 1) {
                                    if ((leftGap % 2 === 0 && rightZonGap % 2 === 0) || leftGap === 0 || rightZonGap === 0) slotUtama.push(s);
                                    else slotKedua.push(s);
-                               } else {
-                                   if ((leftGap === 0 || rightZonGap === 0 || (leftGap % 2 === 0 && rightZonGap % 2 === 0)) && ruangTapakPKA >= 2) slotUtama.push(s);
+                              } else {
+                                   if ((leftGap === 0 || rightZonGap === 0) && ruangTapakPKA >= 2) slotUtama.push(s);
                                    else slotKedua.push(s);
                                }
                            }
@@ -11640,7 +11662,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                    const cubaBebaskanJulatTapakPKA = (hariUji, startUji, endUji, hadRentetanUji) => {
                        let slotsUji = f2_jadualSediaAda[kelasPKA][hariUji];
                        let hadUji = getLimit(kelasPKA, hariUji);
-                       let limitPagiUji = Math.min(rehatIndex, hadUji);
+                       let limitPagiUji = dapatkanHadSlotPagiPJ(kelasPKA, hariUji);
                        let idxTapakUji = isTahap1Kelas ? (hariAdaRehat[hariUji] ? (rehatIndex - 1) : (hadUji - 1)) : 0;
 
                        let adaHalangan = false;
@@ -12269,19 +12291,33 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                });
            }
 
-         // Kira beban guru, kapasiti mingguan kelas (utamakan kelas balik awal seperti 1 Sopan) & guru merentas tahap PKA (+15m)
+         // Kira beban guru, had maksimum harian sekolah & pengesanan dinamik kelas balik awal (cth: 1 Sopan 12:00 vs 12:30)
            let petaBebanGuruGlobal = {};
            let petaSubjek5HariGuru = {};
            let petaKapasitiKelasGlobal = {};
            let petaKelasPKAT23 = {};
+           let maksLimitHarianGlobal = {};
+           ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].forEach(h => {
+               maksLimitHarianGlobal[h] = Math.max(0, ...f2_senaraiKelasUnik.map(k => getLimit(k, h)));
+           });
+
+           let petaKelasBalikAwal = {};
            f2_senaraiKelasUnik.forEach(kls => {
                petaKapasitiKelasGlobal[kls] = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].reduce((jum, h) => jum + getLimit(kls, h), 0);
+               petaKelasBalikAwal[kls] = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS'].some(h => getLimit(kls, h) < (maksLimitHarianGlobal[h] || 0));
                let isT1Kls = String(kls).trim().startsWith('1') || String(kls).trim().startsWith('2');
                let noThnKls = parseInt(kls, 10) || (isT1Kls ? 1 : 3);
                petaKelasPKAT23[kls] = !isT1Kls && ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].some(h =>
                    h !== hariPerhimpunan && ((f2_jadualSediaAda[kls][h] && f2_jadualSediaAda[kls][h][14] !== null) || adalahPKAAktifPadaHari(noThnKls, h))
                );
            });
+
+           const adalahHariBebasHujungTeras = (namaKls, hariStr) => {
+               const hadH = getLimit(namaKls, hariStr);
+               if (!hariAdaRehat[hariStr] && hadH <= rehatIndex + 1) return true;
+               if (hariAdaRehat[hariStr] && hadH < (maksLimitHarianGlobal[hariStr] || 0) && (hadH - rehatIndex) <= 4) return true;
+               return false;
+           };
 
            let setGuruAdaT23PKA = {};
            let setGuruAdaTanpaT23PKA = {};
@@ -12306,7 +12342,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
            senaraiTugasSusunGlobal.forEach(t => {
                let wAsal = t.waktuAsal || t.waktu;
                let isDwiGuru = Boolean(t.subjek.includes(' / ') || (t.kodGuru && t.kodGuru.includes(' / ')));
-              let isKelasBalikAwal = (petaKapasitiKelasGlobal[t.kelas] || 50) <= 48;
+               let isKelasBalikAwal = Boolean(petaKelasBalikAwal[t.kelas]);
                if (t.subjek.includes("PJ")) t._kastaGlobal = 0;
                else if (wAsal >= 9) t._kastaGlobal = 1; // Subjek 5-Hari Wajib (BM 10-12m, BI 10m, AM >=9m) semua kelas dikunci dahulu
                else if (isKelasBalikAwal && ["BM", "BI", "MT", "SN"].includes(t.subjek)) t._kastaGlobal = 1.15; // Utamakan MT & SN kelas balik awal (1 Sopan)
@@ -12573,7 +12609,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                let ganjilA = pagiGanjilMuat3(hA) ? 0 : 1;
                                let ganjilB = pagiGanjilMuat3(hB) ? 0 : 1;
                                if (ganjilA !== ganjilB) return ganjilA - ganjilB;
-                              let limDiff = ((petaKapasitiKelasGlobal[kelas] || 50) <= 48)
+                              let limDiff = petaKelasBalikAwal[kelas]
                                    ? (getLimit(kelas, hA) - getLimit(kelas, hB))
                                    : (getLimit(kelas, hB) - getLimit(kelas, hA));
                                if (limDiff !== 0) return limDiff;
@@ -12607,12 +12643,15 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                            let maxDibenarkanSehari = (waktuAsalTugas >= 11) ? 3 : 2;
                            if (chunkSize > maxDibenarkanSehari) return false;
 
-                           // Buka slot akhir [4, 5] pada hari pendek tanpa rehat (Jumaat) supaya BM & BI tidak berebut slot pagi beranjak
+                           // Buka slot akhir pada hari Jumaat (09:30/10:00) & hari kelas balik awal 12:00 (1 Sopan: pasangan 11:00-12:00)
                            const dapatkanRuangHujungHari = (hadSlotH, hariStr = '') => {
                                if (forceMode) return 0;
-                               if (hariStr && !hariAdaRehat[hariStr] && hadSlotH <= 6) {
+                               if (hariStr && !hariAdaRehat[hariStr] && hadSlotH <= rehatIndex + 1) {
                                    if (simpanRuangHujung <= 1 || waktuAsalTugas >= 9) return 0;
                                    return 1;
+                               }
+                               if (hariStr && adalahHariBebasHujungTeras(kelas, hariStr)) {
+                                   return simpanRuangHujung >= 2 ? 1 : 0;
                                }
                                if (simpanRuangHujung === -1) return (hadSlotH <= rehatIndex + 1) ? 0 : 1;
                                return simpanRuangHujung;
@@ -12633,9 +12672,9 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                if (chunkSize === 2) {
                                    // Jangan sesekali membelah ruang genap (4 atau 6 slot) kepada 2 lubang ganjil terasing (1 + 2 + 1)
                                    if (runLen % 2 === 0) return (leftGap % 2 === 0 && rightGap % 2 === 0);
-                                   // Pada petang 5-slot (cth: 1 Sopan 5..9), kekalkan [5,6] & [7,8] supaya [9] untuk pengisi 1-masa (elak [8,9] musnahkan [7,8])
+                                   // Pada petang 5-slot (10:00-12:30), kekalkan pasangan dari kiri supaya slot akhir untuk pengisi 1-masa
                                    if (hariAdaRehat[hariStr] && sMula >= rehatIndex && !longgarGanjil) return (leftGap % 2 === 0);
-                                   if (!longgarGanjil) return (leftGap % 2 === 0 || rightGap === 0);
+                                   // Pada pagi 5-slot & Jumaat 5-slot, semua kedudukan (termasuk [1,2] dalam 1+2+2) mengekalkan pasangan 2-masa penuh
                                    return (leftGap % 2 === 0 || rightGap % 2 === 0);
                                }
                                if (chunkSize === 3) {
@@ -12694,16 +12733,16 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                    if (lapangKananG === 1 && (sMula + chunkSize === zEnd - 1) && (zEnd - zStart >= 4)) skor += 2;
                                    if (lapangKiriG === 0 || lapangKananG === 0) skor -= 1;
 
-                                   // Lindungi zon genap 1 Sopan daripada dipecahkan oleh blok 3-masa; utamakan petang 6-slot hanya bagi kelas 50-slot
+                                 // Lindungi zon genap 1 Sopan (4-slot petang 12:00 / pagi Rabu) daripada dipecahkan oleh blok 3-masa
                                    if (chunkSize === 3) {
-                                       if ((petaKapasitiKelasGlobal[kelas] || 50) <= 48 && (zEnd - zStart) % 2 === 0) {
+                                       if (petaKelasBalikAwal[kelas] && (zEnd - zStart) % 2 === 0) {
                                            skor += 5;
-                                       } else if ((petaKapasitiKelasGlobal[kelas] || 50) > 48 && (zEnd - zStart) <= 5 && senaraiG.some(g => (petaSubjek5HariGuru[g] || 0) >= 2)) {
+                                       } else if (!petaKelasBalikAwal[kelas] && (zEnd - zStart) <= 5 && senaraiG.some(g => (petaSubjek5HariGuru[g] || 0) >= 2)) {
                                            skor += 2;
                                        }
                                    }
 
-                                   // Penyelarasan guru merentas Tahap 1 & Tahap 2/3 (+15m PKA): elak slot tengah [1,2] & [2,3] yang memakan 3-4 slot kelas tahap sebelah
+                                   // Penyelarasan guru merentas Tahap 1 & Tahap 2/3 (+15m PKA) jika PKA Tahap 2/3 aktif
                                    if (senaraiG.some(g => petaGuruRentasAnjakanPKA[g]) && hariStr !== hariPerhimpunan) {
                                        if (!petaKelasPKAT23[kelas]) {
                                            if (sMula < rehatIndex && (sMula === 1 || sMula === 2)) skor += 6;
@@ -12716,9 +12755,6 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                            if (sMula === 1) skor += 6;
                                            else if (sMula === 2) skor += 2;
                                        }
-                                   }
-                                   if (isTeras && !hariAdaRehat[hariStr] && (sMula + chunkSize) >= hadSlotH) {
-                                       skor += 1;
                                    }
                                }
                                return skor;
@@ -12865,7 +12901,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                if (!placed) placed = cubaSumbat(rehatIndex, limitPetang, false, false, 1, true);
                                if (!placed) placed = cubaSumbat(0, limitPetang, false, false, -1, true);
                                if (!placed) placed = cubaSumbat(0, limitPetang, false, false, -1, false);
-                           } else if ((chunkSize === 3 && (petaKapasitiKelasGlobal[kelas] || 50) > 48 && namaGuru.split(' / ').some(g => (petaSubjek5HariGuru[g.trim()] || 0) >= 2)) || guruRentasDiT23) {
+                          } else if ((chunkSize === 3 && !petaKelasBalikAwal[kelas] && namaGuru.split(' / ').some(g => (petaSubjek5HariGuru[g.trim()] || 0) >= 2)) || guruRentasDiT23) {
                                placed = cubaSumbat(0, limitPetang, false, false, 2);
                                if (!placed) placed = cubaSumbat(0, limitPetang, false, false, 1);
                                if (!placed) placed = cubaSumbat(0, limitPetang, false, false, -1);
@@ -12970,11 +13006,10 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                );
                            };
 
-                           const adalahTapakPJSah = (klsUji, hariUji, sMulaUji, saizPJUji, abaikanSemakSediaAda = false) => {
+                         const adalahTapakPJSah = (klsUji, hariUji, sMulaUji, saizPJUji, abaikanSemakSediaAda = false) => {
                                if (!hariPJBoleh[hariUji]) return false;
                                const minMulaPJ = (hariUji === hariPerhimpunan) ? 1 : 0;
-                               const maxKelasPJ = getLimit(klsUji, hariUji);
-                               const hadPagiPJ = Math.min(rehatIndex, maxKelasPJ);
+                               const hadPagiPJ = dapatkanHadSlotPagiPJ(klsUji, hariUji);
                                if (sMulaUji < minMulaPJ || (sMulaUji + saizPJUji) > hadPagiPJ) return false;
                                if (!abaikanSemakSediaAda) {
                                    if (f2_jadualSediaAda[klsUji][hariUji].slice(0, 14).some(st => st && st.subjek && st.subjek.includes('PJ'))) return false;
@@ -13584,6 +13619,83 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                    }
                                }
 
+                              // Teknik 0B: Susun semula blok dalam hari yang sama (cth: [PMZ, BM, BM, null, null] pada Jumaat 5-slot / 6-slot)
+                               for (let hCari = 0; hCari < cubaHari.length && !placed; hCari++) {
+                                   let hariCari = cubaHari[hCari];
+                                   if (isPJ && !hariPJBoleh[hariCari]) continue;
+                                   let slotsCari = f2_jadualSediaAda[kelas][hariCari];
+                                   let maxCari = getLimit(kelas, hariCari);
+                                   if (slotsCari.slice(0, maxCari).some(st => st && st.subjek === subjek)) continue;
+                                   if (slotsCari.slice(0, maxCari).filter(st => st === null).length < 2) continue;
+
+                                   for (let sCari = 0; sCari <= maxCari - 2 && !placed; sCari++) {
+                                       if (hariAdaRehat[hariCari] && sCari <= (rehatIndex - 1) && (sCari + 1) >= rehatIndex) continue;
+                                       if (isTeras && !benarkanHujung && !adalahHariBebasHujungTeras(kelas, hariCari) && (sCari + 1) >= (maxCari - 1)) continue;
+                                       if (isPJ && !adalahTapakPJSah(kelas, hariCari, sCari, 2, true)) continue;
+                                       if (!isTeacherFree(namaGuru, hariCari, sCari, kelas) || !isTeacherFree(namaGuru, hariCari, sCari + 1, kelas)) continue;
+
+                                       let sentuhKunci = false;
+                                       let setSubTerlibat = new Set();
+                                       for (let u = 0; u < 2; u++) {
+                                           let stU = slotsCari[sCari + u];
+                                           if (stU) {
+                                               if (stU.kunciPKA || stU.subjek === 'PERHIMPUNAN' || stU.subjek.includes('TSMK')) { sentuhKunci = true; break; }
+                                               setSubTerlibat.add(stU.subjek);
+                                           }
+                                       }
+                                       if (sentuhKunci || setSubTerlibat.size === 0 || setSubTerlibat.size > 2) continue;
+
+                                       let senaraiBlokAlih = [];
+                                       let gagalKumpul = false;
+                                       setSubTerlibat.forEach(namaS => {
+                                           let idxS = [];
+                                           for (let i = 0; i < maxCari; i++) {
+                                               if (slotsCari[i] && slotsCari[i].subjek === namaS) idxS.push(i);
+                                           }
+                                           if (idxS.some(i => slotsCari[i].kunciPKA)) gagalKumpul = true;
+                                           else senaraiBlokAlih.push({ subjek: namaS, saiz: idxS.length, data: slotsCari[idxS[0]], idxAsal: idxS });
+                                       });
+                                       if (gagalKumpul) continue;
+                                       senaraiBlokAlih.sort((a, b) => b.saiz - a.saiz);
+
+                                       let sandarH = salinSlot15(slotsCari);
+                                       senaraiBlokAlih.forEach(b => b.idxAsal.forEach(i => { slotsCari[i] = null; }));
+                                       slotsCari[sCari] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+                                       slotsCari[sCari + 1] = { subjek: subjek, kodGuru: namaGuru, warna: warna };
+
+                                       const letakRekursif = (idxB) => {
+                                           if (idxB >= senaraiBlokAlih.length) {
+                                               return isGuruTidakPenat(namaGuru, hariCari, -1, 0, null, -1, hadSemasa, kelas) &&
+                                                   senaraiBlokAlih.every(b => isGuruTidakPenat(b.data.kodGuru, hariCari, -1, 0, null, -1, hadSemasa, kelas));
+                                           }
+                                           let blk = senaraiBlokAlih[idxB];
+                                           let bPJ = blk.subjek.includes('PJ');
+                                           let bTeras = ["BM", "BI", "MT", "SN"].includes(blk.subjek);
+                                           for (let pos = 0; pos <= maxCari - blk.saiz; pos++) {
+                                               if (hariAdaRehat[hariCari] && pos <= (rehatIndex - 1) && (pos + blk.saiz - 1) >= rehatIndex) continue;
+                                               if (bPJ && !adalahTapakPJSah(kelas, hariCari, pos, blk.saiz, true)) continue;
+                                               if (bTeras && !benarkanHujung && !adalahHariBebasHujungTeras(kelas, hariCari) && (pos + blk.saiz - 1) >= (maxCari - 1)) continue;
+                                               let muatPos = true;
+                                               for (let u = 0; u < blk.saiz; u++) {
+                                                   if (slotsCari[pos + u] !== null || !isTeacherFree(blk.data.kodGuru, hariCari, pos + u, kelas)) { muatPos = false; break; }
+                                               }
+                                               if (!muatPos) continue;
+                                               for (let u = 0; u < blk.saiz; u++) slotsCari[pos + u] = blk.data;
+                                               if (letakRekursif(idxB + 1)) return true;
+                                               for (let u = 0; u < blk.saiz; u++) slotsCari[pos + u] = null;
+                                           }
+                                           return false;
+                                       };
+
+                                       if (letakRekursif(0)) {
+                                           placed = true;
+                                           break;
+                                       } else {
+                                           pulihSlot15(slotsCari, sandarH);
+                                       }
+                                   }
+                               }
+
                                // Teknik 1: Alihkan Blok 2-Masa Sedia Ada [m1, m2] (termasuk PJ pagi terkawal) ke 2 Petak Kosong [sEmpty, sEmpty+1]
                                for (let hEmpty = 0; hEmpty < 5 && !placed; hEmpty++) {
                                    let hariEmpty = semuaHari[hEmpty];
@@ -13606,7 +13718,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                            for (let sCari = 0; sCari <= maxCari - 2 && !placed; sCari++) {
                                                if (hariCari === hariEmpty && Math.abs(sCari - sEmpty) < 2) continue;
                                                if (hariAdaRehat[hariCari] && sCari <= (rehatIndex - 1) && (sCari + 1) >= rehatIndex) continue;
-                                               if (isTeras && !benarkanHujung && maxCari > (rehatIndex + 1) && (sCari + 1) >= (maxCari - 1)) continue;
+                                               if (isTeras && !benarkanHujung && !adalahHariBebasHujungTeras(kelas, hariCari) && (sCari + 1) >= (maxCari - 1)) continue;
                                                if (isPJ && !adalahTapakPJSah(kelas, hariCari, sCari, 2, true)) continue;
                                                if (!isTeacherFree(namaGuru, hariCari, sCari, kelas) || !isTeacherFree(namaGuru, hariCari, sCari + 1, kelas)) continue;
 
@@ -13620,7 +13732,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                                if (mPJ && ((hariEmpty !== hariCari && !bolehAlihPJDariHari(kelas, hariCari)) || !adalahTapakPJSah(kelas, hariEmpty, sEmpty, 2, hariEmpty === hariCari))) continue;
 
                                                let mangsaTeras = (m1.subjek.includes("BM") || m1.subjek.includes("BI") || m1.subjek.includes("MT") || m1.subjek.includes("SN"));
-                                               if (mangsaTeras && !benarkanHujung && maxEmpty > (rehatIndex + 1) && (sEmpty + 1) >= (maxEmpty - 1)) continue;
+                                               if (mangsaTeras && !benarkanHujung && !adalahHariBebasHujungTeras(kelas, hariEmpty) && (sEmpty + 1) >= (maxEmpty - 1)) continue;
 
                                                if (hariEmpty !== hariCari && slotsEmpty.slice(0, maxEmpty).some(st => st && st.subjek === m1.subjek)) continue;
 
@@ -14395,10 +14507,11 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                            let slotsH = f2_jadualSediaAda[kSemak][hSemak];
                            let limitH = getLimit(kSemak, hSemak);
                            let indeksPJ = [];
+                         let hadPagiSemakPJ = dapatkanHadSlotPagiPJ(kSemak, hSemak);
                            for (let idx = 0; idx < 14; idx++) {
                                if (slotsH[idx] && slotsH[idx].subjek && slotsH[idx].subjek.includes("PJ")) {
                                    indeksPJ.push(idx);
-                                   if (idx >= limitH || idx >= rehatIndex) jadualGagal = true;
+                                   if (idx >= limitH || idx >= hadPagiSemakPJ) jadualGagal = true;
                                }
                            }
                            if (indeksPJ.length > 0) {
