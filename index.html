@@ -3950,14 +3950,16 @@
         const lukisSelPdPGuru = (slotObj, colspanVal = 1) => {
           const attrCS = colspanVal > 1 ? ` colspan="${colspanVal}"` : '';
           if (!slotObj) {
-            return `<td${attrCS} class="border border-gray-300 p-2 bg-gray-50 border-b-[3px] border-b-gray-800"><div class="text-xs text-gray-300">-</div></td>`;
+            return `<td${attrCS} class="border border-gray-300 px-1 py-2 bg-gray-50 border-b-[3px] border-b-gray-800"><div class="text-xs text-gray-300">-</div></td>`;
           }
-          const htmlMasaKhas = slotObj.labelMasa ? `<div class="text-[8px] font-bold text-black/60 mt-0.5 leading-none whitespace-nowrap">${slotObj.labelMasa}</div>` : '';
-          return `<td${attrCS} class="border border-gray-300 p-2 shadow-sm relative overflow-hidden min-w-[75px] border-b-[3px] border-b-gray-800" style="background-color: ${warnaGuru} !important;">
+          const teksKelas = String(slotObj.kodGuru || '');
+          const saizKelasCss = teksKelas.length >= 10 ? 'text-[8px] md:text-[8.5px] tracking-tighter' : 'text-[9px] tracking-tight';
+          const htmlMasaKhas = slotObj.labelMasa ? `<div class="text-[7.5px] font-bold text-black/60 mt-0.5 leading-none whitespace-nowrap">${slotObj.labelMasa}</div>` : '';
+          return `<td${attrCS} class="border border-gray-300 px-1 py-1.5 shadow-sm relative min-w-[78px] border-b-[3px] border-b-gray-800" style="background-color: ${warnaGuru} !important;">
                     <div class="absolute inset-0 bg-white opacity-[0.10] pointer-events-none"></div>
-                    <div class="relative z-10 flex flex-col justify-center h-full">
+                    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
                       <div class="font-black text-black/80 text-[11px] md:text-sm drop-shadow-sm leading-tight whitespace-nowrap">${slotObj.subjek}</div>
-                      <div class="text-[9px] font-extrabold text-black/60 mt-1 uppercase leading-tight whitespace-nowrap">${slotObj.kodGuru}</div>
+                      <div class="label-kelas-guru ${saizKelasCss} font-extrabold text-black/65 mt-0.5 uppercase leading-[1.1] whitespace-normal break-words w-full">${teksKelas}</div>
                       ${htmlMasaKhas}
                     </div>
                   </td>`;
@@ -3966,12 +3968,13 @@
         const lukisSelPKAGuru = (senaraiKelasPKA, colspanVal = 1, labelMasaKhas = '') => {
           const attrCS = colspanVal > 1 ? ` colspan="${colspanVal}"` : '';
           const labelKelas = senaraiKelasPKA.map(k => String(k).toUpperCase()).join(' / ');
-          const htmlMasaKhas = labelMasaKhas ? `<div class="text-[8px] font-bold text-black/60 mt-0.5 leading-none whitespace-nowrap">${labelMasaKhas}</div>` : '';
-          return `<td${attrCS} class="border border-gray-300 p-2 shadow-sm relative overflow-hidden min-w-[70px] border-b-[3px] border-b-gray-800" style="background-color: ${warnaGuru} !important;">
+          const saizPKACss = labelKelas.length >= 10 ? 'text-[8px] md:text-[8.5px] tracking-tighter' : 'text-[9px] tracking-tight';
+          const htmlMasaKhas = labelMasaKhas ? `<div class="text-[7.5px] font-bold text-black/60 mt-0.5 leading-none whitespace-nowrap">${labelMasaKhas}</div>` : '';
+          return `<td${attrCS} class="border border-gray-300 px-1 py-1.5 shadow-sm relative min-w-[75px] border-b-[3px] border-b-gray-800" style="background-color: ${warnaGuru} !important;">
                     <div class="absolute inset-0 bg-white opacity-[0.10] pointer-events-none"></div>
-                    <div class="relative z-10 flex flex-col justify-center h-full">
+                    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
                       <div class="font-black text-black/80 text-[11px] md:text-sm drop-shadow-sm leading-tight whitespace-nowrap">PKA</div>
-                      <div class="text-[9px] font-extrabold text-black/60 mt-1 uppercase leading-tight whitespace-nowrap">${labelKelas}</div>
+                      <div class="label-kelas-guru ${saizPKACss} font-extrabold text-black/65 mt-0.5 uppercase leading-[1.1] whitespace-normal break-words w-full">${labelKelas}</div>
                       ${htmlMasaKhas}
                     </div>
                   </td>`;
@@ -14894,11 +14897,17 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                 }
             }
 
-            return `<td class="border border-gray-300 p-2 shadow-sm relative overflow-hidden min-w-[80px]${exBorder}" style="${bgColorStyle}">
+            const isGuruMode = (viewMode === 'guru');
+            const padTd = isGuruMode ? 'px-1 py-1.5' : 'p-2 overflow-hidden';
+            const kelasBottomCss = isGuruMode
+                ? `label-kelas-guru ${(String(bottomText || '').length >= 10 ? 'text-[8px] md:text-[8.5px] tracking-tighter' : 'text-[9px] tracking-tight')} font-extrabold text-black/65 mt-0.5 uppercase leading-[1.1] whitespace-normal break-words w-full`
+                : 'text-[9px] font-extrabold text-black/60 mt-1 uppercase leading-tight whitespace-nowrap';
+
+            return `<td class="border border-gray-300 ${padTd} shadow-sm relative min-w-[80px]${exBorder}" style="${bgColorStyle}">
                         ${htmlLatarSlot}
-                        <div class="relative z-10 flex flex-col justify-center h-full">
+                        <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
                             <div class="font-black text-black/80 text-[11px] md:text-sm drop-shadow-sm leading-tight whitespace-nowrap">${slot.subjek}</div>
-                            <div class="text-[9px] font-extrabold text-black/60 mt-1 uppercase leading-tight whitespace-nowrap">${bottomText}</div>
+                            <div class="${kelasBottomCss}">${bottomText}</div>
                         </div>
                     </td>`;
         };
@@ -15177,7 +15186,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
             `;
         } else {
             scaleCss = `
-                /* SAIZ NORMAL UNTUK KELAS DAN GURU (Muat Penuh Lebar A4 Melintang Tanpa Terpotong) */
+                /* SAIZ NORMAL UNTUK KELAS DAN GURU (Muat Penuh Lebar A4 Melintang & Nama Kelas Panjang Tidak Terpotong) */
                 @page { size: A4 landscape; margin: 5mm; }
                 html, body { height: auto !important; margin: 0 !important; padding: 0 !important; }
                 .header-cetak { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 5px; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px; }
@@ -15186,9 +15195,15 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                 .header-teks h2 { font-size: 10px; font-weight: 700; color: #e11d48; margin: 2px 0 0 0; }
                 table { width: 100% !important; min-width: 0 !important; border-collapse: collapse !important; table-layout: fixed !important; margin-bottom: 16px !important; }
                 thead { position: static !important; }
-                th { font-size: 10px !important; min-width: 0 !important; padding: 5px 3px !important; border: 1px solid #6b7280 !important; }
-                td { font-size: 10px !important; min-width: 0 !important; padding: 5px 3px !important; border: 1px solid #6b7280 !important; }
-                td div { font-size: 10px !important; line-height: 1.25 !important; }
+                th.w-20 { width: 48px !important; }
+                th.w-24 { width: 64px !important; }
+                th { font-size: 9.5px !important; min-width: 0 !important; padding: 4px 2px !important; border: 1px solid #6b7280 !important; overflow: visible !important; }
+                td { font-size: 9.5px !important; min-width: 0 !important; padding: 4px 1.5px !important; border: 1px solid #6b7280 !important; overflow: visible !important; vertical-align: middle !important; }
+                td div { font-size: 10px !important; line-height: 1.2 !important; }
+                td .font-black { font-size: 10.5px !important; line-height: 1.15 !important; }
+                td .font-extrabold { font-size: 8.5px !important; line-height: 1.15 !important; }
+                td .label-kelas-guru { font-size: 7.5px !important; line-height: 1.12 !important; letter-spacing: -0.2px !important; white-space: normal !important; word-break: normal !important; overflow-wrap: break-word !important; display: block !important; width: 100% !important; }
+                td .font-bold { font-size: 7.2px !important; line-height: 1.05 !important; }
                 .page-break-inside-avoid { page-break-inside: avoid; margin-top: 14px; }
             `;
         }
