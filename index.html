@@ -15145,34 +15145,35 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         let scaleCss = '';
         if (isInduk) {
             scaleCss = `
-                /* KUNCI MUTLAK 1 MUKA SURAT A4 MELINTANG UNTUK JADUAL INDUK KESELURUHAN */
-                @page { size: A4 landscape; margin: 4mm; }
-                html, body { width: 100% !important; height: auto !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
-                #ukur-kertas-induk { position: fixed; top: 0; left: 0; width: 289mm; height: 192mm; visibility: hidden; pointer-events: none; z-index: -1; }
+                /* KUNCI MUTLAK 1 MUKA SURAT A4 MELINTANG PENUH TANPA TERPOTONG BARIS TERAKHIR (JUMAAT - 6 BERSIH) */
+                @page { size: A4 landscape; margin: 5mm 6mm; }
+                html, body { width: 100% !important; height: auto !important; margin: 0 !important; padding: 0 !important; background: #ffffff !important; }
+                #ukur-kertas-induk { position: fixed; top: 0; left: 0; width: 277mm; height: 174mm; visibility: hidden; pointer-events: none; z-index: -1; }
                 @media screen {
-                    #bingkai-satu-muka { width: 289mm !important; margin: 0 auto; overflow: hidden !important; }
+                    #bingkai-satu-muka { width: 277mm !important; margin: 0 auto; overflow: visible !important; }
                 }
                 @media print {
-                    #ukur-kertas-induk { display: none !important; }
-                    #bingkai-satu-muka { width: 100% !important; max-height: 193mm !important; overflow: hidden !important; page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: avoid !important; break-after: avoid !important; }
+                    #bingkai-satu-muka { width: 100% !important; margin: 0 auto !important; overflow: visible !important; page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: avoid !important; break-after: avoid !important; }
                 }
-                .header-cetak { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 3px !important; border-bottom: 1.5px solid #cbd5e1 !important; padding-bottom: 3px !important; }
-                .header-cetak img { height: 26px !important; width: auto; object-fit: contain; }
-                .header-teks h1 { font-size: 11.5px !important; font-weight: 900; color: #1e3a8a; margin: 0; line-height: 1.1 !important; text-transform: uppercase; }
-                .header-teks h2 { font-size: 8.5px !important; font-weight: 700; color: #e11d48; margin: 1px 0 0 0; line-height: 1.1 !important; }
-                .kandungan-jadual-cetak > div { border: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
+                #kandungan-skala-induk { padding-bottom: 5px !important; box-sizing: border-box !important; }
+                .header-cetak { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px !important; border-bottom: 1.5px solid #cbd5e1 !important; padding-bottom: 2px !important; }
+                .header-cetak img { height: 22px !important; width: auto; object-fit: contain; }
+                .header-teks h1 { font-size: 11px !important; font-weight: 900; color: #1e3a8a; margin: 0; line-height: 1.1 !important; text-transform: uppercase; }
+                .header-teks h2 { font-size: 8px !important; font-weight: 700; color: #e11d48; margin: 1px 0 0 0; line-height: 1.1 !important; }
+                .kandungan-jadual-cetak > div { border: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; max-height: none !important; }
                 table { width: 100% !important; min-width: 0 !important; border-collapse: collapse !important; table-layout: fixed !important; margin: 0 !important; page-break-inside: avoid !important; break-inside: avoid !important; }
                 thead { position: static !important; display: table-row-group !important; box-shadow: none !important; }
                 tr, th, td { page-break-inside: avoid !important; break-inside: avoid !important; }
-                th.w-20 { width: 42px !important; }
-                th.w-24 { width: 60px !important; }
-                th { font-size: 7.5px !important; line-height: 1.05 !important; min-width: 0 !important; padding: 1.5px 1px !important; border: 1px solid #4b5563 !important; }
-                th div { font-size: 6.5px !important; line-height: 1.05 !important; margin: 0 !important; }
-                td { font-size: 7.5px !important; line-height: 1.05 !important; min-width: 0 !important; padding: 1px 1px !important; border: 1px solid #4b5563 !important; height: auto !important; }
+                th.w-20 { width: 40px !important; }
+                th.w-24 { width: 58px !important; }
+                th { font-size: 7px !important; line-height: 1.05 !important; min-width: 0 !important; padding: 1px 1px !important; border: 1px solid #4b5563 !important; overflow: visible !important; }
+                th div { font-size: 6px !important; line-height: 1.05 !important; margin: 0 !important; }
+                td { font-size: 7px !important; line-height: 1.05 !important; min-width: 0 !important; padding: 1px 1px !important; border: 1px solid #4b5563 !important; height: auto !important; overflow: visible !important; vertical-align: middle !important; }
+                td > div.relative { height: auto !important; justify-content: center !important; }
                 td div { margin: 0 !important; line-height: 1.05 !important; }
-                td .font-black { font-size: 8px !important; line-height: 1.05 !important; }
-                td .font-extrabold { font-size: 6.5px !important; line-height: 1.0 !important; margin-top: 0.5px !important; }
-                td .font-bold { font-size: 6px !important; line-height: 1.0 !important; margin-top: 0.5px !important; }
+                td .font-black { font-size: 7.5px !important; line-height: 1.05 !important; }
+                td .font-extrabold { font-size: 6.2px !important; line-height: 1.05 !important; margin-top: 0.5px !important; display: block !important; }
+                td .font-bold { font-size: 5.8px !important; line-height: 1.0 !important; margin-top: 0.5px !important; }
             `;
         } else {
             scaleCss = `
@@ -15241,45 +15242,77 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         printWindow.document.write(htmlContent);
         printWindow.document.close();
 
-        // Enjin Pengukur Auto-Fit: Kira nisbah tinggi sebenar vs tinggi 1 helai A4 melintang sebelum cetak
-        let sudahCetak = false;
-        const jalankanAutoMuatDanCetak = () => {
-            if (sudahCetak) return;
-            sudahCetak = true;
+        // Enjin Pengukur Auto-Fit 2D: Pastikan semua baris (termasuk Jumaat - 6 Bersih & Kod Guru) muat penuh dalam PDF A4 Melintang
+        const laraskanSkalaSatuMukaInduk = () => {
             try {
-                if (isInduk && printWindow && printWindow.document) {
-                    const doc = printWindow.document;
-                    const ukurEl = doc.getElementById('ukur-kertas-induk');
-                    const bingkai = doc.getElementById('bingkai-satu-muka');
-                    const panel = doc.getElementById('kandungan-skala-induk');
-                    if (ukurEl && bingkai && panel) {
-                        const hadTinggiPx = ukurEl.getBoundingClientRect().height;
-                        const tinggiAsalPx = panel.scrollHeight;
-                        if (hadTinggiPx > 0 && tinggiAsalPx > hadTinggiPx) {
-                            let skala = (hadTinggiPx / tinggiAsalPx) * 0.985;
+                if (!isInduk || !printWindow || !printWindow.document) return;
+                const doc = printWindow.document;
+                const ukurEl = doc.getElementById('ukur-kertas-induk');
+                const bingkai = doc.getElementById('bingkai-satu-muka');
+                const panel = doc.getElementById('kandungan-skala-induk');
+                if (!ukurEl || !bingkai || !panel) return;
+
+                ukurEl.style.display = 'block';
+                panel.style.transform = 'none';
+                panel.style.width = '100%';
+                bingkai.style.height = 'auto';
+
+                const hadTinggiPx = ukurEl.getBoundingClientRect().height;
+                const hadLebarPx = bingkai.getBoundingClientRect().width || ukurEl.getBoundingClientRect().width;
+                ukurEl.style.display = 'none';
+
+                const tinggiAsalPx = panel.scrollHeight;
+                if (hadTinggiPx > 0 && tinggiAsalPx > 0) {
+                    let skala = Math.min(1, (hadTinggiPx / tinggiAsalPx) * 0.975);
+                    if (skala < 1) {
+                        for (let iter = 0; iter < 3; iter++) {
                             panel.style.width = (100 / skala).toFixed(3) + '%';
-                            const tinggiSemakPx = panel.scrollHeight;
-                            if (tinggiSemakPx * skala > hadTinggiPx) {
-                                skala = (hadTinggiPx / tinggiSemakPx) * 0.985;
-                                panel.style.width = (100 / skala).toFixed(3) + '%';
+                            const tinggiBaruPx = panel.scrollHeight;
+                            if (tinggiBaruPx * skala > hadTinggiPx * 0.985) {
+                                skala = (hadTinggiPx / tinggiBaruPx) * 0.975;
+                            } else {
+                                break;
                             }
-                            panel.style.transformOrigin = 'top left';
-                            panel.style.transform = `scale(${skala.toFixed(4)})`;
-                            bingkai.style.height = Math.ceil(panel.scrollHeight * skala) + 'px';
-                        } else if (tinggiAsalPx > 0) {
-                            bingkai.style.height = Math.ceil(tinggiAsalPx) + 'px';
                         }
+                        panel.style.width = (100 / skala).toFixed(3) + '%';
+                        const lebarSemakPx = panel.scrollWidth * skala;
+                        if (hadLebarPx > 0 && lebarSemakPx > hadLebarPx * 1.005) {
+                            const skalaLebar = (hadLebarPx / panel.scrollWidth) * 0.995;
+                            skala = Math.min(skala, skalaLebar);
+                        }
+                        panel.style.transformOrigin = 'top left';
+                        panel.style.transform = `scale(${skala.toFixed(4)})`;
+                        bingkai.style.height = Math.ceil(panel.getBoundingClientRect().height + 6) + 'px';
+                    } else {
+                        bingkai.style.height = Math.ceil(tinggiAsalPx + 6) + 'px';
                     }
                 }
             } catch (err) {
                 console.warn('Pelarasan skala cetakan:', err);
             }
-            printWindow.focus();
-            printWindow.print();
         };
 
-        printWindow.onload = () => setTimeout(jalankanAutoMuatDanCetak, 250);
-        setTimeout(jalankanAutoMuatDanCetak, 900);
+        let sudahCetak = false;
+        const jalankanAutoMuatDanCetak = () => {
+            if (sudahCetak) return;
+            sudahCetak = true;
+            const mulakanCetak = () => {
+                laraskanSkalaSatuMukaInduk();
+                printWindow.focus();
+                printWindow.print();
+            };
+            if (printWindow && printWindow.document && printWindow.document.fonts && printWindow.document.fonts.ready) {
+                printWindow.document.fonts.ready.then(() => setTimeout(mulakanCetak, 120)).catch(() => setTimeout(mulakanCetak, 150));
+            } else {
+                setTimeout(mulakanCetak, 200);
+            }
+        };
+
+        if (isInduk && printWindow) {
+            printWindow.addEventListener('beforeprint', laraskanSkalaSatuMukaInduk);
+        }
+        printWindow.onload = () => setTimeout(jalankanAutoMuatDanCetak, 200);
+        setTimeout(jalankanAutoMuatDanCetak, 950);
     }
 
     // =========================================================================
