@@ -876,11 +876,11 @@
                                    <span class="text-[9.5px] font-black text-purple-900 uppercase tracking-wider">Tahap 1 (2.5 Masa / 5 Hari)</span>
                                    <span class="text-[8.5px] font-extrabold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Sebelum Rehat</span>
                                </div>
-                               <div class="grid grid-cols-2 gap-1.5 text-[10.5px] font-bold text-purple-900 mb-1.5">
+                              <div class="grid grid-cols-2 gap-1.5 text-[10.5px] font-bold text-purple-900 mb-1.5">
                                    <label class="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-purple-100 shadow-sm cursor-pointer hover:bg-purple-50 transition-all"><input type="checkbox" id="pka-t1" onchange="kawalTetapanPKA('1')" class="w-3 h-3 text-purple-600 rounded focus:ring-purple-500 shrink-0"> Tahun 1</label>
                                    <label class="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-purple-100 shadow-sm cursor-pointer hover:bg-purple-50 transition-all"><input type="checkbox" id="pka-t2" onchange="kawalTetapanPKA('2')" class="w-3 h-3 text-purple-600 rounded focus:ring-purple-500 shrink-0"> Tahun 2</label>
                                </div>
-                               <p class="text-[8.5px] font-bold text-purple-700 leading-tight"><i class="fa-solid fa-clock mr-1"></i>5 hari sebelum Rehat (15m PKA + 15m Rehat; tahun lain Rehat 30m).</p>
+                               <p class="text-[8.5px] font-bold text-purple-700 leading-tight"><i class="fa-solid fa-clock mr-1"></i>5 hari sebelum Rehat (15m PKA + Rehat 15m/30m ikut pilihan Waktu Rehat).</p>
                            </div>
 
                            <!-- Bahagian Tahap 2 & Tahap 3 (Tahun 3, 4, 5 & 6) -->
@@ -973,7 +973,7 @@
                <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 shadow-sm flex-1 flex flex-col justify-between transition-all">
                    <div>
                        <h3 class="text-xs font-extrabold text-amber-900 mb-3 uppercase tracking-widest border-b border-amber-200/50 pb-2"><i class="fa-solid fa-mug-hot text-amber-500 mr-1.5"></i> Tetapan Waktu Rehat</h3>
-                       <div class="flex justify-between items-center font-bold mb-3 gap-1">
+                       <div class="flex justify-between items-center font-bold mb-2.5 gap-1">
                          <span class="text-[11px] text-amber-800 shrink-0">Isnin - Khamis</span>
                          <div class="flex items-center gap-1"><input type="time" id="waktu-rehat-mula" value="10:00" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-amber-400 text-amber-700 bg-white transition-all"> <span class="text-[9px]">ke</span> <input type="time" id="waktu-rehat-tamat" value="10:15" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-amber-400 text-amber-700 bg-white transition-all"></div>
                        </div>
@@ -981,6 +981,23 @@
                          <span class="text-[11px] text-emerald-800 shrink-0">Jumaat</span>
                          <div class="flex items-center gap-1"><input type="time" id="waktu-rehat-jum-mula" value="10:00" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-emerald-400 text-emerald-700 bg-white transition-all"> <span class="text-[9px]">ke</span> <input type="time" id="waktu-rehat-jum-tamat" value="10:15" onchange="kawalInputRehat()" class="border rounded p-1 text-[11px] font-black outline-none focus:ring-2 focus:ring-emerald-400 text-emerald-700 bg-white transition-all"></div>
                        </div>
+
+                       <!-- KOD BAHARU: Pilihan Tempoh Rehat Tahun Ada PKA (Tahap 1, 2 & 3: 15 Minit atau 30 Minit) -->
+                       <div class="bg-white/85 p-2 rounded-lg border border-purple-200/90 mb-2.5 shadow-sm">
+                         <div class="flex items-center justify-between gap-1 mb-1.5">
+                           <span class="text-[10px] font-black text-purple-900 uppercase tracking-wider"><i class="fa-solid fa-seedling text-purple-600 mr-1"></i>Rehat Tahun Ada PKA (T1–T6):</span>
+                           <input type="hidden" id="tetapan-rehat-pka" value="15">
+                         </div>
+                         <div class="flex items-center gap-1.5 bg-amber-50/80 p-1 rounded-lg border border-amber-200/80">
+                           <button type="button" id="btn-rehat-pka-15" onclick="pilihTempohRehatPKA(15)" class="flex-1 py-1 px-2 rounded-md text-[10px] font-black bg-amber-500 text-white shadow-sm transition-all">
+                             15 Minit
+                           </button>
+                           <button type="button" id="btn-rehat-pka-30" onclick="pilihTempohRehatPKA(30)" class="flex-1 py-1 px-2 rounded-md text-[10px] font-bold text-purple-900 hover:bg-purple-100/80 transition-all">
+                             30 Minit (+15m Balik)
+                           </button>
+                         </div>
+                       </div>
+
                        <div id="info-zon-rehat-pintar" class="mb-3"></div>
                    </div>
                    
@@ -2042,8 +2059,9 @@
             
             const setCheck = (id, val) => { if(document.getElementById(id)) document.getElementById(id).checked = (val === true || val === 'true' || val === 'TRUE'); };
 
-           if (data.fasa1_asas && data.fasa1_asas.length > 1) {
+          if (data.fasa1_asas && data.fasa1_asas.length > 1) {
                 let kelasDariCloud = [];
+                let rehatPKACloud = 15;
                 data.fasa1_asas.forEach(row => {
                     let kat = row[0], item = row[1], val = row[2];
                     if (kat === "Perhimpunan") {
@@ -2055,6 +2073,8 @@
                     } else if (kat === "Rehat_Jumaat") {
                         if (item === "Mula") setVal('waktu-rehat-jum-mula', val);
                         if (item === "Tamat") setVal('waktu-rehat-jum-tamat', val);
+                    } else if (kat === "Rehat_PKA") {
+                        if (item === "Tempoh") rehatPKACloud = (parseInt(val, 10) === 30) ? 30 : 15;
                     } else if (kat === "Hari_Rehat") {
                         setCheck('rehat-' + item.toLowerCase(), val);
                     } else if (kat === "Tasmik_Hari") {
@@ -2079,6 +2099,7 @@
                 if (kelasDariCloud.length > 0) {
                     senaraiKelasFasa1 = window.nyahDuplikasiDanSusunKelasFasa1(kelasDariCloud);
                 }
+                if(typeof window.pilihTempohRehatPKA === 'function') window.pilihTempohRehatPKA(rehatPKACloud, true);
                 if(typeof renderKadboardKelasFasa1 === 'function') renderKadboardKelasFasa1();
                 if(typeof window.segarkanSemuaDropdownKelasFasa2 === 'function') window.segarkanSemuaDropdownKelasFasa2();
                 if(typeof kawalInputRehat === 'function') kawalInputRehat(true);
@@ -2424,19 +2445,20 @@
       return `${hh}${mm}`;
     }
 
-    function kiraJulatMinitSebenarSlotInduk(namaKelas, hariStr, slotIdx, adaSebarangPKASekolah) {
+function kiraJulatMinitSebenarSlotInduk(namaKelas, hariStr, slotIdx, adaSebarangPKASekolah) {
       const mulaSekolahStr = document.getElementById('waktu-mula-sekolah') ? document.getElementById('waktu-mula-sekolah').value : '07:30';
       const wRehatBiasaMulaStr = document.getElementById('waktu-rehat-mula') ? document.getElementById('waktu-rehat-mula').value : '10:00';
       const wRehatBiasaTamatStr = document.getElementById('waktu-rehat-tamat') ? document.getElementById('waktu-rehat-tamat').value : '10:15';
       const wRehatJumMulaStr = document.getElementById('waktu-rehat-jum-mula') ? document.getElementById('waktu-rehat-jum-mula').value : wRehatBiasaMulaStr;
       const wRehatJumTamatStr = document.getElementById('waktu-rehat-jum-tamat') ? document.getElementById('waktu-rehat-jum-tamat').value : wRehatBiasaTamatStr;
       const hariPerhimpunan = (document.getElementById('tetapan-perhimpunan') ? document.getElementById('tetapan-perhimpunan').value : 'RABU').toUpperCase();
+      const tempohRehatPKA = (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15;
 
       const mulaSekolahMinit = parseMasaKeMinitInduk(mulaSekolahStr, 450);
       const isJum = (hariStr === 'JUMAAT');
       const rMulaMinit = parseMasaKeMinitInduk(isJum ? wRehatJumMulaStr : wRehatBiasaMulaStr, 600);
       const rTamatAsalMinit = parseMasaKeMinitInduk(isJum ? wRehatJumTamatStr : wRehatBiasaTamatStr, 615);
-      const rTamatEfektifMinit = adaSebarangPKASekolah ? (rMulaMinit + 30) : Math.max(rMulaMinit + 15, rTamatAsalMinit);
+      const rTamatNonPKAMinit = adaSebarangPKASekolah ? (rMulaMinit + 30) : Math.max(rMulaMinit + 15, rTamatAsalMinit);
 
       let rehatIdx = Math.floor((rMulaMinit - mulaSekolahMinit) / 30);
       if (isNaN(rehatIdx) || rehatIdx <= 0) rehatIdx = 5;
@@ -2444,13 +2466,9 @@
       const cbRehat = document.getElementById('rehat-' + hariStr.toLowerCase());
       const adaRehat = cbRehat ? cbRehat.checked : (hariStr !== 'JUMAAT');
 
-      let noThn = 1;
-      for (let t = 1; t <= 6; t++) {
-        if (String(namaKelas).includes(`${t} `) || String(namaKelas).trim().endsWith(`${t}`)) {
-          noThn = t;
-          break;
-        }
-      }
+      const noThn = (typeof window.dapatkanNoTahunKelasGlobal === 'function')
+        ? window.dapatkanNoTahunKelasGlobal(namaKelas)
+        : 1;
 
       const isT1 = (noThn <= 2);
       const pkaSlot = (f2_jadualSediaAda[namaKelas] && f2_jadualSediaAda[namaKelas][hariStr]) ? f2_jadualSediaAda[namaKelas][hariStr][14] : null;
@@ -2479,13 +2497,14 @@
           if (isPKAT23) return [mulaSekolahMinit + 15 + slotIdx * 30, mulaSekolahMinit + 45 + slotIdx * 30];
           return [mulaSekolahMinit + slotIdx * 30, mulaSekolahMinit + (slotIdx + 1) * 30];
         }
-        return [rTamatEfektifMinit + (slotIdx - rehatIdx) * 30, rTamatEfektifMinit + (slotIdx - rehatIdx + 1) * 30];
+        // Selepas rehat: Kelas aktif PKA bermula selepas (15m PKA + tempohRehatPKA 15m/30m), kelas tanpa PKA ikut rTamatNonPKAMinit
+        const rTamatKelasIniMinit = aktifPKAHariIni ? (rMulaMinit + 15 + tempohRehatPKA) : rTamatNonPKAMinit;
+        return [rTamatKelasIniMinit + (slotIdx - rehatIdx) * 30, rTamatKelasIniMinit + (slotIdx - rehatIdx + 1) * 30];
       } else {
         if (isPKAT23) return [mulaSekolahMinit + 15 + slotIdx * 30, mulaSekolahMinit + 45 + slotIdx * 30];
         return [mulaSekolahMinit + slotIdx * 30, mulaSekolahMinit + (slotIdx + 1) * 30];
       }
     }
-
     function ekstrakSlotSahUntukGuruGanti(namaKelas, objSlot) {
       if (!objSlot || !objSlot.subjek || !objSlot.kodGuru || objSlot.kodGuru === '-') return [];
       const subUpper = String(objSlot.subjek).trim().toUpperCase();
@@ -3745,6 +3764,9 @@
 
       const dapatkanNoTahunKelas = (namaKelas) => {
         if (!namaKelas) return 1;
+        if (typeof window.dapatkanNoTahunKelasGlobal === 'function') {
+          return window.dapatkanNoTahunKelasGlobal(namaKelas);
+        }
         for (let t = 1; t <= 6; t++) {
           if (namaKelas.includes(`${t} `) || namaKelas.endsWith(`${t}`)) return t;
         }
@@ -3842,8 +3864,10 @@
        const subHeaderKelasLama = document.getElementById('jadual-subheader-masa-kelas');
         if (subHeaderKelasLama) subHeaderKelasLama.remove();
 
+        const tempohRehatPKAKelas = (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15;
+
         if (isTahap1 && isPKAKelasIni) {
-          // TAHAP 1 (Tahun 1 & 2) yang aktif PKA (Kekal 1 Baris Masa Berwarna Kelabu):
+          // TAHAP 1 (Tahun 1 & 2) yang aktif PKA (Sokong Rehat PKA 15m -> 10:30 atau 30m -> 10:45):
           let th = `<th class="border border-gray-300 p-2 bg-gray-200 text-gray-800 font-black uppercase tracking-widest w-24">HARI</th>`;
           let cur = waktuMula;
           for (let i = 0; i < rehatIdx; i++) {
@@ -3853,11 +3877,12 @@
           }
           let pkaMula = cur;
           let pkaTamat = tambahMinitMasa(pkaMula, 15);
-          let rehatTamat = tambahMinitMasa(pkaTamat, 15);
+          let rehatTamat = tambahMinitMasa(pkaTamat, 15); // Kekal 10:30 untuk rujukan Jumaat tanpa rehat
+          let rehatTamatPKA = tambahMinitMasa(pkaTamat, tempohRehatPKAKelas);
           th += `<th class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-[10px] md:text-xs">${pkaMula} - ${pkaTamat}</th>`;
-          th += `<th class="border border-gray-300 p-1 md:p-2 bg-amber-50 text-amber-600 font-black text-[10px] md:text-xs">${pkaTamat} - ${rehatTamat}</th>`;
+          th += `<th class="border border-gray-300 p-1 md:p-2 bg-amber-50 text-amber-600 font-black text-[10px] md:text-xs">${pkaTamat} - ${rehatTamatPKA}</th>`;
 
-          cur = rehatTamat;
+          cur = rehatTamatPKA;
           for (let i = rehatIdx; i < maxSlot; i++) {
             let nxt = tambahMinitMasa(cur, 30);
             th += `<th class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-[10px] md:text-xs">${cur} - ${nxt}</th>`;
@@ -3987,21 +4012,35 @@
             rowsHtml += `</tr>`;
           });
           tbodyKelas.innerHTML = rowsHtml;
-       } else if (!isTahap1 && isPKAKelasIni) {
-          // TAHAP 2 & 3 (Tahun 3, 4, 5 & 6) yang aktif PKA (2 Baris Masa Selaras Dengan Paparan Induk):
-          // - Baris Masa 1 (MASA T3 - Ada PKA): 07:30-07:45 (PKA), 07:45-10:15 (5 slot PdP), 10:15-10:30 (Rehat 15m)
-          // - Baris Masa 2 (MASA T3 - Kecuali PERH): 07:30-10:00 (Perhimpunan + 4 slot PdP), 10:00-10:30 (Rehat 30m merentangi 2 kolum)
+      } else if (!isTahap1 && isPKAKelasIni) {
+          // TAHAP 2 & 3 (Tahun 3, 4, 5 & 6) yang aktif PKA (Bentuk 1: Sokong Rehat PKA 15m atau 30m):
           let tamatPKAAwal = tambahMinitMasa(waktuMula, 15);
           let mPKA1000 = tambahMinitMasa(waktuMula, rehatIdx * 30);
           let tPKA1015 = tambahMinitMasa(mPKA1000, 15);
           let rTamat1030 = tambahMinitMasa(tPKA1015, 15);
+          let rTamatPKA = tambahMinitMasa(tPKA1015, tempohRehatPKAKelas);
+          let isRehatPKA30Kelas = (tempohRehatPKAKelas === 30);
 
-          let htmlPetangKelas = '';
-          let curPetang = rTamat1030;
-          for (let i = rehatIdx; i < maxSlot; i++) {
-            let nxt = tambahMinitMasa(curPetang, 30);
-            htmlPetangKelas += `<th rowspan="2" class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-[10px] md:text-xs align-middle">${curPetang}<br>${nxt}</th>`;
-            curPetang = nxt;
+          let htmlPetangBaris1 = '';
+          let htmlPetangBaris2 = '';
+          if (!isRehatPKA30Kelas) {
+            let curPetang = rTamat1030;
+            for (let i = rehatIdx; i < maxSlot; i++) {
+              let nxt = tambahMinitMasa(curPetang, 30);
+              htmlPetangBaris1 += `<th rowspan="2" class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-[10px] md:text-xs align-middle">${curPetang}<br>${nxt}</th>`;
+              curPetang = nxt;
+            }
+          } else {
+            let curP1 = rTamatPKA;
+            let curP2 = rTamat1030;
+            for (let i = rehatIdx; i < maxSlot; i++) {
+              let nxtP1 = tambahMinitMasa(curP1, 30);
+              let nxtP2 = tambahMinitMasa(curP2, 30);
+              htmlPetangBaris1 += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-[10px] md:text-xs align-middle">${curP1}<br>${nxtP1}</th>`;
+              htmlPetangBaris2 += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-[10px] md:text-xs align-middle">${curP2}<br>${nxtP2}</th>`;
+              curP1 = nxtP1;
+              curP2 = nxtP2;
+            }
           }
 
           // Bina Baris Masa 1 (Hari Ada PKA)
@@ -4014,8 +4053,8 @@
             thBaris1 += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-[10px] md:text-xs">${cur1}<br>${nxt}</th>`;
             cur1 = nxt;
           }
-          thBaris1 += `<th class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-[10px] md:text-xs">${tPKA1015} - ${rTamat1030}</th>`;
-          thBaris1 += htmlPetangKelas;
+          thBaris1 += `<th class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-[10px] md:text-xs">${tPKA1015} - ${rTamatPKA}</th>`;
+          thBaris1 += htmlPetangBaris1;
           trHeader.innerHTML = thBaris1;
 
           // Bina Baris Masa 2 (Hari Perhimpunan / Tiada PKA)
@@ -4027,6 +4066,7 @@
             cur2 = nxt;
           }
           thBaris2 += `<th colspan="2" class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-[10px] md:text-xs">${mPKA1000} - ${rTamat1030}</th>`;
+          thBaris2 += htmlPetangBaris2;
 
           const trSubKelas = document.createElement('tr');
           trSubKelas.id = 'jadual-subheader-masa-kelas';
@@ -4147,7 +4187,10 @@
         let setTahunPKAT23Guru = new Set();
         let setTahunSemuaGuru = new Set();
 
-       if (Array.isArray(profilG.senaraiTugas)) {
+      const tempohRehatPKAGuru = (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15;
+        const isRehatPKA30Guru = (tempohRehatPKAGuru === 30);
+
+        if (Array.isArray(profilG.senaraiTugas)) {
           profilG.senaraiTugas.forEach(t => {
             const noT = dapatkanNoTahunKelas(t.tahun);
             setTahunSemuaGuru.add(`T${noT}`);
@@ -4156,8 +4199,10 @@
               if (noT <= 2) setTahunPKAT1Guru.add(`T${noT}`);
               else setTahunPKAT23Guru.add(`T${noT}`);
             } else if (noT >= 3 && semakKelasAdaPKA(t.tahun, noT)) {
-              // Guru yang mengajar subjek PdP di kelas Tahap 2/3 yang mempunyai PKA turut menggunakan jadual masa anjakan T23_PKA
               setTahunPKAT23Guru.add(`T${noT}`);
+            } else if (isRehatPKA30Guru && noT <= 2 && semakKelasAdaPKA(t.tahun, noT)) {
+              // Apabila Rehat PKA = 30 minit, kelas Tahap 1 ber-PKA turut menggunakan jadual petang 10:45
+              setTahunPKAT1Guru.add(`T${noT}`);
             }
           });
         }
@@ -4227,11 +4272,13 @@
         const mPKA1000 = tambahMinitMasa(waktuMula, rehatIdx * 30);
         const tPKA1015 = tambahMinitMasa(mPKA1000, 15);
         const rTamat1030 = tambahMinitMasa(tPKA1015, 15);
+        const rTamatPKAGuru = tambahMinitMasa(tPKA1015, tempohRehatPKAGuru);
 
         const susunTahun = (setT) => Array.from(setT).sort((a, b) => parseInt(a.replace('T', ''), 10) - parseInt(b.replace('T', ''), 10));
         const senaraiT1Guru = susunTahun(setTahunPKAT1Guru);
         const senaraiT23Guru = susunTahun(setTahunPKAT23Guru);
         const senaraiSemuaT = susunTahun(setTahunSemuaGuru);
+        const tahunTanpaPKAGuruAwal = senaraiSemuaT.filter(t => !senaraiT1Guru.includes(t) && !senaraiT23Guru.includes(t));
 
         const lukisSelPdPGuru = (slotObj, colspanVal = 1) => {
           const attrCS = colspanVal > 1 ? ` colspan="${colspanVal}"` : '';
@@ -4310,9 +4357,9 @@
           dataHarianGuru[hari] = { sCikgu, maksSlotSekolahHariIni };
         });
 
-        if (!adaPKAT23Guru) {
+        if (!adaPKAT23Guru && !(isRehatPKA30Guru && tahunTanpaPKAGuruAwal.length > 0)) {
           // =========================================================================
-          // KES 1: GURU HANYA MENGAJAR PKA TAHAP 1 (LETAK BETUL-BETUL SEBELUM REHAT 10:00 - 10:15)
+          // KES 1: GURU HANYA MENGAJAR KELAS PKA TAHAP 1 SAHAJA
           // =========================================================================
           const adaHariRehatTanpaPKAT1 = senaraiHari.some(h => hariAdaRehatMap[h] && pkaT1IkutHari[h].length === 0);
           const attrRowspanT1 = adaHariRehatTanpaPKAT1 ? ' rowspan="2"' : '';
@@ -4324,11 +4371,11 @@
             thHtml += `<th${attrRowspanT1} class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs align-middle">${cur}<br>${nxt}</th>`;
             cur = nxt;
           }
-          // Kolum Masa PKA Tahap 1 (10:00 - 10:15) & Rehat (10:15 - 10:30)
+          // Kolum Masa PKA Tahap 1 (10:00 - 10:15) & Rehat (10:15 - 10:30 atau 10:15 - 10:45)
           thHtml += `<th class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-center min-w-[62px] leading-tight text-[10px] md:text-xs align-middle">${mPKA1000} - ${tPKA1015}</th>`;
-          thHtml += `<th class="border border-gray-300 p-1 md:p-2 bg-amber-50 text-amber-600 font-black text-center min-w-[62px] leading-tight text-[10px] md:text-xs align-middle">${tPKA1015} - ${rTamat1030}</th>`;
+          thHtml += `<th class="border border-gray-300 p-1 md:p-2 bg-amber-50 text-amber-600 font-black text-center min-w-[62px] leading-tight text-[10px] md:text-xs align-middle">${tPKA1015} - ${rTamatPKAGuru}</th>`;
 
-          cur = rTamat1030;
+          cur = rTamatPKAGuru;
           for (let i = rehatIdx; i < maxTotalSlotGuru; i++) {
             let nxt = tambahMinitMasa(cur, 30);
             thHtml += `<th${attrRowspanT1} class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs align-middle">${cur}<br>${nxt}</th>`;
@@ -4339,7 +4386,7 @@
           if (adaHariRehatTanpaPKAT1) {
             const trSubG = document.createElement('tr');
             trSubG.id = 'jadual-subheader-masa-guru';
-            trSubG.innerHTML = `<th colspan="2" class="border border-gray-300 p-1 md:p-2 bg-amber-50 text-amber-600 font-black text-center text-[10px] md:text-xs leading-tight">${mPKA1000} - ${rTamat1030}</th>`;
+            trSubG.innerHTML = `<th colspan="2" class="border border-gray-300 p-1 md:p-2 bg-amber-50 text-amber-600 font-black text-center text-[10px] md:text-xs leading-tight">${mPKA1000} - ${rTamatPKAGuru}</th>`;
             trHeaderGuru.insertAdjacentElement('afterend', trSubG);
           }
 
@@ -4487,10 +4534,9 @@
             rowsHtml += `</tr>`;
           });
           tbodyGuru.innerHTML = rowsHtml;
-        } else {
+       } else {
           // =========================================================================
-          // KES 2: GURU MENGAJAR PKA TAHAP 2 / TAHAP 3 (ATAU KEDUA-DUA TAHAP 1 & TAHAP 2/3)
-          // PKA Tahap 2/3 diletakkan di awal sesi pertama (07:30 - 07:45) & masa dipecahkan mengikut PKA guru
+          // KES 2 (BENTUK 1): KEPALA MASA BERTINGKAT (ATAS: PKA T1, TENGAH: PKA T2/3, BAWAH: TIADA PKA)
           // =========================================================================
           const senaraiBarisHeaderGuru = [];
 
@@ -4502,34 +4548,55 @@
             });
           }
 
-          senaraiBarisHeaderGuru.push({
-            jenis: 'T23_PKA',
-            htmlLabel: `<div class="font-black text-[9px] md:text-[10px] leading-tight">MASA ${senaraiT23Guru.join('/')}</div>` +
-                       `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Ada subjek PKA</div>`
-          });
+          if (adaPKAT23Guru) {
+            senaraiBarisHeaderGuru.push({
+              jenis: 'T23_PKA',
+              htmlLabel: `<div class="font-black text-[9px] md:text-[10px] leading-tight">MASA ${senaraiT23Guru.join('/')}</div>` +
+                         `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Ada subjek PKA</div>`
+            });
+          }
 
-          const tahunTanpaPKAGuru = senaraiSemuaT.filter(t => !senaraiT1Guru.includes(t) && !senaraiT23Guru.includes(t));
+          const tahunTanpaPKAGuru = tahunTanpaPKAGuruAwal;
           const gabunganTahunBarisAkhir = [...new Set([...senaraiT23Guru, ...tahunTanpaPKAGuru])].sort((a, b) => parseInt(a.replace('T', ''), 10) - parseInt(b.replace('T', ''), 10));
-          const infoSubTeksTanpaPKA = tahunTanpaPKAGuru.length > 0
+          const infoSubTeksTanpaPKA = (tahunTanpaPKAGuru.length > 0 && adaPKAT23Guru)
             ? `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Tiada subjek PKA</div>` +
               `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight normal-case">• Ada PKA (kecuali PERH)</div>`
-            : `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Ada PKA (kecuali PERH)</div>`;
+            : (tahunTanpaPKAGuru.length > 0
+                ? `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Tiada subjek PKA</div>`
+                : `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Ada PKA (kecuali PERH)</div>`);
 
-          senaraiBarisHeaderGuru.push({
-            jenis: 'TIADA_PKA',
-            htmlLabel: `<div class="font-black text-[9px] md:text-[10px] leading-tight">MASA ${gabunganTahunBarisAkhir.join('/')}</div>` +
-                       infoSubTeksTanpaPKA
-          });
+          if (gabunganTahunBarisAkhir.length > 0) {
+            senaraiBarisHeaderGuru.push({
+              jenis: 'TIADA_PKA',
+              htmlLabel: `<div class="font-black text-[9px] md:text-[10px] leading-tight">MASA ${gabunganTahunBarisAkhir.join('/')}</div>` +
+                         infoSubTeksTanpaPKA
+            });
+          }
 
           const jumBarisHGuru = senaraiBarisHeaderGuru.length;
 
-          let htmlPetangKongsiGuru = '';
-          let curPetang = rTamat1030;
-          for (let i = rehatIdx; i < maxTotalSlotGuru; i++) {
-            let nxt = tambahMinitMasa(curPetang, 30);
-            htmlPetangKongsiGuru += `<th rowspan="${jumBarisHGuru}" class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs align-middle">${curPetang}<br>${nxt}</th>`;
-            curPetang = nxt;
-          }
+          const binaSelPetangGuru = (jenisB, bIdx) => {
+            if (!isRehatPKA30Guru) {
+              if (bIdx !== 0) return '';
+              let html = '';
+              let curPetang = rTamat1030;
+              for (let i = rehatIdx; i < maxTotalSlotGuru; i++) {
+                let nxt = tambahMinitMasa(curPetang, 30);
+                html += `<th rowspan="${jumBarisHGuru}" class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs align-middle">${curPetang}<br>${nxt}</th>`;
+                curPetang = nxt;
+              }
+              return html;
+            }
+            // Bentuk 1 (Rehat PKA 30m): Baris PKA bermula 10:45, Baris Tiada PKA / PERH bermula 10:30
+            let html = '';
+            let curPetang = (jenisB === 'TIADA_PKA') ? rTamat1030 : rTamatPKAGuru;
+            for (let i = rehatIdx; i < maxTotalSlotGuru; i++) {
+              let nxt = tambahMinitMasa(curPetang, 30);
+              html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs align-middle">${curPetang}<br>${nxt}</th>`;
+              curPetang = nxt;
+            }
+            return html;
+          };
 
           const binaSelPagiGuru = (jenisB) => {
             let html = '';
@@ -4541,9 +4608,8 @@
                 cur = nxt;
               }
               html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${mPKA1000} - ${tPKA1015}</th>`;
-              html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${tPKA1015} - ${rTamat1030}</th>`;
+              html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${tPKA1015} - ${rTamatPKAGuru}</th>`;
             } else if (jenisB === 'T23_PKA') {
-              // Awal sesi pertama: 07:30 - 07:45 (PKA Tahap 2/3)
               html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs">${waktuMula}<br>${tamatPKAAwal}</th>`;
               let cur = tamatPKAAwal;
               for (let i = 0; i < rehatIdx; i++) {
@@ -4551,7 +4617,7 @@
                 html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs">${cur}<br>${nxt}</th>`;
                 cur = nxt;
               }
-              html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${tPKA1015} - ${rTamat1030}</th>`;
+              html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${tPKA1015} - ${rTamatPKAGuru}</th>`;
             } else {
               let cur = waktuMula;
               for (let i = 0; i < rehatIdx; i++) {
@@ -4571,13 +4637,14 @@
                 `<th rowspan="${jumBarisHGuru}" class="border border-gray-300 p-2 bg-gray-200 text-gray-800 font-black w-20 align-middle">HARI</th>` +
                 `<th class="border border-gray-300 px-2 py-1 bg-gray-100 text-gray-700 whitespace-nowrap tracking-wider align-middle">${infoB.htmlLabel}</th>` +
                 binaSelPagiGuru(infoB.jenis) +
-                htmlPetangKongsiGuru;
+                binaSelPetangGuru(infoB.jenis, bIdx);
             } else {
               const trSubG = document.createElement('tr');
               trSubG.id = bIdx === 1 ? 'jadual-subheader-masa-guru' : `jadual-subheader-masa-guru-${bIdx}`;
               trSubG.innerHTML =
                 `<th class="border border-gray-300 px-2 py-1 bg-gray-100 text-gray-700 whitespace-nowrap tracking-wider align-middle">${infoB.htmlLabel}</th>` +
-                binaSelPagiGuru(infoB.jenis);
+                binaSelPagiGuru(infoB.jenis) +
+                binaSelPetangGuru(infoB.jenis, bIdx);
               currAnchorG.insertAdjacentElement('afterend', trSubG);
               currAnchorG = trSubG;
             }
@@ -4836,9 +4903,12 @@
           'JUMAAT': document.getElementById('rehat-jumaat') ? document.getElementById('rehat-jumaat').checked : false
         };
 
+       const tempohRehatPKAInduk = (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15;
+        const isRehatPKA30Induk = (tempohRehatPKAInduk === 30);
         const mPKA = wRehatM;
         const tPKA = tambahMinitMasa(mPKA, 15);
-        const tRehat = tambahMinitMasa(tPKA, 15);
+        const tRehat = tambahMinitMasa(tPKA, 15); // Kekal 10:30 untuk Tahun Tiada PKA & Hari Perhimpunan
+        const tRehatPKA = tambahMinitMasa(tPKA, tempohRehatPKAInduk); // 10:30 (15m) atau 10:45 (30m)
         let bilKolumPetangInduk = 0;
 
         const semuaThInduk = Array.from(trHeaderInduk.querySelectorAll('th'));
@@ -4847,7 +4917,7 @@
 
           if (!adaTahap23PKA) {
             // =========================================================
-            // MOD ASAL (KEKAL SEPERTI SEKARANG): HANYA TAHAP 1 ADA PKA
+            // MOD HANYA TAHAP 1 ADA PKA (SOKONG REHAT PKA 15M & 30M)
             // =========================================================
             const thRehatInduk = semuaThInduk[rehatIdx + 2];
             if (adaTahap1PKA && thRehatInduk) {
@@ -4859,11 +4929,14 @@
 
               thRehatInduk.setAttribute('data-pka-split', '1');
               thRehatInduk.className = 'border border-gray-300 p-1 md:p-2 bg-amber-50 text-amber-600 font-black text-center min-w-[62px] leading-tight text-[10px] md:text-xs';
-              thRehatInduk.innerHTML = `${tPKA} - ${tRehat}`;
+              thRehatInduk.innerHTML = `${tPKA} - ${tRehatPKA}`;
 
-              let curPetang = tRehat;
+              let curPetang = tRehatPKA;
               for (let k = rehatIdx + 3; k < semuaThInduk.length; k++) {
                 let nxtPetang = tambahMinitMasa(curPetang, 30);
+                if (adaKelasTanpaPKA && isRehatPKA30Induk) {
+                  semuaThInduk[k].setAttribute('data-pka-split', '1');
+                }
                 semuaThInduk[k].innerHTML = `${curPetang}<br>${nxtPetang}`;
                 curPetang = nxtPetang;
               }
@@ -4873,94 +4946,112 @@
               Array.from(trHeaderInduk.querySelectorAll('th')).forEach(th => {
                 if (!th.hasAttribute('data-pka-split')) th.setAttribute('rowspan', '2');
               });
+              let htmlSubPetang = '';
+              if (isRehatPKA30Induk) {
+                let curPetangNonPKA = tRehat;
+                for (let k = 0; k < bilKolumPetangInduk; k++) {
+                  let nxtPetangNonPKA = tambahMinitMasa(curPetangNonPKA, 30);
+                  htmlSubPetang += `<th class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs">${curPetangNonPKA}<br>${nxtPetangNonPKA}</th>`;
+                  curPetangNonPKA = nxtPetangNonPKA;
+                }
+              }
               const trSubHeader = document.createElement('tr');
               trSubHeader.id = 'jadual-subheader-masa-induk';
-              trSubHeader.innerHTML = `<th colspan="2" class="border border-gray-300 p-1 md:p-2 bg-amber-50 text-amber-600 font-black text-center text-[10px] md:text-xs leading-tight">${mPKA} - ${tRehat}</th>`;
+              trSubHeader.innerHTML = `<th colspan="2" class="border border-gray-300 p-1 md:p-2 bg-amber-50 text-amber-600 font-black text-center text-[10px] md:text-xs leading-tight">${mPKA} - ${tRehat}</th>` + htmlSubPetang;
               trHeaderInduk.insertAdjacentElement('afterend', trSubHeader);
             }
           } else {
             // =========================================================================
-            // MOD 3 BARIS MASA DINAMIK: AKTIF APABILA TAHAP 2 / TAHAP 3 ADA SUBJEK PKA
+            // BENTUK 1 (MOD 3 BARIS MASA): ATAS = PKA T1, TENGAH = PKA T2/3, BAWAH = TIADA PKA
             // =========================================================================
             const senaraiBarisHeader = [];
 
-            // Baris 1: Untuk Tahap 1 yang ada subjek PKA (contoh: MASA T1/T2)
+            // Baris 1 (Atas): PKA Tahap 1 (contoh: MASA T1/T2)
             if (adaTahap1PKA) {
               senaraiBarisHeader.push({
                 jenis: 'T1_PKA',
-                htmlLabel: `<div class="font-black text-[9px] md:text-[10px] leading-tight">MASA ${senaraiTahunT1PKA.join('/')}</div>`
+                htmlLabel: `<div class="font-black text-[9px] md:text-[10px] leading-tight">MASA ${senaraiTahunT1PKA.join('/')}</div>` +
+                           `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Ada PKA Tahap 1</div>`
               });
             }
 
-            // Baris 2: Untuk Tahap 2 / Tahap 3 yang ada subjek PKA (contoh: MASA T3 atau MASA T3/T4)
+            // Baris 2 (Tengah): PKA Tahap 2 & 3 (contoh: MASA T3/T4/T5/T6)
             senaraiBarisHeader.push({
               jenis: 'T23_PKA',
-              htmlLabel: `<div class="font-black text-[9px] md:text-[10px] leading-tight">MASA ${senaraiTahunT23PKA.join('/')}</div>`
+              htmlLabel: `<div class="font-black text-[9px] md:text-[10px] leading-tight">MASA ${senaraiTahunT23PKA.join('/')}</div>` +
+                         `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Ada subjek PKA</div>`
             });
 
-            // Baris 3: Dwi-Fungsi:
-            // (1) Tahun yang tiada subjek PKA langsung
-            // (2) Tahun Tahap 2/3 yang ada subjek PKA tetapi pada Hari Perhimpunan (kecuali PERH)
+            // Baris 3 (Bawah): Tahun Tiada PKA & Hari Perhimpunan Tahap 2/3
             const gabunganTahunBaris3 = [...new Set([...senaraiTahunT23PKA, ...senaraiTahunTanpaPKA])].sort((a, b) => {
               return parseInt(a.replace('T', ''), 10) - parseInt(b.replace('T', ''), 10);
             });
             const labelTahunBaris3 = senaraiTahunTanpaPKA.length > 0
               ? `MASA ${gabunganTahunBaris3.join('/')}`
               : `MASA ${senaraiTahunT23PKA.join('/')}`;
+            const subLabelBaris3 = senaraiTahunTanpaPKA.length > 0
+              ? `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Tiada subjek PKA</div>` +
+                `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight normal-case">• Ada PKA (kecuali PERH)</div>`
+              : `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Ada PKA (kecuali PERH)</div>`;
 
             senaraiBarisHeader.push({
               jenis: 'TIADA_PKA',
-              htmlLabel: `<div class="font-black text-[9px] md:text-[10px] leading-tight">${labelTahunBaris3}</div>` +
-                         `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight mt-0.5 normal-case">• Tiada subjek PKA</div>` +
-                         `<div class="text-[7px] md:text-[8px] font-bold text-gray-500 leading-tight normal-case">• Ada PKA (kecuali PERH)</div>`
+              htmlLabel: `<div class="font-black text-[9px] md:text-[10px] leading-tight">${labelTahunBaris3}</div>` + subLabelBaris3
             });
 
             const jumBarisHeader = senaraiBarisHeader.length;
             const tamatPKAAwal = tambahMinitMasa(waktuMula, 15);
 
-            // Bina sel masa selepas 10:30 (semua berwarna kelabu bg-gray-100 text-gray-700)
-            let htmlPetangKongsi = '';
-            let curPetang = tRehat;
-            for (let k = 0; k < bilKolumPetangInduk; k++) {
-              let nxtPetang = tambahMinitMasa(curPetang, 30);
-              htmlPetangKongsi += `<th rowspan="${jumBarisHeader}" class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs align-middle">${curPetang}<br>${nxtPetang}</th>`;
-              curPetang = nxtPetang;
-            }
+            const binaSelPetangMengikutJenis = (jenisBaris, bIdx) => {
+              if (!isRehatPKA30Induk) {
+                if (bIdx !== 0) return '';
+                let html = '';
+                let curPetang = tRehat;
+                for (let k = 0; k < bilKolumPetangInduk; k++) {
+                  let nxtPetang = tambahMinitMasa(curPetang, 30);
+                  html += `<th rowspan="${jumBarisHeader}" class="border border-gray-300 p-1 md:p-2 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs align-middle">${curPetang}<br>${nxtPetang}</th>`;
+                  curPetang = nxtPetang;
+                }
+                return html;
+              }
+              // Bentuk 1 (Rehat PKA 30m): Baris PKA bermula 10:45, Baris Tiada PKA / PERH bermula 10:30
+              let html = '';
+              let curPetang = (jenisBaris === 'TIADA_PKA') ? tRehat : tRehatPKA;
+              for (let k = 0; k < bilKolumPetangInduk; k++) {
+                let nxtPetang = tambahMinitMasa(curPetang, 30);
+                html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs align-middle">${curPetang}<br>${nxtPetang}</th>`;
+                curPetang = nxtPetang;
+              }
+              return html;
+            };
 
             const binaSelPagiMengikutJenis = (jenisBaris) => {
               let html = '';
               if (jenisBaris === 'T1_PKA') {
-                // Kolum 1..rehatIdx: Terus bermula 07:30 - 08:00 (warna kelabu)
                 let cur = waktuMula;
                 for (let i = 0; i < rehatIdx; i++) {
                   let nxt = tambahMinitMasa(cur, 30);
                   html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs">${cur}<br>${nxt}</th>`;
                   cur = nxt;
                 }
-                // Slot PKA Tahap 1 (10:00 - 10:15, kelabu) + Rehat 15m (10:15 - 10:30, kuning)
                 html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${mPKA} - ${tPKA}</th>`;
-                html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${tPKA} - ${tRehat}</th>`;
+                html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${tPKA} - ${tRehatPKA}</th>`;
               } else if (jenisBaris === 'T23_PKA') {
-                // Kolum 1: PKA Awal Pagi (07:30 - 07:45, kelabu)
                 html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs">${waktuMula}<br>${tamatPKAAwal}</th>`;
-                // 5 Slot PdP Pagi (07:45 - 10:15, kelabu)
                 let cur = tamatPKAAwal;
                 for (let i = 0; i < rehatIdx; i++) {
                   let nxt = tambahMinitMasa(cur, 30);
                   html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs">${cur}<br>${nxt}</th>`;
                   cur = nxt;
                 }
-                // Rehat 15m (10:15 - 10:30, kuning)
-                html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${tPKA} - ${tRehat}</th>`;
+                html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${tPKA} - ${tRehatPKA}</th>`;
               } else {
-                // TIADA_PKA & HARI PERHIMPUNAN: Terus bermula 07:30 - 08:00 (kelabu)
                 let cur = waktuMula;
                 for (let i = 0; i < rehatIdx; i++) {
                   let nxt = tambahMinitMasa(cur, 30);
                   html += `<th class="border border-gray-300 p-1 md:p-1.5 bg-gray-100 text-gray-700 font-bold text-center min-w-[55px] leading-tight text-[10px] md:text-xs">${cur}<br>${nxt}</th>`;
                   cur = nxt;
                 }
-                // Rehat 30m (10:00 - 10:30, kuning) merentangi 2 kolum
                 html += `<th colspan="2" class="border border-gray-300 p-1 md:p-1.5 bg-amber-50 text-amber-600 font-black text-center min-w-[60px] leading-tight text-[10px] md:text-xs">${mPKA} - ${tRehat}</th>`;
               }
               return html;
@@ -4968,7 +5059,6 @@
 
             let currAnchorTr = trHeaderInduk;
             senaraiBarisHeader.forEach((infoB, bIdx) => {
-              // Semua kolum label MASA T1..T6 berwarna kelabu (bg-gray-100 text-gray-700)
               const warnaLabel = 'bg-gray-100 text-gray-700';
 
               if (bIdx === 0) {
@@ -4977,13 +5067,14 @@
                   `<th rowspan="${jumBarisHeader}" class="border border-gray-300 p-2 bg-gray-200 text-gray-800 font-black w-24 align-middle">KELAS</th>` +
                   `<th class="border border-gray-300 px-2 py-1 ${warnaLabel} whitespace-nowrap tracking-wider align-middle">${infoB.htmlLabel}</th>` +
                   binaSelPagiMengikutJenis(infoB.jenis) +
-                  htmlPetangKongsi;
+                  binaSelPetangMengikutJenis(infoB.jenis, bIdx);
               } else {
                 const trBaru = document.createElement('tr');
                 trBaru.id = bIdx === 1 ? 'jadual-subheader-masa-induk' : `jadual-subheader-masa-induk-${bIdx}`;
                 trBaru.innerHTML =
                   `<th class="border border-gray-300 px-2 py-1 ${warnaLabel} whitespace-nowrap tracking-wider align-middle">${infoB.htmlLabel}</th>` +
-                  binaSelPagiMengikutJenis(infoB.jenis);
+                  binaSelPagiMengikutJenis(infoB.jenis) +
+                  binaSelPetangMengikutJenis(infoB.jenis, bIdx);
                 currAnchorTr.insertAdjacentElement('afterend', trBaru);
                 currAnchorTr = trBaru;
               }
@@ -6418,8 +6509,7 @@ return `
                 };
 
                 const getLimit = (kelas, hariStr) => {
-                   let t = 't1';
-                   if (kelas.includes('1 ')) t = 't1'; else if (kelas.includes('2 ')) t = 't2'; else if (kelas.includes('3 ')) t = 't3'; else if (kelas.includes('4 ')) t = 't4'; else if (kelas.includes('5 ')) t = 't5'; else if (kelas.includes('6 ')) t = 't6';
+                   let t = 't' + ((typeof window.dapatkanNoTahunKelasGlobal === 'function') ? window.dapatkanNoTahunKelasGlobal(kelas) : 1);
                    return kiraMaxSlotDinamik(`waktu-${hariStr === 'ISNIN' ? 'isn' : (hariStr === 'SELASA' ? 'sel' : (hariStr === 'RABU' ? 'rab' : (hariStr === 'KHAMIS' ? 'kha' : 'jum')))}-${t}`, hariAdaRehat[hariStr], hariStr === 'JUMAAT');
                 };
 
@@ -6473,6 +6563,9 @@ return `
                 let isHariRehat = hariAdaRehat[namaHariPilihan];
 
                 const dapatkanNoThnTV = (kls) => {
+                    if (typeof window.dapatkanNoTahunKelasGlobal === 'function') {
+                        return window.dapatkanNoTahunKelasGlobal(kls);
+                    }
                     for (let t = 1; t <= 6; t++) if (kls.includes(`${t} `) || kls.endsWith(`${t}`)) return t;
                     return 1;
                 };
@@ -6588,16 +6681,19 @@ return `
                     if (elSub) elSub.remove();
                 });
 
+               const tempohRehatPKATV = (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15;
+                const isRehatPKA30TV = (tempohRehatPKATV === 30);
                 const elTvThead = document.getElementById('tv-thead-harian');
 
                 if (!mod3BarisTV) {
                     // =========================================================================
-                    // MOD ASAL TV LIVE: KEKAL SEPERTI SEKARANG JIKA TIADA PKA TAHAP 2 / TAHAP 3
+                    // MOD TV LIVE TANPA PKA TAHAP 2/3 (ATAU PADA HARI PERHIMPUNAN)
                     // =========================================================================
                     const perluSubHeaderRehatTV = isHariRehat && adaPKATahap1HariIni && adaKelasTanpaPKAT1TV;
                     const perluSubHeaderJumSplitTV = !isHariRehat && adaPKATahap1HariIni && adaKelasGunaSlot30mSplitTV;
                     const adaSubHeaderTV = perluSubHeaderRehatTV || perluSubHeaderJumSplitTV;
                     const attrRowspanTV = adaSubHeaderTV ? ' rowspan="2"' : '';
+                    const attrRowspanPetangTV = (perluSubHeaderRehatTV && isRehatPKA30TV) ? '' : attrRowspanTV;
 
                     let thHtmlMasa = `<th${attrRowspanTV} class="border-r-[2px] md:border-r-[3px] border-gray-800 px-1 py-1 text-white bg-gray-900 font-black text-xs md:text-sm lg:text-base tracking-wider text-center align-middle" style="width: 8%;">KELAS</th>`;
                     let currentMasa = waktuMula;
@@ -6614,12 +6710,13 @@ return `
 
                         mPKARehatTV = currentMasa;
                         let tPKARehat = addMinutes(mPKARehatTV, 15);
-                        tRehatPenuhTV = addMinutes(tPKARehat, 15);
+                        tRehatPenuhTV = addMinutes(tPKARehat, 15); // 10:30 untuk kelas tanpa PKA / Hari Perhimpunan
+                        let tRehatPKATV = addMinutes(tPKARehat, tempohRehatPKATV); // 10:30 (15m) atau 10:45 (30m)
 
                         if (adaPKATahap1HariIni) {
                             thHtmlMasa += `<th class="border-r border-l-2 border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${mPKARehatTV} - ${tPKARehat}</th>`;
-                            thHtmlMasa += `<th class="border-r-[2px] md:border-r-[3px] border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${tPKARehat} - ${tRehatPenuhTV}</th>`;
-                            currentMasa = tRehatPenuhTV;
+                            thHtmlMasa += `<th class="border-r-[2px] md:border-r-[3px] border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${tPKARehat} - ${tRehatPKATV}</th>`;
+                            currentMasa = tRehatPKATV;
                         } else {
                             let teksRehatHarian = namaHariPilihan === 'JUMAAT' ? `${wJRehatM}<br>${wJRehatT}` : `${wRehatM}<br>${wRehatT}`;
                             thHtmlMasa += `<th class="border-r-[2px] border-l-[2px] md:border-r-[3px] md:border-l-[3px] border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${teksRehatHarian}</th>`;
@@ -6628,7 +6725,7 @@ return `
 
                         for(let i = rehatIndex; i < maxSlotHariIni; i++) {
                             let nextMasa = addMinutes(currentMasa, 30);
-                            thHtmlMasa += `<th${attrRowspanTV} class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${currentMasa}<br>${nextMasa}</th>`;
+                            thHtmlMasa += `<th${attrRowspanPetangTV} class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-1 align-middle">${currentMasa}<br>${nextMasa}</th>`;
                             currentMasa = nextMasa;
                         }
                     } else if (adaPKATahap1HariIni && adaKelasGunaSlot30mSplitTV) {
@@ -6677,9 +6774,18 @@ return `
                     }
                     elTvThead.innerHTML = thHtmlMasa;
                     if (perluSubHeaderRehatTV) {
+                        let htmlSubPetangTV = '';
+                        if (isRehatPKA30TV) {
+                            let curSubP = tRehatPenuhTV;
+                            for (let i = rehatIndex; i < maxSlotHariIni; i++) {
+                                let nxtSubP = addMinutes(curSubP, 30);
+                                htmlSubPetangTV += `<th class="border-t border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-0.5 align-middle">${curSubP}<br>${nxtSubP}</th>`;
+                                curSubP = nxtSubP;
+                            }
+                        }
                         const trSubTV = document.createElement('tr');
                         trSubTV.id = 'tv-subthead-harian';
-                        trSubTV.innerHTML = `<th colspan="2" class="border-t border-r-[2px] border-l-2 md:border-r-[3px] border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm py-0.5 align-middle">${mPKARehatTV} - ${tRehatPenuhTV}</th>`;
+                        trSubTV.innerHTML = `<th colspan="2" class="border-t border-r-[2px] border-l-2 md:border-r-[3px] border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm py-0.5 align-middle">${mPKARehatTV} - ${tRehatPenuhTV}</th>` + htmlSubPetangTV;
                         elTvThead.insertAdjacentElement('afterend', trSubTV);
                     } else if (perluSubHeaderJumSplitTV) {
                         const trSubTV = document.createElement('tr');
@@ -6689,7 +6795,7 @@ return `
                     }
                 } else {
                     // =========================================================================
-                    // MOD 3 BARIS MASA DINAMIK TV LIVE (APABILA TAHAP 2 / TAHAP 3 ADA PKA)
+                    // BENTUK 1 (MOD 3 BARIS MASA DINAMIK TV LIVE): SOKONG REHAT PKA 15M & 30M
                     // =========================================================================
                     const senaraiBarisTV = [];
                     if (senaraiTahunT1PKATV.length > 0) {
@@ -6704,26 +6810,44 @@ return `
                     const tamatPKAAwalTV = addMinutes(waktuMula, 15);
                     const mPKARehatTV = addMinutes(waktuMula, rehatIndex * 30);
                     const tPKARehatTV = addMinutes(mPKARehatTV, 15);
-                    const tRehatPenuhTV = addMinutes(tPKARehatTV, 15);
+                    const tRehatPenuhTV = addMinutes(tPKARehatTV, 15); // 10:30 (Tiada PKA & Hari Tanpa Rehat)
+                    const tRehatPKATV = addMinutes(tPKARehatTV, tempohRehatPKATV); // 10:30 (15m) atau 10:45 (30m)
 
-                   let htmlPetangKongsiTV = '';
-                    if (isHariRehat) {
-                        let curP = tRehatPenuhTV;
+                    const binaSelPetangTV = (jenisB, bIdx) => {
+                        if (!isHariRehat) {
+                            if (bIdx !== 0) return '';
+                            let html = '';
+                            let curP = tRehatPenuhTV;
+                            for (let k = 0; k < bilKolumPetangMod3TV; k++) {
+                                let nxtP = addMinutes(curP, 30);
+                                html += `<th rowspan="${jumBarisTV}" class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-0.5 align-middle">${curP}<br>${nxtP}</th>`;
+                                curP = nxtP;
+                            }
+                            return html;
+                        }
+                        if (!isRehatPKA30TV) {
+                            if (bIdx !== 0) return '';
+                            let html = '';
+                            let curP = tRehatPenuhTV;
+                            for (let i = rehatIndex; i < maxSlotHariIni; i++) {
+                                let nxtP = addMinutes(curP, 30);
+                                html += `<th rowspan="${jumBarisTV}" class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-0.5 align-middle">${curP}<br>${nxtP}</th>`;
+                                curP = nxtP;
+                            }
+                            return html;
+                        }
+                        // Bentuk 1 (Rehat PKA 30m): Baris PKA bermula 10:45, Baris Tiada PKA bermula 10:30
+                        let html = '';
+                        let curP = (jenisB === 'TIADA_PKA') ? tRehatPenuhTV : tRehatPKATV;
                         for (let i = rehatIndex; i < maxSlotHariIni; i++) {
                             let nxtP = addMinutes(curP, 30);
-                            htmlPetangKongsiTV += `<th rowspan="${jumBarisTV}" class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-0.5 align-middle">${curP}<br>${nxtP}</th>`;
+                            html += `<th class="border-r border-b border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[9px] md:text-xs shadow-inner px-0.5 py-0.5 align-middle">${curP}<br>${nxtP}</th>`;
                             curP = nxtP;
                         }
-                    } else {
-                        let curP = tRehatPenuhTV;
-                        for (let k = 0; k < bilKolumPetangMod3TV; k++) {
-                            let nxtP = addMinutes(curP, 30);
-                            htmlPetangKongsiTV += `<th rowspan="${jumBarisTV}" class="border-r border-gray-700 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[10px] md:text-xs lg:text-sm shadow-inner px-0.5 py-0.5 align-middle">${curP}<br>${nxtP}</th>`;
-                            curP = nxtP;
-                        }
-                    }
+                        return html;
+                    };
 
-                     const binaSelPagiTV = (jenisB) => {
+                    const binaSelPagiTV = (jenisB) => {
                         let html = '';
                         if (jenisB === 'T1_PKA') {
                             let cur = waktuMula;
@@ -6734,7 +6858,7 @@ return `
                             }
                             if (isHariRehat) {
                                 html += `<th class="border-r border-b border-l-2 border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${mPKARehatTV} - ${tPKARehatTV}</th>`;
-                                html += `<th class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${tPKARehatTV} - ${tRehatPenuhTV}</th>`;
+                                html += `<th class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${tPKARehatTV} - ${tRehatPKATV}</th>`;
                             } else if (minLimPKAT1TV <= rehatIndex) {
                                 html += `<th class="border-r border-b border-l-2 border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${mPKARehatTV} - ${tPKARehatTV}</th>`;
                                 html += `<th class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${tPKARehatTV} - ${tRehatPenuhTV}</th>`;
@@ -6750,7 +6874,7 @@ return `
                                 cur = nxt;
                             }
                             if (isHariRehat) {
-                                html += `<th class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${tPKARehatTV} - ${tRehatPenuhTV}</th>`;
+                                html += `<th class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 bg-amber-50 text-amber-600 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${tPKARehatTV} - ${tRehatPKATV}</th>`;
                             } else {
                                 html += `<th class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 bg-indigo-900 text-indigo-100 font-black text-center leading-tight text-[9px] md:text-xs px-0.5 py-0.5 align-middle">${tPKARehatTV} - ${tRehatPenuhTV}</th>`;
                             }
@@ -6778,13 +6902,14 @@ return `
                                 `<th rowspan="${jumBarisTV}" class="border-r border-gray-800 px-1 py-1 text-white bg-gray-900 font-black text-xs md:text-sm lg:text-base tracking-wider text-center align-middle" style="width: 6%;">KELAS</th>` +
                                 `<th class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 px-1 py-0.5 ${warnaLabelTV} font-black text-[8px] md:text-[10px] whitespace-nowrap tracking-wider text-center align-middle" style="width: 6%;">${infoB.label}</th>` +
                                 binaSelPagiTV(infoB.jenis) +
-                                htmlPetangKongsiTV;
+                                binaSelPetangTV(infoB.jenis, bIdx);
                         } else {
                             const trSub = document.createElement('tr');
                             trSub.id = bIdx === 1 ? 'tv-subthead-harian' : `tv-subthead-harian-${bIdx}`;
                             trSub.innerHTML =
                                 `<th class="border-r-[2px] md:border-r-[3px] border-b border-gray-800 px-1 py-0.5 ${warnaLabelTV} font-black text-[8px] md:text-[10px] whitespace-nowrap tracking-wider text-center align-middle">${infoB.label}</th>` +
-                                binaSelPagiTV(infoB.jenis);
+                                binaSelPagiTV(infoB.jenis) +
+                                binaSelPetangTV(infoB.jenis, bIdx);
                             currAnchorTV.insertAdjacentElement('afterend', trSub);
                             currAnchorTV = trSub;
                         }
@@ -7666,7 +7791,8 @@ let selObj = null;
             f1_perhimpunan: document.getElementById('tetapan-perhimpunan').value,
             f1_rehat: {
                 isnin: document.getElementById('rehat-isnin').checked, selasa: document.getElementById('rehat-selasa').checked,
-                rabu: document.getElementById('rehat-rabu').checked, khamis: document.getElementById('rehat-khamis').checked, jumaat: document.getElementById('rehat-jumaat').checked
+                rabu: document.getElementById('rehat-rabu').checked, khamis: document.getElementById('rehat-khamis').checked, jumaat: document.getElementById('rehat-jumaat').checked,
+                rehatPKA: (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15
             },
            f1_hadBeban: {
                 gb: parseInt(document.getElementById('max-gb').value) || 7, pk: parseInt(document.getElementById('max-pk').value) || 12, gab: parseInt(document.getElementById('max-gab').value) || 30
@@ -7740,6 +7866,9 @@ let selObj = null;
                         document.getElementById('rehat-isnin').checked = state.f1_rehat.isnin; document.getElementById('rehat-selasa').checked = state.f1_rehat.selasa;
                         document.getElementById('rehat-rabu').checked = state.f1_rehat.rabu; document.getElementById('rehat-khamis').checked = state.f1_rehat.khamis;
                         document.getElementById('rehat-jumaat').checked = state.f1_rehat.jumaat;
+                        if (typeof window.pilihTempohRehatPKA === 'function') {
+                            window.pilihTempohRehatPKA(state.f1_rehat.rehatPKA || 15, true);
+                        }
                     }
                 }
 
@@ -8423,8 +8552,7 @@ let selObj = null;
 
        const val = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
        const isChecked = (id) => document.getElementById(id) ? document.getElementById(id).checked : false;
-
-       let fasa1_asas = [
+let fasa1_asas = [
            ["KATEGORI", "ITEM", "NILAI"],
            ["Perhimpunan", "Hari", val('tetapan-perhimpunan')],
            ["Perhimpunan", "Tamat", val('waktu-perhimpunan-tamat')],
@@ -8432,8 +8560,8 @@ let selObj = null;
            ["Rehat_Biasa", "Tamat", val('waktu-rehat-tamat')],
            ["Rehat_Jumaat", "Mula", val('waktu-rehat-jum-mula')],
            ["Rehat_Jumaat", "Tamat", val('waktu-rehat-jum-tamat')],
-           ["Hari_Rehat", "Isnin", isChecked('rehat-isnin')],
-           ["Hari_Rehat", "Selasa", isChecked('rehat-selasa')],
+           ["Rehat_PKA", "Tempoh", String((typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15)],
+           ["Hari_Rehat", "Isnin", isChecked('rehat-isnin')],           ["Hari_Rehat", "Selasa", isChecked('rehat-selasa')],
            ["Hari_Rehat", "Rabu", isChecked('rehat-rabu')],
            ["Hari_Rehat", "Khamis", isChecked('rehat-khamis')],
            ["Hari_Rehat", "Jumaat", isChecked('rehat-jumaat')],
@@ -9521,7 +9649,48 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         showToast('Mod Kemaskini Aktif: Sila edit dan tekan Simpan.');
     }
 
-    // KOD BAHARU: Pelukis Lencana Pintar Zon Rehat (Auto-Pecahan 15m PKA + 15m Rehat vs 30m Rehat Penuh)
+   // KOD BAHARU: Pengawal Pilihan Tempoh Rehat Tahun Ada PKA (15 Minit atau 30 Minit)
+    window.dapatkanTempohRehatPKA = function() {
+        const el = document.getElementById('tetapan-rehat-pka');
+        return (el && String(el.value) === '30') ? 30 : 15;
+    };
+
+    window.pilihTempohRehatPKA = function(minitPilihan, abaikanAnjak = false) {
+        const nilai = (parseInt(minitPilihan, 10) === 30) ? '30' : '15';
+        const inputHidden = document.getElementById('tetapan-rehat-pka');
+        const btn15 = document.getElementById('btn-rehat-pka-15');
+        const btn30 = document.getElementById('btn-rehat-pka-30');
+        if (inputHidden) inputHidden.value = nilai;
+
+        if (btn15 && btn30) {
+            if (nilai === '30') {
+                btn30.className = "flex-1 py-1 px-2 rounded-md text-[10px] font-black bg-purple-600 text-white shadow-sm transition-all";
+                btn15.className = "flex-1 py-1 px-2 rounded-md text-[10px] font-bold text-amber-900 hover:bg-amber-100/80 transition-all";
+            } else {
+                btn15.className = "flex-1 py-1 px-2 rounded-md text-[10px] font-black bg-amber-500 text-white shadow-sm transition-all";
+                btn30.className = "flex-1 py-1 px-2 rounded-md text-[10px] font-bold text-purple-900 hover:bg-purple-100/80 transition-all";
+            }
+        }
+
+        if (!abaikanAnjak) {
+            const pemicuRehatPKA = nilai === '30'
+                ? 'REHAT_PKA:Rehat Tahun Ada PKA ditetapkan kepada 30 minit (+15 minit waktu balik diselaraskan).'
+                : 'REHAT_PKA:Rehat Tahun Ada PKA ditetapkan kepada 15 minit (waktu balik diselaraskan semula).';
+            if (typeof selaraskanMatriksDanSubjekPKA === 'function') {
+                selaraskanMatriksDanSubjekPKA(false, pemicuRehatPKA);
+            }
+            if (typeof kemaskiniKapasitiLive === 'function') {
+                kemaskiniKapasitiLive();
+            }
+            if (typeof simpanLocalState === 'function') {
+                simpanLocalState();
+            }
+        } else if (typeof window.kemaskiniInfoZonRehatPintar === 'function') {
+            window.kemaskiniInfoZonRehatPintar();
+        }
+    };
+
+    // KOD BAHARU: Pelukis Lencana Pintar Zon Rehat (Sokong Pilihan Rehat PKA 15m atau 30m)
     window.kemaskiniInfoZonRehatPintar = function() {
         const bekasInfo = document.getElementById('info-zon-rehat-pintar');
         const biasaMulaEl = document.getElementById('waktu-rehat-mula');
@@ -9562,6 +9731,8 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         const tamatStr = adaHariBiasa ? (biasaTamatEl.value || '10:30') : (jumTamatEl ? jumTamatEl.value : '10:30');
         const durasi = Math.max(0, parseMinitZon(tamatStr) - parseMinitZon(mulaStr));
         const tengahStr = formatMasaZon(parseMinitZon(mulaStr) + 15);
+        const tempohRehatPKA = window.dapatkanTempohRehatPKA();
+        const tamatRehatPKAStr = formatMasaZon(parseMinitZon(mulaStr) + 15 + tempohRehatPKA);
 
         const mapArrPKA = { 1: arraySubjekTahap1, 2: arraySubjekTahap2, 3: arraySubjekTahap3, 4: arraySubjekTahap4, 5: arraySubjekTahap5, 6: arraySubjekTahap6 };
         let tahunAdaPKA = [];
@@ -9584,20 +9755,25 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
             let notaJumaat = '';
             if (adaHariBiasa && adaHariJumaat && jumMulaEl && jumTamatEl && jumMulaEl.value !== mulaStr) {
                 const tengahJum = formatMasaZon(parseMinitZon(jumMulaEl.value) + 15);
-                notaJumaat = `<div class="text-emerald-800 border-t border-purple-200/50 pt-0.5 mt-0.5">• <span class="font-black">Jumaat (${jumMulaEl.value} – ${jumTamatEl.value}):</span> Ada PKA Rehat 15m (${tengahJum} – ${jumTamatEl.value})</div>`;
+                const tamatPKAJum = formatMasaZon(parseMinitZon(jumMulaEl.value) + 15 + tempohRehatPKA);
+                notaJumaat = `<div class="text-emerald-800 border-t border-purple-200/50 pt-0.5 mt-0.5">• <span class="font-black">Jumaat:</span> Tahun Ada PKA Rehat ${tempohRehatPKA}m (${tengahJum} – ${tamatPKAJum})</div>`;
             }
 
             const barisKedua = tahunTiadaPKA.length > 0
                 ? `<div class="text-amber-900">• <span class="font-black">Tahun Tiada PKA (${tahunTiadaPKA.join(', ')}):</span> Rehat penuh <span class="font-black text-amber-700">30 minit</span> (${mulaStr} – ${tamatStr})</div>`
                 : `<div class="text-amber-900">• <span class="font-black">Hari Perhimpunan (Tahap 2 &amp; 3):</span> Rehat penuh <span class="font-black text-amber-700">30 minit</span> (${mulaStr} – ${tamatStr})</div>`;
 
+            const lencanaKanan = tempohRehatPKA === 30
+                ? `<span class="bg-purple-600 text-white px-1.5 py-0.5 rounded text-[8px] font-black uppercase shrink-0">+15m Balik</span>`
+                : `<span class="bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded text-[8px] font-black uppercase shrink-0"><i class="fa-solid fa-lock mr-0.5"></i>Zon 30m</span>`;
+
             bekasInfo.innerHTML = `
                 <div class="bg-gradient-to-r from-purple-50 to-amber-50 p-2.5 rounded-lg border border-purple-200 text-[9.5px] font-bold text-gray-700 leading-relaxed shadow-sm space-y-0.5">
                     <div class="flex items-center justify-between gap-1 border-b border-purple-200/60 pb-1 mb-0.5">
-                        <span class="font-black text-purple-900"><i class="fa-solid fa-wand-magic-sparkles text-purple-600 mr-1"></i>Auto-Pecahan Zon Rehat (${mulaStr} – ${tamatStr})</span>
-                        <span class="bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded text-[8px] font-black uppercase shrink-0" title="Zon Rehat kekal 30 minit supaya sistem auto-bahagi 15m Rehat + 15m PKA"><i class="fa-solid fa-lock mr-0.5"></i>Zon 30m</span>
+                        <span class="font-black text-purple-900"><i class="fa-solid fa-wand-magic-sparkles text-purple-600 mr-1"></i>Zon Rehat (${mulaStr} – ${tamatRehatPKAStr})</span>
+                        ${lencanaKanan}
                     </div>
-                    <div class="text-purple-900">• <span class="font-black">Tahun Ada PKA (${tahunAdaPKA.join(', ')}):</span> Rehat <span class="font-black text-amber-700">15 minit</span> (${tengahStr} – ${tamatStr}) + PKA <span class="font-black text-purple-700">15 minit</span></div>
+                    <div class="text-purple-900">• <span class="font-black">Tahun Ada PKA (${tahunAdaPKA.join(', ')}):</span> Rehat <span class="font-black text-amber-700">${tempohRehatPKA} minit</span> (${tengahStr} – ${tamatRehatPKAStr}) + PKA <span class="font-black text-purple-700">15m</span></div>
                     ${barisKedua}
                     ${notaJumaat}
                 </div>
@@ -9941,8 +10117,9 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         }
 
          // 2. Kira Status Anjakan Tambahan 15 Minit PKA pada Jadual Matriks:
-        // - Pada hari yang ADA REHAT (Isnin - Khamis): Kelas yang mengambil PKA (sama ada Tahap 1 mahupun Tahap 2/3) mendapat 15m PKA + 15m Rehat (10:15-10:30) = 30m, manakala kelas tanpa PKA mendapat 30m Rehat (10:00-10:30). Jadi anjakan +15m sudah pun diserap melalui blok Rehat 30m di atas!
-        // - Pada hari yang TIADA REHAT (seperti Jumaat): Kelas yang aktif PKA pada hari tersebut dianjakkan +15m untuk menampung sesi 15 minit PKA.
+        // - Hari ADA REHAT + Pilihan Rehat PKA 15m: 15m PKA + 15m Rehat = 30m (diserap penuh dalam blok Rehat 30m -> anjakan tambahan = 0m)
+        // - Hari ADA REHAT + Pilihan Rehat PKA 30m: 15m PKA + 30m Rehat = 45m (waktu balik tahun aktif PKA ditambah +15m)
+        // - Hari TIADA REHAT (cth: Jumaat tanpa rehat): Kelas aktif PKA ditambah +15m untuk menampung sesi 15 minit PKA.
         const hariAdaRehat = {
             isn: document.getElementById('rehat-isnin') ? document.getElementById('rehat-isnin').checked : true,
             sel: document.getElementById('rehat-selasa') ? document.getElementById('rehat-selasa').checked : true,
@@ -9951,12 +10128,18 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
             jum: document.getElementById('rehat-jumaat') ? document.getElementById('rehat-jumaat').checked : false
         };
 
+        const tempohRehatPKASemasa = (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15;
         const statusPKASemasa = {};
         ['isn', 'sel', 'rab', 'kha', 'jum'].forEach(pfx => {
             for (let t = 1; t <= 6; t++) {
                 const aktif = adalahPKAAktifPadaHari(t, pfx);
-                // Hanya tambah 15m tambahan jika hari tersebut TIADA rehat (kerana jika ada rehat, 15m PKA + 15m Rehat sudah genap 30m dalam julat 10:00-10:30)
-                statusPKASemasa[`${pfx}_t${t}`] = (aktif && !hariAdaRehat[pfx]) ? 15 : 0;
+                if (!aktif) {
+                    statusPKASemasa[`${pfx}_t${t}`] = 0;
+                } else if (!hariAdaRehat[pfx]) {
+                    statusPKASemasa[`${pfx}_t${t}`] = 15;
+                } else {
+                    statusPKASemasa[`${pfx}_t${t}`] = (tempohRehatPKASemasa === 30) ? 15 : 0;
+                }
             }
         });
 
@@ -9989,12 +10172,20 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
 
             renderSubjekFasa1();
 
+            const adalahTukarRehatPKA = String(infoTrigger || '').startsWith('REHAT_PKA:');
+            const mesejBersihTrigger = adalahTukarRehatPKA ? String(infoTrigger).replace('REHAT_PKA:', '') : infoTrigger;
+
             if (senaraiTahunBerubah.size > 0) {
                 const teksTahun = Array.from(senaraiTahunBerubah).join(', ');
-                const teksAksi = deltaTerakhir > 0 ? 'diaktifkan (PKA diselaraskan ke Peruntukan Subjek, Rehat & Jadual Matriks)' : 'dinyahaktifkan (PKA dikeluarkan & Jadual Matriks diselaraskan)';
-                showToast(`Auto-Selaras PKA: ${teksTahun} telah ${teksAksi}.`, 'success');
-            } else if (infoTrigger) {
-                showToast(infoTrigger, 'success');
+                if (adalahTukarRehatPKA) {
+                    const arahWaktu = deltaTerakhir > 0 ? 'ditambah +15 minit' : 'dikurangkan -15 minit';
+                    showToast(`Auto-Anjak Rehat PKA (${tempohRehatPKASemasa}m): Waktu balik ${teksTahun} telah ${arahWaktu}.`, 'success');
+                } else {
+                    const teksAksi = deltaTerakhir > 0 ? 'diaktifkan (PKA diselaraskan ke Peruntukan Subjek, Rehat & Jadual Matriks)' : 'dinyahaktifkan (PKA dikeluarkan & Jadual Matriks diselaraskan)';
+                    showToast(`Auto-Selaras PKA: ${teksTahun} telah ${teksAksi}.`, 'success');
+                }
+            } else if (mesejBersihTrigger) {
+                showToast(mesejBersihTrigger, 'success');
             }
         }
     }
@@ -10016,8 +10207,9 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                 }
             }
         }
+        const mRehatPKA = (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15;
         const statusTeks = (cb && cb.checked)
-            ? `Tahun ${tahunStr} diaktifkan untuk PKA (Rehat Tahun ${tahunStr}: 15m + PKA: 15m; Tahun lain Rehat: 30m).`
+            ? `Tahun ${tahunStr} diaktifkan untuk PKA (PKA: 15m + Rehat: ${mRehatPKA}m${mRehatPKA === 30 ? ' • Waktu balik +15m' : ''}).`
             : `Tahun ${tahunStr} dinyahaktifkan daripada PKA.`;
         selaraskanMatriksDanSubjekPKA(false, statusTeks);
     };
@@ -10050,7 +10242,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         selaraskanMatriksDanSubjekPKA(true);
     }, 550);
 
-  // Fungsi Matematik Mengira Jumlah Minit Bersih PdP Sehari (1 Masa = 30 Minit)
+    // Fungsi Matematik Mengira Jumlah Minit Bersih PdP Sehari (1 Masa = 30 Minit; Sokong Rehat PKA 15m & 30m)
     function kiraMinitBersihSlot(timeValId, tolakRehat, isJumaat = false) {
         let inputMasa = document.getElementById(timeValId);
         let timeStr = inputMasa ? inputMasa.value : "";
@@ -10067,35 +10259,29 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         let startMins = parseInt(mulaParts[0]) * 60 + parseInt(mulaParts[1]); 
         
         let diff = endMins - startMins;
+
+        const padananId = timeValId.match(/^waktu-(isn|sel|rab|kha|jum)-t([1-6])$/);
+        const aktifPKAHariIni = padananId ? adalahPKAAktifPadaHari(parseInt(padananId[2], 10), padananId[1]) : false;
         
         if (tolakRehat) { 
-            let rMula = '10:00'; let rTamat = '10:15';
-            if (isJumaat) {
-                rMula = (document.getElementById('waktu-rehat-jum-mula') && document.getElementById('waktu-rehat-jum-mula').value) ? document.getElementById('waktu-rehat-jum-mula').value : '10:00';
-                rTamat = (document.getElementById('waktu-rehat-jum-tamat') && document.getElementById('waktu-rehat-jum-tamat').value) ? document.getElementById('waktu-rehat-jum-tamat').value : '10:15';
+            if (aktifPKAHariIni) {
+                // Tolak tempoh rehat sebenar bagi tahun aktif PKA pada hari ini (15 minit atau 30 minit mengikut pilihan)
+                const tempohRehatPKA = (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15;
+                diff -= tempohRehatPKA;
             } else {
-                rMula = (document.getElementById('waktu-rehat-mula') && document.getElementById('waktu-rehat-mula').value) ? document.getElementById('waktu-rehat-mula').value : '10:00';
-                rTamat = (document.getElementById('waktu-rehat-tamat') && document.getElementById('waktu-rehat-tamat').value) ? document.getElementById('waktu-rehat-tamat').value : '10:15';
-            }
-            let rm = parseInt(rMula.split(':')[0]) * 60 + parseInt(rMula.split(':')[1]);
-            let rt = parseInt(rTamat.split(':')[0]) * 60 + parseInt(rTamat.split(':')[1]);
-            
-            // Tolak masa rehat mengikut tempoh rehat yang ditetapkan pada hari tersebut
-            // (Bagi Tahap 1 yang aktif PKA pada hari ada rehat, 15m PKA + 15m Rehat sudah terkandung dalam 30m rTamat - rMula)
-            if (rt > rm) {
-                diff -= (rt - rm);
-            }
-        }
-
-        // Bagi kelas yang aktif PKA pada hari tersebut:
-        // - Pada hari ADA rehat (tempoh rehat penuh 30m): kelas PKA hanya berehat 15m (manakala 15m lagi ialah PdP subjek PKA), jadi pulangkan +15m kepada diff.
-        // - Pada hari TIADA rehat (seperti Jumaat): 15m PKA dikekalkan dalam diff supaya dikira sebagai 0.5 masa Kapasiti Masa.
-        const padananId = timeValId.match(/^waktu-(isn|sel|rab|kha|jum)-t([1-6])$/);
-        if (padananId) {
-            const pfxHari = padananId[1];
-            const noTahun = parseInt(padananId[2], 10);
-            if (adalahPKAAktifPadaHari(noTahun, pfxHari)) {
-                if (tolakRehat) diff += 15;
+                let rMula = '10:00'; let rTamat = '10:15';
+                if (isJumaat) {
+                    rMula = (document.getElementById('waktu-rehat-jum-mula') && document.getElementById('waktu-rehat-jum-mula').value) ? document.getElementById('waktu-rehat-jum-mula').value : '10:00';
+                    rTamat = (document.getElementById('waktu-rehat-jum-tamat') && document.getElementById('waktu-rehat-jum-tamat').value) ? document.getElementById('waktu-rehat-jum-tamat').value : '10:15';
+                } else {
+                    rMula = (document.getElementById('waktu-rehat-mula') && document.getElementById('waktu-rehat-mula').value) ? document.getElementById('waktu-rehat-mula').value : '10:00';
+                    rTamat = (document.getElementById('waktu-rehat-tamat') && document.getElementById('waktu-rehat-tamat').value) ? document.getElementById('waktu-rehat-tamat').value : '10:15';
+                }
+                let rm = parseInt(rMula.split(':')[0]) * 60 + parseInt(rMula.split(':')[1]);
+                let rt = parseInt(rTamat.split(':')[0]) * 60 + parseInt(rTamat.split(':')[1]);
+                if (rt > rm) {
+                    diff -= (rt - rm);
+                }
             }
         }
         
@@ -10340,9 +10526,8 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
            'KHAMIS': document.getElementById('rehat-khamis') ? document.getElementById('rehat-khamis').checked : true,
            'JUMAAT': document.getElementById('rehat-jumaat') ? document.getElementById('rehat-jumaat').checked : false
         };
-        const getLimitLocal = (kelas, hariStr) => {
-           let t = 't1';
-           if (kelas.includes('1 ')) t = 't1'; else if (kelas.includes('2 ')) t = 't2'; else if (kelas.includes('3 ')) t = 't3'; else if (kelas.includes('4 ')) t = 't4'; else if (kelas.includes('5 ')) t = 't5'; else if (kelas.includes('6 ')) t = 't6';
+       const getLimitLocal = (kelas, hariStr) => {
+           let t = 't' + ((typeof window.dapatkanNoTahunKelasGlobal === 'function') ? window.dapatkanNoTahunKelasGlobal(kelas) : 1);
            let h = hariStr === 'ISNIN' ? 'isn' : (hariStr === 'SELASA' ? 'sel' : (hariStr === 'RABU' ? 'rab' : (hariStr === 'KHAMIS' ? 'kha' : 'jum')));
            return kiraMaxSlotDinamik(`waktu-${h}-${t}`, hariAdaRehat[hariStr], hariStr === 'JUMAAT');
         };
@@ -10405,17 +10590,31 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                 let masaHariIni = 0;
                 let masaTasmikHariIni = 0;
 
-                const hariPerhHC = document.getElementById('tetapan-perhimpunan') ? document.getElementById('tetapan-perhimpunan').value : 'RABU';
+               const hariPerhHC = document.getElementById('tetapan-perhimpunan') ? document.getElementById('tetapan-perhimpunan').value : 'RABU';
+                const tempohRehatPKAHC = (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15;
+                const adaSebarangPKAHC = [1, 2, 3, 4, 5, 6].some(t => document.getElementById(`pka-t${t}`) && document.getElementById(`pka-t${t}`).checked) ||
+                    f2_senaraiKelasUnik.some(kL => senaraiHari.some(hL => f2_jadualSediaAda[kL] && f2_jadualSediaAda[kL][hL] && f2_jadualSediaAda[kL][hL][14]));
+                const dapatkanDurasiRehatNonPKAHC = (hariStr) => {
+                    if (adaSebarangPKAHC) return 30;
+                    const idM = (hariStr === 'JUMAAT') ? 'waktu-rehat-jum-mula' : 'waktu-rehat-mula';
+                    const idT = (hariStr === 'JUMAAT') ? 'waktu-rehat-jum-tamat' : 'waktu-rehat-tamat';
+                    const sM = document.getElementById(idM) ? document.getElementById(idM).value : '10:00';
+                    const sT = document.getElementById(idT) ? document.getElementById(idT).value : '10:15';
+                    const [h1, m1] = sM.split(':').map(Number);
+                    const [h2, m2] = sT.split(':').map(Number);
+                    const beza = (h2 * 60 + m2) - (h1 * 60 + m1);
+                    return (!isNaN(beza) && beza > 0) ? beza : 15;
+                };
                 const dapatkanJulatSlotHC = (namaKls, hariStr, sIdx) => {
-                    let mThn = String(namaKls || '').match(/([1-6])/);
-                    let noThn = mThn ? parseInt(mThn[1], 10) : 1;
+                    let noThn = (typeof window.dapatkanNoTahunKelasGlobal === 'function') ? window.dapatkanNoTahunKelasGlobal(namaKls) : 1;
                     let isT1 = (noThn <= 2);
                     let pkaSl = (f2_jadualSediaAda[namaKls] && f2_jadualSediaAda[namaKls][hariStr]) ? f2_jadualSediaAda[namaKls][hariStr][14] : null;
-                    let aktifPKA = (pkaSl && pkaSl.subjek === 'PKA') || (adalahPKAAktifPadaHari(noThn, hariStr) && (isT1 || hariStr !== hariPerhHC));
+                    let aktifPKA = Boolean((pkaSl && pkaSl.subjek === 'PKA') || (adalahPKAAktifPadaHari(noThn, hariStr) && (isT1 || hariStr !== hariPerhHC)));
                     let isPKAT23 = !isT1 && aktifPKA && (hariStr !== hariPerhHC);
                     if (hariAdaRehat[hariStr]) {
                         if (sIdx < rehatIdx) return isPKAT23 ? [15 + sIdx * 30, 45 + sIdx * 30] : [sIdx * 30, (sIdx + 1) * 30];
-                        return [rehatIdx * 30 + 30 + (sIdx - rehatIdx) * 30, rehatIdx * 30 + 60 + (sIdx - rehatIdx) * 30];
+                        let mulaPetangHC = aktifPKA ? (rehatIdx * 30 + 15 + tempohRehatPKAHC) : (rehatIdx * 30 + dapatkanDurasiRehatNonPKAHC(hariStr));
+                        return [mulaPetangHC + (sIdx - rehatIdx) * 30, mulaPetangHC + (sIdx - rehatIdx + 1) * 30];
                     }
                     return isPKAT23 ? [15 + sIdx * 30, 45 + sIdx * 30] : [sIdx * 30, (sIdx + 1) * 30];
                 };
@@ -11180,19 +11379,28 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
            document.body.appendChild(modalDiv); return; 
        }
 
-      // Fungsi Pengira Julat Masa Sebenar [mulaMinit, tamatMinit] Dari Waktu Mula Sekolah (Termasuk Anjakan +15m PKA)
-      window.dapatkanJulatMinitSlotFasa2 = (namaKelas, hariStr, slotIdx) => {
-           let noThn = 1;
-           if (namaKelas.includes('2 ')) noThn = 2;
-           else if (namaKelas.includes('3 ')) noThn = 3;
-           else if (namaKelas.includes('4 ')) noThn = 4;
-           else if (namaKelas.includes('5 ')) noThn = 5;
-           else if (namaKelas.includes('6 ')) noThn = 6;
+     const tempohRehatPKAF2 = (typeof window.dapatkanTempohRehatPKA === 'function') ? window.dapatkanTempohRehatPKA() : 15;
+      const adaSebarangPKAF2 = [1, 2, 3, 4, 5, 6].some(t => document.getElementById(`pka-t${t}`) && document.getElementById(`pka-t${t}`).checked) ||
+          tugasSelepasGabung.some(t => t.subjek === 'PKA' && (parseFloat(t.waktu) || 0) > 0);
+      const dapatkanDurasiRehatNonPKAF2 = (hariStr) => {
+          if (adaSebarangPKAF2) return 30;
+          const idM = (hariStr === 'JUMAAT') ? 'waktu-rehat-jum-mula' : 'waktu-rehat-mula';
+          const idT = (hariStr === 'JUMAAT') ? 'waktu-rehat-jum-tamat' : 'waktu-rehat-tamat';
+          const sM = document.getElementById(idM) ? document.getElementById(idM).value : '10:00';
+          const sT = document.getElementById(idT) ? document.getElementById(idT).value : '10:15';
+          const [h1, m1] = sM.split(':').map(Number);
+          const [h2, m2] = sT.split(':').map(Number);
+          const beza = (h2 * 60 + m2) - (h1 * 60 + m1);
+          return (!isNaN(beza) && beza > 0) ? beza : 15;
+      };
 
+      // Fungsi Pengira Julat Masa Sebenar [mulaMinit, tamatMinit] Dari Waktu Mula Sekolah (Sokong Rehat PKA 15m & 30m)
+      window.dapatkanJulatMinitSlotFasa2 = (namaKelas, hariStr, slotIdx) => {
+           const noThn = (typeof window.dapatkanNoTahunKelasGlobal === 'function') ? window.dapatkanNoTahunKelasGlobal(namaKelas) : 1;
            const isT1 = (noThn <= 2);
            const adaRehat = hariAdaRehat[hariStr];
            const pkaSlot = (f2_jadualSediaAda[namaKelas] && f2_jadualSediaAda[namaKelas][hariStr]) ? f2_jadualSediaAda[namaKelas][hariStr][14] : null;
-           const aktifPKA = (pkaSlot && pkaSlot.subjek === 'PKA') || (adalahPKAAktifPadaHari(noThn, hariStr) && (isT1 || hariStr !== hariPerhimpunan));
+           const aktifPKA = Boolean((pkaSlot && pkaSlot.subjek === 'PKA') || (adalahPKAAktifPadaHari(noThn, hariStr) && (isT1 || hariStr !== hariPerhimpunan)));
            const isPKAT1 = isT1 && aktifPKA;
            const isPKAT23 = !isT1 && aktifPKA && (hariStr !== hariPerhimpunan);
            const limitPdP = getLimit(namaKelas, hariStr);
@@ -11201,7 +11409,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                if (!aktifPKA) return null;
                if (isPKAT23) return [0, 15]; // 07:30 - 07:45
                if (adaRehat) return [rehatIndex * 30, rehatIndex * 30 + 15]; // 10:00 - 10:15
-               return [limitPdP * 30, limitPdP * 30 + 15]; // 10:30 - 10:45 (Jumaat Tanpa Rehat)
+               return [limitPdP * 30, limitPdP * 30 + 15]; // Jumaat Tanpa Rehat
            }
 
            if (adaRehat) {
@@ -11209,8 +11417,11 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                    if (isPKAT23) return [15 + slotIdx * 30, 45 + slotIdx * 30]; // 07:45 - 10:15
                    return [slotIdx * 30, (slotIdx + 1) * 30]; // 07:30 - 10:00
                }
-               // Selepas waktu rehat (10:30 ke atas), semua kelas berjalan serentak tanpa anjakan
-               return [rehatIndex * 30 + 30 + (slotIdx - rehatIndex) * 30, rehatIndex * 30 + 60 + (slotIdx - rehatIndex) * 30];
+               // Selepas waktu rehat: Kelas aktif PKA bermula pada (rehatIndex*30 + 15 + tempohRehatPKA), kelas tanpa PKA ikut durasi rehat biasa
+               const mulaPetang = aktifPKA
+                   ? (rehatIndex * 30 + 15 + tempohRehatPKAF2)
+                   : (rehatIndex * 30 + dapatkanDurasiRehatNonPKAF2(hariStr));
+               return [mulaPetang + (slotIdx - rehatIndex) * 30, mulaPetang + (slotIdx - rehatIndex + 1) * 30];
            } else {
                if (isPKAT23) {
                    return [15 + slotIdx * 30, 45 + slotIdx * 30];
@@ -12667,13 +12878,17 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
            });
 
            let petaKelasBalikAwal = {};
+           let petaKelasAdaSebarangPKA = {};
            f2_senaraiKelasUnik.forEach(kls => {
                petaKapasitiKelasGlobal[kls] = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].reduce((jum, h) => jum + getLimit(kls, h), 0);
                petaKelasBalikAwal[kls] = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS'].some(h => getLimit(kls, h) < (maksLimitHarianGlobal[h] || 0));
-               let isT1Kls = String(kls).trim().startsWith('1') || String(kls).trim().startsWith('2');
-               let noThnKls = parseInt(kls, 10) || (isT1Kls ? 1 : 3);
+               let noThnKls = (typeof window.dapatkanNoTahunKelasGlobal === 'function') ? window.dapatkanNoTahunKelasGlobal(kls) : 1;
+               let isT1Kls = (noThnKls <= 2);
                petaKelasPKAT23[kls] = !isT1Kls && ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].some(h =>
                    h !== hariPerhimpunan && ((f2_jadualSediaAda[kls][h] && f2_jadualSediaAda[kls][h][14] !== null) || adalahPKAAktifPadaHari(noThnKls, h))
+               );
+               petaKelasAdaSebarangPKA[kls] = ['ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT'].some(h =>
+                   (f2_jadualSediaAda[kls][h] && f2_jadualSediaAda[kls][h][14] !== null) || (adalahPKAAktifPadaHari(noThnKls, h) && (isT1Kls || h !== hariPerhimpunan))
                );
            });
 
@@ -12686,6 +12901,8 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
 
            let setGuruAdaT23PKA = {};
            let setGuruAdaTanpaT23PKA = {};
+           let setGuruPetangPKA30 = {};
+           let setGuruPetangBiasa1030 = {};
            tugasSelepasGabung.forEach(t => {
                if ((parseFloat(t.waktu) || 0) <= 0 || t.subjek === "TSMK") return;
                let wPenuh = parseFloat(t.waktu) || 0;
@@ -12696,11 +12913,18 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                    }
                    if (petaKelasPKAT23[t.kelas]) setGuruAdaT23PKA[kodG] = true;
                    else setGuruAdaTanpaT23PKA[kodG] = true;
+
+                   if (petaKelasAdaSebarangPKA[t.kelas]) setGuruPetangPKA30[kodG] = true;
+                   if (!petaKelasAdaSebarangPKA[t.kelas] || (petaKelasPKAT23[t.kelas] && hariAdaRehat[hariPerhimpunan])) {
+                       setGuruPetangBiasa1030[kodG] = true;
+                   }
                });
            });
            let petaGuruRentasAnjakanPKA = {};
+           let petaGuruRentasPetangPKA30 = {};
            Object.keys(petaBebanGuruGlobal).forEach(kodG => {
                petaGuruRentasAnjakanPKA[kodG] = Boolean(setGuruAdaT23PKA[kodG] && setGuruAdaTanpaT23PKA[kodG]);
+               petaGuruRentasPetangPKA30[kodG] = (tempohRehatPKAF2 === 30) && Boolean(setGuruPetangPKA30[kodG] && setGuruPetangBiasa1030[kodG]);
            });
 
            let senaraiTugasSusunGlobal = tugasSemasa.filter(t => t.waktu > 0 && t.subjek !== "PKA" && t.subjek !== "TSMK");
@@ -13107,7 +13331,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                        }
                                    }
 
-                                   // Penyelarasan guru merentas Tahap 1 & Tahap 2/3 (+15m PKA) jika PKA Tahap 2/3 aktif
+                                  // Penyelarasan guru merentas Tahap 1 & Tahap 2/3 (+15m PKA) jika PKA Tahap 2/3 aktif
                                    if (senaraiG.some(g => petaGuruRentasAnjakanPKA[g]) && hariStr !== hariPerhimpunan) {
                                        if (!petaKelasPKAT23[kelas]) {
                                            if (sMula < rehatIndex && (sMula === 1 || sMula === 2)) skor += 6;
@@ -13120,6 +13344,11 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                                            if (sMula === 1) skor += 6;
                                            else if (sMula === 2) skor += 2;
                                        }
+                                   }
+
+                                   // Penyelarasan petang apabila Rehat Tahun Ada PKA = 30 minit (elak blok 2-masa tergantung di tengah zon petang beranjak)
+                                   if (hariAdaRehat[hariStr] && sMula >= rehatIndex && senaraiG.some(g => petaGuruRentasPetangPKA30[g])) {
+                                       if (sMula > rehatIndex && (sMula + chunkSize) < zEnd) skor += 4;
                                    }
                                }
                                return skor;
@@ -15100,14 +15329,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
         };
 
        const getLimit = (kelas, hariStr) => {
-           let t = 't1';
-           if (kelas.includes('1 ')) t = 't1';
-           else if (kelas.includes('2 ')) t = 't2';
-           else if (kelas.includes('3 ')) t = 't3';
-           else if (kelas.includes('4 ')) t = 't4';
-           else if (kelas.includes('5 ')) t = 't5';
-           else if (kelas.includes('6 ')) t = 't6';
-           
+           let t = 't' + ((typeof window.dapatkanNoTahunKelasGlobal === 'function') ? window.dapatkanNoTahunKelasGlobal(kelas) : 1);
            let h = hariStr === 'ISNIN' ? 'isn' : (hariStr === 'SELASA' ? 'sel' : (hariStr === 'RABU' ? 'rab' : (hariStr === 'KHAMIS' ? 'kha' : 'jum')));
            return kiraMaxSlotDinamik(`waktu-${h}-${t}`, hariAdaRehat[hariStr], hariStr === 'JUMAAT');
         };
