@@ -818,87 +818,132 @@
       <!-- STRUKTUR BAHARU: 3 TINGKAT MODULAR -->
       <div class="flex flex-col gap-6">
        
-      <!-- TINGKAT 1: TETAPAN ASAS (PERHIMPUNAN/TASMIK, KAD PJ & REHAT) -->
-       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-           <!-- Kolum Kiri: Perhimpunan & Tasmik -->
-           <div class="flex flex-col gap-4">
-                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-sm h-full flex flex-col justify-between">
-                 <div>
-                  <h3 class="text-xs font-extrabold text-indigo-900 mb-3 uppercase tracking-widest border-b border-indigo-200 pb-2"><i class="fa-solid fa-bullhorn text-indigo-500 mr-1.5"></i> Waktu Perhimpunan</h3>
-                  <div class="flex justify-between items-center font-bold mb-3">
-                   <span class="text-xs text-indigo-800">Hari Perhimpunan:</span>
-                   <select id="tetapan-perhimpunan" onchange="kawalHariPerhimpunanPKA()" class="border border-indigo-200 rounded p-1 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-400 text-indigo-700 bg-white shadow-sm cursor-pointer">
-                     <option value="ISNIN">Hari Isnin</option>
-                     <option value="SELASA">Hari Selasa</option>
-                     <option value="RABU" selected>Hari Rabu</option>
-                     <option value="KHAMIS">Hari Khamis</option>
-                     <option value="JUMAAT">Hari Jumaat</option>
-                   </select>
-                  </div>
-                 </div>
-                 <input type="hidden" id="waktu-perhimpunan-tamat" value="08:00">
-                 <div id="info-waktu-perhimpunan-pintar" class="bg-white/90 p-2.5 rounded-lg border border-indigo-200/80 text-[10px] font-bold text-indigo-900 leading-snug shadow-sm">
-                  <div class="flex items-center justify-between gap-1 border-b border-indigo-100 pb-1 mb-1">
-                   <span class="font-black text-indigo-800"><i class="fa-solid fa-clock text-indigo-500 mr-1"></i>Masa Auto: <span id="label-masa-perhimpunan-auto" class="text-indigo-700">07:30 – 08:00</span></span>
-                   <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-[8px] font-black uppercase shrink-0">1 Masa (30m)</span>
-                  </div>
-                  <p class="text-[9.5px] font-bold text-gray-600 leading-relaxed"><i class="fa-solid fa-circle-info text-indigo-500 mr-1"></i>Perhimpunan dijalankan selama <span class="text-indigo-800 font-black">30 minit sahaja (1 masa)</span> pada <span class="text-indigo-800 font-black">1 hari dalam seminggu</span> (mula automatik ikut Waktu Mula Sekolah).</p>
-                 </div>
-                </div>
-
-                <div class="bg-emerald-50/80 p-4 rounded-xl border border-emerald-200 shadow-sm h-full">
-                 <h3 class="text-xs font-black text-emerald-900 mb-3 uppercase tracking-widest flex items-center gap-2 border-b border-emerald-200 pb-2"><i class="fa-solid fa-mosque text-emerald-600"></i> Mod Tasmik (Lanjutan)</h3>
-                 <p class="text-[10px] font-bold text-gray-600 mb-3 leading-relaxed">Pilih hari untuk kelas Tasmik (Waktu Tambahan 1 Jam akan auto-buka di hujung waktu).</p>
-                 <div class="grid grid-cols-3 gap-2 text-[11px] font-bold text-emerald-900">
-                    <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-50 transition-all"><input type="checkbox" id="tasmik-isnin" onchange="hadkanTasmik()" class="w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500 shrink-0"> Isnin</label>
-                    <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-50 transition-all"><input type="checkbox" id="tasmik-selasa" onchange="hadkanTasmik()" class="w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500 shrink-0"> Selasa</label>
-                    <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-50 transition-all"><input type="checkbox" id="tasmik-rabu" onchange="hadkanTasmik()" class="w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500 shrink-0"> Rabu</label>
-                    <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-50 transition-all"><input type="checkbox" id="tasmik-khamis" onchange="hadkanTasmik()" class="w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500 shrink-0"> Khamis</label>
-                    <label class="flex items-center gap-1.5 bg-emerald-100 p-1.5 rounded-lg border border-emerald-300 shadow-sm cursor-pointer hover:bg-emerald-200 transition-all"><input type="checkbox" id="tasmik-jumaat" onchange="hadkanTasmik()" class="w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500 shrink-0" checked> Jumaat</label>
-                 </div>
-                </div>
-           </div>
-
-          <!-- Kolum Tengah: Kad Baharu Subjek Pembentukan Karakter (PKA) -->
-           <div class="bg-purple-50/90 p-4 rounded-xl border border-purple-200 shadow-sm h-full flex flex-col justify-between transition-all">
-               <div>
-                   <h3 class="text-xs font-black text-purple-900 mb-2 uppercase tracking-widest flex items-center gap-2 border-b border-purple-200 pb-2"><i class="fa-solid fa-seedling text-purple-600"></i> Subjek Pembentukan Karakter (PKA)</h3>
-                   <p class="text-[10px] font-bold text-gray-600 mb-3 leading-relaxed">Aktifkan mengikut tahun (<span class="text-purple-700 font-black">15 minit / sesi</span>). Sistem akan <span class="text-purple-700 font-black">auto-selaras</span> Peruntukan Subjek, Rehat &amp; Jadual Matriks.</p>
-
-                   <!-- Bahagian Tahap 1 (Tahun 1 & Tahun 2) -->
-                   <div class="bg-white/90 p-2.5 rounded-lg border border-purple-200 mb-3 shadow-sm">
-                       <div class="flex items-center justify-between border-b border-purple-100 pb-1.5 mb-2">
-                           <span class="text-[10px] font-black text-purple-900 uppercase tracking-wider">Tahap 1 (2.5 Masa / 5 Hari)</span>
-                           <span class="text-[9px] font-extrabold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Sebelum Rehat</span>
+     <!-- TINGKAT 1: TETAPAN ASAS (PERHIMPUNAN/TASMIK, PKA, TETAPAN KELAS MELINTANG, KAD PJ & REHAT) -->
+       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+           <!-- Gabungan Kolum Kiri & Tengah (Atas: Perhimpunan/Tasmik + PKA | Bawah Melintang: Kadboard Tetapan Kelas) -->
+           <div class="lg:col-span-2 flex flex-col gap-3.5 h-full justify-between">
+               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                   <!-- Sub-Kolum Kiri: Waktu Perhimpunan & Mod Tasmik (Dipadatkan) -->
+                   <div class="flex flex-col gap-3 h-full">
+                       <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 shadow-sm flex flex-col justify-between">
+                        <div>
+                         <h3 class="text-[11px] font-extrabold text-indigo-900 mb-2 uppercase tracking-widest border-b border-indigo-200 pb-1.5"><i class="fa-solid fa-bullhorn text-indigo-500 mr-1.5"></i> Waktu Perhimpunan</h3>
+                         <div class="flex justify-between items-center font-bold mb-2">
+                          <span class="text-[11px] text-indigo-800">Hari Perhimpunan:</span>
+                          <select id="tetapan-perhimpunan" onchange="kawalHariPerhimpunanPKA()" class="border border-indigo-200 rounded px-2 py-1 text-[11px] font-bold outline-none focus:ring-2 focus:ring-indigo-400 text-indigo-700 bg-white shadow-sm cursor-pointer">
+                            <option value="ISNIN">Hari Isnin</option>
+                            <option value="SELASA">Hari Selasa</option>
+                            <option value="RABU" selected>Hari Rabu</option>
+                            <option value="KHAMIS">Hari Khamis</option>
+                            <option value="JUMAAT">Hari Jumaat</option>
+                          </select>
+                         </div>
+                        </div>
+                        <input type="hidden" id="waktu-perhimpunan-tamat" value="08:00">
+                        <div id="info-waktu-perhimpunan-pintar" class="bg-white/90 p-2 rounded-lg border border-indigo-200/80 text-[9.5px] font-bold text-indigo-900 leading-snug shadow-sm">
+                         <div class="flex items-center justify-between gap-1 border-b border-indigo-100 pb-1 mb-1">
+                          <span class="font-black text-indigo-800"><i class="fa-solid fa-clock text-indigo-500 mr-1"></i>Masa Auto: <span id="label-masa-perhimpunan-auto" class="text-indigo-700">07:30 – 08:00</span></span>
+                          <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-[8px] font-black uppercase shrink-0">1 Masa (30m)</span>
+                         </div>
+                         <p class="text-[9px] font-bold text-gray-600 leading-tight"><i class="fa-solid fa-circle-info text-indigo-500 mr-1"></i>Dijalankan <span class="text-indigo-800 font-black">30 minit (1 masa)</span> pada <span class="text-indigo-800 font-black">1 hari seminggu</span> ikut Waktu Mula Sekolah.</p>
+                        </div>
                        </div>
-                       <div class="grid grid-cols-2 gap-2 text-[11px] font-bold text-purple-900 mb-2">
-                           <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-purple-100 shadow-sm cursor-pointer hover:bg-purple-50 transition-all"><input type="checkbox" id="pka-t1" onchange="kawalTetapanPKA('1')" class="w-3.5 h-3.5 text-purple-600 rounded focus:ring-purple-500 shrink-0"> Tahun 1</label>
-                           <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-purple-100 shadow-sm cursor-pointer hover:bg-purple-50 transition-all"><input type="checkbox" id="pka-t2" onchange="kawalTetapanPKA('2')" class="w-3.5 h-3.5 text-purple-600 rounded focus:ring-purple-500 shrink-0"> Tahun 2</label>
+
+                       <div class="bg-emerald-50/80 p-3 rounded-xl border border-emerald-200 shadow-sm flex-1 flex flex-col justify-between">
+                        <div>
+                         <h3 class="text-[11px] font-black text-emerald-900 mb-1.5 uppercase tracking-widest flex items-center gap-1.5 border-b border-emerald-200 pb-1.5"><i class="fa-solid fa-mosque text-emerald-600"></i> Mod Tasmik (Lanjutan)</h3>
+                         <p class="text-[9.5px] font-bold text-gray-600 mb-2 leading-snug">Pilih hari kelas Tasmik (Waktu Tambahan 1 Jam auto-buka di hujung waktu).</p>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1.5 text-[10.5px] font-bold text-emerald-900">
+                           <label class="flex items-center gap-1 bg-white p-1.5 rounded-lg border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-50 transition-all"><input type="checkbox" id="tasmik-isnin" onchange="hadkanTasmik()" class="w-3 h-3 text-emerald-600 rounded focus:ring-emerald-500 shrink-0"> Isnin</label>
+                           <label class="flex items-center gap-1 bg-white p-1.5 rounded-lg border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-50 transition-all"><input type="checkbox" id="tasmik-selasa" onchange="hadkanTasmik()" class="w-3 h-3 text-emerald-600 rounded focus:ring-emerald-500 shrink-0"> Selasa</label>
+                           <label class="flex items-center gap-1 bg-white p-1.5 rounded-lg border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-50 transition-all"><input type="checkbox" id="tasmik-rabu" onchange="hadkanTasmik()" class="w-3 h-3 text-emerald-600 rounded focus:ring-emerald-500 shrink-0"> Rabu</label>
+                           <label class="flex items-center gap-1 bg-white p-1.5 rounded-lg border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-50 transition-all"><input type="checkbox" id="tasmik-khamis" onchange="hadkanTasmik()" class="w-3 h-3 text-emerald-600 rounded focus:ring-emerald-500 shrink-0"> Khamis</label>
+                           <label class="flex items-center gap-1 bg-emerald-100 p-1.5 rounded-lg border border-emerald-300 shadow-sm cursor-pointer hover:bg-emerald-200 transition-all"><input type="checkbox" id="tasmik-jumaat" onchange="hadkanTasmik()" class="w-3 h-3 text-emerald-600 rounded focus:ring-emerald-500 shrink-0" checked> Jumaat</label>
+                        </div>
                        </div>
-                       <p class="text-[9px] font-bold text-purple-700 leading-tight"><i class="fa-solid fa-clock mr-1"></i>Wajib 5 hari sebelum Rehat (15m PKA + 15m Rehat; tahun lain Rehat 30m supaya masa selepas rehat selaras).</p>
                    </div>
 
-                   <!-- Bahagian Tahap 2 & Tahap 3 (Tahun 3, 4, 5 & 6) -->
-                   <div class="bg-white/90 p-2.5 rounded-lg border border-indigo-200 shadow-sm">
-                       <div class="flex items-center justify-between border-b border-indigo-100 pb-1.5 mb-2">
-                           <span class="text-[10px] font-black text-indigo-900 uppercase tracking-wider">Tahap 2 &amp; 3 (2 Masa / 4 Hari)</span>
-                           <span class="text-[9px] font-extrabold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">Waktu Pertama</span>
+                   <!-- Sub-Kolum Tengah: Kad Subjek Pembentukan Karakter (PKA) (Dipadatkan Ruang Bawah) -->
+                   <div class="bg-purple-50/90 p-3 rounded-xl border border-purple-200 shadow-sm h-full flex flex-col justify-between transition-all">
+                       <div>
+                           <h3 class="text-[11px] font-black text-purple-900 mb-1.5 uppercase tracking-widest flex items-center gap-1.5 border-b border-purple-200 pb-1.5"><i class="fa-solid fa-seedling text-purple-600"></i> Subjek Pembentukan Karakter (PKA)</h3>
+                           <p class="text-[9.5px] font-bold text-gray-600 mb-2 leading-snug">Aktifkan ikut tahun (<span class="text-purple-700 font-black">15m / sesi</span>). Sistem <span class="text-purple-700 font-black">auto-selaras</span> Subjek, Rehat &amp; Matriks.</p>
+
+                           <!-- Bahagian Tahap 1 (Tahun 1 & Tahun 2) -->
+                           <div class="bg-white/90 p-2 rounded-lg border border-purple-200 mb-2 shadow-sm">
+                               <div class="flex items-center justify-between border-b border-purple-100 pb-1 mb-1.5">
+                                   <span class="text-[9.5px] font-black text-purple-900 uppercase tracking-wider">Tahap 1 (2.5 Masa / 5 Hari)</span>
+                                   <span class="text-[8.5px] font-extrabold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Sebelum Rehat</span>
+                               </div>
+                               <div class="grid grid-cols-2 gap-1.5 text-[10.5px] font-bold text-purple-900 mb-1.5">
+                                   <label class="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-purple-100 shadow-sm cursor-pointer hover:bg-purple-50 transition-all"><input type="checkbox" id="pka-t1" onchange="kawalTetapanPKA('1')" class="w-3 h-3 text-purple-600 rounded focus:ring-purple-500 shrink-0"> Tahun 1</label>
+                                   <label class="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-purple-100 shadow-sm cursor-pointer hover:bg-purple-50 transition-all"><input type="checkbox" id="pka-t2" onchange="kawalTetapanPKA('2')" class="w-3 h-3 text-purple-600 rounded focus:ring-purple-500 shrink-0"> Tahun 2</label>
+                               </div>
+                               <p class="text-[8.5px] font-bold text-purple-700 leading-tight"><i class="fa-solid fa-clock mr-1"></i>5 hari sebelum Rehat (15m PKA + 15m Rehat; tahun lain Rehat 30m).</p>
+                           </div>
+
+                           <!-- Bahagian Tahap 2 & Tahap 3 (Tahun 3, 4, 5 & 6) -->
+                           <div class="bg-white/90 p-2 rounded-lg border border-indigo-200 shadow-sm">
+                               <div class="flex items-center justify-between border-b border-indigo-100 pb-1 mb-1.5">
+                                   <span class="text-[9.5px] font-black text-indigo-900 uppercase tracking-wider">Tahap 2 &amp; 3 (2 Masa / 4 Hari)</span>
+                                   <span class="text-[8.5px] font-extrabold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">Waktu Pertama</span>
+                               </div>
+                               <div class="grid grid-cols-2 gap-1.5 text-[10.5px] font-bold text-indigo-900 mb-1.5">
+                                   <label class="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-indigo-100 shadow-sm cursor-pointer hover:bg-indigo-50 transition-all"><input type="checkbox" id="pka-t3" onchange="kawalTetapanPKA('3')" class="w-3 h-3 text-indigo-600 rounded focus:ring-indigo-500 shrink-0"> Tahun 3</label>
+                                   <label class="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-indigo-100 shadow-sm cursor-pointer hover:bg-indigo-50 transition-all"><input type="checkbox" id="pka-t4" onchange="kawalTetapanPKA('4')" class="w-3 h-3 text-indigo-600 rounded focus:ring-indigo-500 shrink-0"> Tahun 4</label>
+                                   <label class="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-indigo-100 shadow-sm cursor-pointer hover:bg-indigo-50 transition-all"><input type="checkbox" id="pka-t5" onchange="kawalTetapanPKA('5')" class="w-3 h-3 text-indigo-600 rounded focus:ring-indigo-500 shrink-0"> Tahun 5</label>
+                                   <label class="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-indigo-100 shadow-sm cursor-pointer hover:bg-indigo-50 transition-all"><input type="checkbox" id="pka-t6" onchange="kawalTetapanPKA('6')" class="w-3 h-3 text-indigo-600 rounded focus:ring-indigo-500 shrink-0"> Tahun 6</label>
+                               </div>
+                               <span class="block text-[8.5px] text-indigo-800 font-black uppercase tracking-wider mb-1 border-t border-indigo-100 pt-1">4 Hari Aktif (Kecuali Hari Perhimpunan):</span>
+                               <div class="grid grid-cols-3 gap-1 text-[9.5px] font-bold text-indigo-900 mb-1">
+                                   <label class="flex items-center gap-1 bg-indigo-50/70 p-1 rounded border border-indigo-200 cursor-pointer hover:bg-indigo-100 transition-all"><input type="checkbox" id="pka-hari-isnin" onchange="kawalHariPKATahap23(this)" checked class="w-3 h-3 text-indigo-600 rounded shrink-0"> Isnin</label>
+                                   <label class="flex items-center gap-1 bg-indigo-50/70 p-1 rounded border border-indigo-200 cursor-pointer hover:bg-indigo-100 transition-all"><input type="checkbox" id="pka-hari-selasa" onchange="kawalHariPKATahap23(this)" checked class="w-3 h-3 text-indigo-600 rounded shrink-0"> Selasa</label>
+                                   <label class="flex items-center gap-1 bg-gray-100 p-1 rounded border border-gray-200 opacity-50 cursor-not-allowed transition-all"><input type="checkbox" id="pka-hari-rabu" onchange="kawalHariPKATahap23(this)" disabled class="w-3 h-3 text-indigo-600 rounded shrink-0"> Rabu</label>
+                                   <label class="flex items-center gap-1 bg-indigo-50/70 p-1 rounded border border-indigo-200 cursor-pointer hover:bg-indigo-100 transition-all"><input type="checkbox" id="pka-hari-khamis" onchange="kawalHariPKATahap23(this)" checked class="w-3 h-3 text-indigo-600 rounded shrink-0"> Khamis</label>
+                                   <label class="flex items-center gap-1 bg-indigo-50/70 p-1 rounded border border-indigo-200 cursor-pointer hover:bg-indigo-100 transition-all"><input type="checkbox" id="pka-hari-jumaat" onchange="kawalHariPKATahap23(this)" checked class="w-3 h-3 text-indigo-600 rounded shrink-0"> Jumaat</label>
+                               </div>
+                               <p class="text-[8.5px] font-bold text-indigo-700 leading-tight"><i class="fa-solid fa-ban mr-1 text-rose-500"></i>Dikecualikan pada Hari Perhimpunan (waktu pertama).</p>
+                           </div>
                        </div>
-                       <div class="grid grid-cols-2 gap-2 text-[11px] font-bold text-indigo-900 mb-2.5">
-                           <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-indigo-100 shadow-sm cursor-pointer hover:bg-indigo-50 transition-all"><input type="checkbox" id="pka-t3" onchange="kawalTetapanPKA('3')" class="w-3.5 h-3.5 text-indigo-600 rounded focus:ring-indigo-500 shrink-0"> Tahun 3</label>
-                           <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-indigo-100 shadow-sm cursor-pointer hover:bg-indigo-50 transition-all"><input type="checkbox" id="pka-t4" onchange="kawalTetapanPKA('4')" class="w-3.5 h-3.5 text-indigo-600 rounded focus:ring-indigo-500 shrink-0"> Tahun 4</label>
-                           <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-indigo-100 shadow-sm cursor-pointer hover:bg-indigo-50 transition-all"><input type="checkbox" id="pka-t5" onchange="kawalTetapanPKA('5')" class="w-3.5 h-3.5 text-indigo-600 rounded focus:ring-indigo-500 shrink-0"> Tahun 5</label>
-                           <label class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-indigo-100 shadow-sm cursor-pointer hover:bg-indigo-50 transition-all"><input type="checkbox" id="pka-t6" onchange="kawalTetapanPKA('6')" class="w-3.5 h-3.5 text-indigo-600 rounded focus:ring-indigo-500 shrink-0"> Tahun 6</label>
+                   </div>
+               </div>
+
+               <!-- KOD BAHARU: Kadboard Tetapan Kelas Melintang (Di Bawah Mod Tasmik & Merentang Ke Bawah Kad PKA) -->
+               <div class="bg-blue-50/90 p-3.5 rounded-xl border border-blue-200 shadow-sm flex-1 flex flex-col justify-between transition-all">
+                   <div>
+                       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-blue-200 pb-1.5 mb-2.5">
+                           <h3 class="text-[11px] font-black text-blue-900 uppercase tracking-widest flex items-center gap-1.5">
+                               <i class="fa-solid fa-door-open text-blue-600"></i> Tetapan Kelas (Tahun 1 – Tahun 6)
+                           </h3>
+                           <span id="f1-jumlah-kelas-badge" class="text-[9px] font-black bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full border border-blue-200 uppercase tracking-wider">6 Kelas Aktif</span>
                        </div>
-                       <span class="block text-[9px] text-indigo-800 font-black uppercase tracking-wider mb-1.5 border-t border-indigo-100 pt-1.5">4 Hari Aktif (Kecuali Hari Perhimpunan):</span>
-                       <div class="grid grid-cols-3 gap-1.5 text-[10px] font-bold text-indigo-900 mb-1.5">
-                           <label class="flex items-center gap-1 bg-indigo-50/70 p-1 rounded border border-indigo-200 cursor-pointer hover:bg-indigo-100 transition-all"><input type="checkbox" id="pka-hari-isnin" onchange="kawalHariPKATahap23(this)" checked class="w-3 h-3 text-indigo-600 rounded shrink-0"> Isnin</label>
-                           <label class="flex items-center gap-1 bg-indigo-50/70 p-1 rounded border border-indigo-200 cursor-pointer hover:bg-indigo-100 transition-all"><input type="checkbox" id="pka-hari-selasa" onchange="kawalHariPKATahap23(this)" checked class="w-3 h-3 text-indigo-600 rounded shrink-0"> Selasa</label>
-                           <label class="flex items-center gap-1 bg-gray-100 p-1 rounded border border-gray-200 opacity-50 cursor-not-allowed transition-all"><input type="checkbox" id="pka-hari-rabu" onchange="kawalHariPKATahap23(this)" disabled class="w-3 h-3 text-indigo-600 rounded shrink-0"> Rabu</label>
-                           <label class="flex items-center gap-1 bg-indigo-50/70 p-1 rounded border border-indigo-200 cursor-pointer hover:bg-indigo-100 transition-all"><input type="checkbox" id="pka-hari-khamis" onchange="kawalHariPKATahap23(this)" checked class="w-3 h-3 text-indigo-600 rounded shrink-0"> Khamis</label>
-                           <label class="flex items-center gap-1 bg-indigo-50/70 p-1 rounded border border-indigo-200 cursor-pointer hover:bg-indigo-100 transition-all"><input type="checkbox" id="pka-hari-jumaat" onchange="kawalHariPKATahap23(this)" checked class="w-3 h-3 text-indigo-600 rounded shrink-0"> Jumaat</label>
+
+                       <!-- Baris Input: Pilihan Tahun + Ruang Nama Kelas + Butang Simpan -->
+                       <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2.5">
+                           <select id="f1-pilih-tahun-kelas" class="sm:w-32 px-2.5 py-1.5 border border-blue-200 rounded-lg text-[16px] md:text-xs font-extrabold text-blue-900 bg-white outline-none focus:ring-2 focus:ring-blue-400 shadow-sm cursor-pointer shrink-0">
+                               <option value="1">Tahun 1</option>
+                               <option value="2">Tahun 2</option>
+                               <option value="3">Tahun 3</option>
+                               <option value="4">Tahun 4</option>
+                               <option value="5">Tahun 5</option>
+                               <option value="6">Tahun 6</option>
+                           </select>
+                           <input type="text" id="f1-input-nama-kelas" placeholder="Isi nama kelas (Cth: Sopan / Bestari)" onkeydown="if(event.key==='Enter'){event.preventDefault(); if(typeof tambahKelasFasa1==='function') tambahKelasFasa1();}" class="flex-1 min-w-0 px-3 py-1.5 border border-blue-200 rounded-lg text-[16px] md:text-xs font-bold text-gray-800 bg-white outline-none focus:ring-2 focus:ring-blue-400 shadow-sm">
+                           <button type="button" onclick="if(typeof tambahKelasFasa1==='function') tambahKelasFasa1()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 shrink-0">
+                               <i class="fa-solid fa-floppy-disk"></i> Simpan
+                           </button>
                        </div>
-                       <p class="text-[9px] font-bold text-indigo-700 leading-tight"><i class="fa-solid fa-ban mr-1 text-rose-500"></i>Tidak boleh diadakan pada Hari Perhimpunan kerana waktu pertama telah ada Perhimpunan.</p>
+                   </div>
+
+                   <!-- Bekas Paparan Lencana Kelas (Cth: T1 Sopan, T2 Amanah, ...) -->
+                   <div id="f1-senarai-lencana-kelas" class="bg-white/90 p-2 rounded-lg border border-blue-100 flex flex-wrap items-center gap-1.5 min-h-[38px] max-h-[84px] overflow-y-auto" style="scrollbar-width: thin;">
+                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-50 text-purple-900 border border-purple-200 text-[10.5px] font-black shadow-sm">T1 Sopan</span>
+                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-900 border border-indigo-200 text-[10.5px] font-black shadow-sm">T2 Amanah</span>
+                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-900 border border-blue-200 text-[10.5px] font-black shadow-sm">T3 Cemerlang</span>
+                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-50 text-orange-900 border border-orange-200 text-[10.5px] font-black shadow-sm">T4 Jujur</span>
+                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 text-teal-900 border border-teal-200 text-[10.5px] font-black shadow-sm">T5 Sopan</span>
+                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-50 text-cyan-900 border border-cyan-200 text-[10.5px] font-black shadow-sm">T6 Bersih</span>
                    </div>
                </div>
            </div>
@@ -1632,12 +1677,244 @@
         { nama: 'Bahasa Iban (BIB)', waktu: 3 }
     ];
 
-    // Tahun 5
+   // Tahun 5
     let arraySubjekTahap5 = JSON.parse(JSON.stringify(arraySubjekTahap4));
     // Tahun 6
     let arraySubjekTahap6 = JSON.parse(JSON.stringify(arraySubjekTahap4));
     
     let hadBebanJawatan = { gb: 7, pk: 12, gab: 30 };
+
+    // KOD BAHARU: Senarai Kelas Dinamik Sekolah (Tahun 1 - Tahun 6)
+    let senaraiKelasFasa1 = [
+        { tahun: 1, nama: 'Sopan', penuh: '1 Sopan' },
+        { tahun: 2, nama: 'Amanah', penuh: '2 Amanah' },
+        { tahun: 3, nama: 'Cemerlang', penuh: '3 Cemerlang' },
+        { tahun: 4, nama: 'Jujur', penuh: '4 Jujur' },
+        { tahun: 5, nama: 'Sopan', penuh: '5 Sopan' },
+        { tahun: 6, nama: 'Bersih', penuh: '6 Bersih' }
+    ];
+
+    window.binaObjekKelasFasa1 = function(tahunInput, namaAtauPenuh) {
+        let tNum = parseInt(String(tahunInput || '').replace(/\D/g, ''), 10);
+        let teksAsal = String(namaAtauPenuh || '').replace(/[|/]/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!teksAsal) return null;
+
+        // Kesan tahun daripada teks jika parameter tahun tidak lengkap
+        const padananAwal = teksAsal.match(/^(?:TAHUN\s*|T)?([1-6])(?:\s+|-)+(.*)$/i);
+        if (padananAwal) {
+            if (!(tNum >= 1 && tNum <= 6)) tNum = parseInt(padananAwal[1], 10);
+            if (parseInt(padananAwal[1], 10) === tNum) {
+                teksAsal = padananAwal[2].trim();
+            }
+        }
+        if (!(tNum >= 1 && tNum <= 6)) tNum = 1;
+
+        // Buang awalan berulang seperti "Tahun 1 ", "T1 " atau "1 " jika pengguna menaip sekali dengan tahun
+        const regexAwalan = new RegExp(`^(?:TAHUN\\s*${tNum}|T${tNum}|${tNum})(?:\\s+|-)+`, 'i');
+        let namaBersih = teksAsal.replace(regexAwalan, '').trim();
+        if (!namaBersih) return null;
+
+        // Kemaskan huruf awal setiap perkataan (Cth: "sopan" -> "Sopan", "al-farabi" -> "Al-Farabi")
+        namaBersih = namaBersih.split(' ').map(perkataan =>
+            perkataan.split('-').map(bhg => bhg ? (bhg.charAt(0).toUpperCase() + bhg.slice(1).toLowerCase()) : '').join('-')
+        ).join(' ');
+
+        return {
+            tahun: tNum,
+            nama: namaBersih,
+            penuh: `${tNum} ${namaBersih}`
+        };
+    };
+
+    window.nyahDuplikasiDanSusunKelasFasa1 = function(senaraiMentah) {
+        const petaUnik = new Map();
+        (senaraiMentah || []).forEach(item => {
+            const obj = (item && item.tahun && item.nama)
+                ? window.binaObjekKelasFasa1(item.tahun, item.nama)
+                : window.binaObjekKelasFasa1(item?.tahun || '', item?.penuh || item);
+            if (!obj) return;
+            const kunci = obj.penuh.toUpperCase();
+            if (!petaUnik.has(kunci)) petaUnik.set(kunci, obj);
+        });
+        return Array.from(petaUnik.values()).sort((a, b) => a.tahun - b.tahun);
+    };
+
+    window.dapatkanNoTahunKelasGlobal = function(namaKelas) {
+        const bersih = String(namaKelas || '').trim();
+        if (!bersih) return 1;
+        if (Array.isArray(senaraiKelasFasa1)) {
+            const jumpa = senaraiKelasFasa1.find(k => k.penuh.toUpperCase() === bersih.toUpperCase());
+            if (jumpa) return jumpa.tahun;
+        }
+        const mAwal = bersih.match(/^(?:TAHUN\s*|T)?([1-6])\b/i);
+        if (mAwal) return parseInt(mAwal[1], 10);
+        const mMana = bersih.match(/([1-6])/);
+        return mMana ? parseInt(mMana[1], 10) : 1;
+    };
+
+    window.susunSenaraiKelasMengikutFasa1 = function(senaraiNamaKelas) {
+        const petaUrutan = new Map();
+        (senaraiKelasFasa1 || []).forEach((k, idx) => petaUrutan.set(k.penuh.toUpperCase(), idx));
+        return [...(senaraiNamaKelas || [])].sort((a, b) => {
+            const tA = window.dapatkanNoTahunKelasGlobal(a);
+            const tB = window.dapatkanNoTahunKelasGlobal(b);
+            if (tA !== tB) return tA - tB;
+            const idxA = petaUrutan.has(String(a).trim().toUpperCase()) ? petaUrutan.get(String(a).trim().toUpperCase()) : 999;
+            const idxB = petaUrutan.has(String(b).trim().toUpperCase()) ? petaUrutan.get(String(b).trim().toUpperCase()) : 999;
+            if (idxA !== idxB) return idxA - idxB;
+            return String(a).localeCompare(String(b));
+        });
+    };
+
+    window.renderKadboardKelasFasa1 = function() {
+        const bekas = document.getElementById('f1-senarai-lencana-kelas');
+        const badgeJumlah = document.getElementById('f1-jumlah-kelas-badge');
+        if (!bekas) return;
+
+        senaraiKelasFasa1 = window.nyahDuplikasiDanSusunKelasFasa1(senaraiKelasFasa1);
+        if (badgeJumlah) {
+            badgeJumlah.textContent = `${senaraiKelasFasa1.length} Kelas Aktif`;
+        }
+
+        if (senaraiKelasFasa1.length === 0) {
+            bekas.innerHTML = `<span class="text-[10px] font-bold text-rose-500 italic px-2 py-1">Tiada kelas didaftarkan. Sila pilih tahun dan isi nama kelas di atas.</span>`;
+            return;
+        }
+
+        const gayaTahun = {
+            1: 'bg-purple-50 text-purple-900 border-purple-200',
+            2: 'bg-indigo-50 text-indigo-900 border-indigo-200',
+            3: 'bg-blue-50 text-blue-900 border-blue-200',
+            4: 'bg-orange-50 text-orange-900 border-orange-200',
+            5: 'bg-teal-50 text-teal-900 border-teal-200',
+            6: 'bg-cyan-50 text-cyan-900 border-cyan-200'
+        };
+
+        bekas.innerHTML = senaraiKelasFasa1.map((k, idx) => {
+            const kelasWarna = gayaTahun[k.tahun] || gayaTahun[1];
+            return `
+                <span class="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-lg border text-[10.5px] font-black shadow-sm transition-all ${kelasWarna}">
+                    <span>T${k.tahun} ${k.nama}</span>
+                    <button type="button" onclick="confirmPadamKelasFasa1(${idx})" title="Padam kelas T${k.tahun} ${k.nama}" class="w-4 h-4 rounded-full inline-flex items-center justify-center text-[9px] text-gray-500 hover:bg-rose-500 hover:text-white transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </span>
+            `;
+        }).join('');
+    };
+
+    window.tambahKelasFasa1 = function() {
+        const selTahun = document.getElementById('f1-pilih-tahun-kelas');
+        const inputNama = document.getElementById('f1-input-nama-kelas');
+        if (!selTahun || !inputNama) return;
+
+        const tahunDipilih = parseInt(selTahun.value, 10) || 1;
+        const teksInput = inputNama.value.trim();
+        if (!teksInput) {
+            showToast('Sila isi nama kelas terlebih dahulu (Contoh: Sopan / Bestari)!', 'error');
+            inputNama.focus();
+            return;
+        }
+
+        const objBaru = window.binaObjekKelasFasa1(tahunDipilih, teksInput);
+        if (!objBaru) {
+            showToast('Nama kelas tidak sah. Sila masukkan nama kelas seperti Sopan atau Bestari.', 'error');
+            inputNama.focus();
+            return;
+        }
+
+        const sudahWujud = senaraiKelasFasa1.some(k => k.penuh.toUpperCase() === objBaru.penuh.toUpperCase());
+        if (sudahWujud) {
+            showToast(`AMARAN: Kelas T${objBaru.tahun} ${objBaru.nama} sudah wujud dalam senarai!`, 'error');
+            inputNama.select();
+            return;
+        }
+
+        senaraiKelasFasa1.push(objBaru);
+        senaraiKelasFasa1 = window.nyahDuplikasiDanSusunKelasFasa1(senaraiKelasFasa1);
+        inputNama.value = '';
+        window.renderKadboardKelasFasa1();
+
+        if (typeof window.segarkanSemuaDropdownKelasFasa2 === 'function') window.segarkanSemuaDropdownKelasFasa2();
+        if (typeof renderRadarSubjekFasa2 === 'function') renderRadarSubjekFasa2();
+        if (typeof simpanLocalState === 'function') simpanLocalState();
+
+        showToast(`Kelas T${objBaru.tahun} ${objBaru.nama} ditambah! Tekan 'Simpan Pangkalan Data' di bawah untuk simpan kekal.`, 'success');
+    };
+
+    window.confirmPadamKelasFasa1 = function(idx) {
+        const sasaran = senaraiKelasFasa1[idx];
+        if (!sasaran) return;
+
+        if (senaraiKelasFasa1.length <= 1) {
+            showToast('AMARAN: Sekurang-kurangnya 1 kelas wajib dikekalkan dalam sistem!', 'error');
+            return;
+        }
+
+        // Semak jika kelas ini sedang dipegang oleh mana-mana guru di Fasa 2
+        const guruTerlibat = (f2_senaraiGuruPenuh || []).filter(g =>
+            g && Array.isArray(g.senaraiTugas) &&
+            g.senaraiTugas.some(t => String(t.tahun || '').trim().toUpperCase() === sasaran.penuh.toUpperCase())
+        );
+
+        if (guruTerlibat.length === 0) {
+            window.laksanaPadamKelasFasa1(idx, false);
+            return;
+        }
+
+        const senaraiNamaG = guruTerlibat.map(g => g.kod || g.nama).join(', ');
+        const modalDiv = document.createElement('div');
+        modalDiv.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[110] fade-in';
+        modalDiv.innerHTML = `
+          <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 border-t-8 border-rose-500">
+            <div class="flex items-start gap-3.5 mb-4">
+              <div class="bg-rose-100 p-3 rounded-full text-rose-600 shrink-0"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
+              <div>
+                <h3 class="font-black text-gray-800 text-base uppercase tracking-tight">Padam Kelas T${sasaran.tahun} ${sasaran.nama}?</h3>
+                <p class="text-xs font-semibold text-gray-600 mt-1.5 leading-relaxed">
+                  Kelas ini mempunyai agihan tugas aktif di Fasa 2 bagi guru: <strong class="text-rose-600">${senaraiNamaG}</strong>.
+                </p>
+                <p class="text-[10px] font-bold text-gray-500 mt-2 leading-snug">Jika diteruskan, tugasan kelas ini pada profil guru terlibat akan turut dibersihkan.</p>
+              </div>
+            </div>
+            <div class="flex gap-2.5 justify-end mt-5">
+              <button type="button" onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl font-bold text-xs uppercase tracking-wider">Batal</button>
+              <button type="button" onclick="this.closest('.fixed').remove(); laksanaPadamKelasFasa1(${idx}, true);" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> Ya, Padam</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modalDiv);
+    };
+
+    window.laksanaPadamKelasFasa1 = function(idx, bersihkanTugasF2 = false) {
+        const sasaran = senaraiKelasFasa1[idx];
+        if (!sasaran) return;
+        const kunciPadam = sasaran.penuh.toUpperCase();
+
+        senaraiKelasFasa1.splice(idx, 1);
+        window.renderKadboardKelasFasa1();
+
+        if (bersihkanTugasF2 && Array.isArray(f2_senaraiGuruPenuh)) {
+            f2_senaraiGuruPenuh.forEach(g => {
+                if (!g || !Array.isArray(g.senaraiTugas)) return;
+                g.senaraiTugas = g.senaraiTugas.filter(t => String(t.tahun || '').trim().toUpperCase() !== kunciPadam);
+                g.totalWaktu = g.senaraiTugas.reduce((jum, t) => Math.round((jum + (parseFloat(t.waktu) || 0)) * 10) / 10, 0);
+                g.isLebih = (g.maxWaktu !== '-' && g.totalWaktu > parseFloat(g.maxWaktu));
+            });
+            if (f2_jadualSediaAda && f2_jadualSediaAda[sasaran.penuh]) {
+                delete f2_jadualSediaAda[sasaran.penuh];
+                f2_senaraiKelasUnik = (f2_senaraiKelasUnik || []).filter(k => String(k).trim().toUpperCase() !== kunciPadam);
+            }
+            renderGridGuru();
+            simpanFasa2Database();
+        }
+
+        if (typeof window.segarkanSemuaDropdownKelasFasa2 === 'function') window.segarkanSemuaDropdownKelasFasa2();
+        if (typeof renderRadarSubjekFasa2 === 'function') renderRadarSubjekFasa2();
+        if (typeof simpanLocalState === 'function') simpanLocalState();
+
+        showToast(`Kelas T${sasaran.tahun} ${sasaran.nama} telah dikeluarkan daripada Kadboard.`, 'success');
+    };
 
     const defaultConfig = {
       school_name: 'SISTEM GURU GANTI SEKOLAH KEBANGSAAN ULU PELAGUS',
@@ -1765,7 +2042,8 @@
             
             const setCheck = (id, val) => { if(document.getElementById(id)) document.getElementById(id).checked = (val === true || val === 'true' || val === 'TRUE'); };
 
-            if (data.fasa1_asas && data.fasa1_asas.length > 1) {
+           if (data.fasa1_asas && data.fasa1_asas.length > 1) {
+                let kelasDariCloud = [];
                 data.fasa1_asas.forEach(row => {
                     let kat = row[0], item = row[1], val = row[2];
                     if (kat === "Perhimpunan") {
@@ -1777,7 +2055,7 @@
                     } else if (kat === "Rehat_Jumaat") {
                         if (item === "Mula") setVal('waktu-rehat-jum-mula', val);
                         if (item === "Tamat") setVal('waktu-rehat-jum-tamat', val);
-                   } else if (kat === "Hari_Rehat") {
+                    } else if (kat === "Hari_Rehat") {
                         setCheck('rehat-' + item.toLowerCase(), val);
                     } else if (kat === "Tasmik_Hari") {
                         setCheck('tasmik-' + item.toLowerCase(), val);
@@ -1793,8 +2071,16 @@
                         if (item === "GAB") { setVal('max-gab', val); hadBebanJawatan.gab = parseInt(val) || 30; }
                     } else if (kat === "Mula_Sekolah") {
                         if (item === "Waktu") setVal('waktu-mula-sekolah', val);
+                    } else if (kat === "Kelas_Sekolah") {
+                        const objKls = window.binaObjekKelasFasa1(item, val);
+                        if (objKls) kelasDariCloud.push(objKls);
                     }
                 });
+                if (kelasDariCloud.length > 0) {
+                    senaraiKelasFasa1 = window.nyahDuplikasiDanSusunKelasFasa1(kelasDariCloud);
+                }
+                if(typeof renderKadboardKelasFasa1 === 'function') renderKadboardKelasFasa1();
+                if(typeof window.segarkanSemuaDropdownKelasFasa2 === 'function') window.segarkanSemuaDropdownKelasFasa2();
                 if(typeof kawalInputRehat === 'function') kawalInputRehat(true);
                 if(typeof hadkanTasmik === 'function') hadkanTasmik();
                 if(typeof kawalPilihanPJ === 'function') kawalPilihanPJ();
@@ -1888,12 +2174,12 @@
     };
 
     window.dapatkanSenaraiSubjekIkutKelas = function(namaKelas) {
-        const k = String(namaKelas || '');
-        if (k.includes('2 ') || k === '2') return arraySubjekTahap2;
-        if (k.includes('3 ') || k === '3') return arraySubjekTahap3;
-        if (k.includes('4 ') || k === '4') return arraySubjekTahap4;
-        if (k.includes('5 ') || k === '5') return arraySubjekTahap5;
-        if (k.includes('6 ') || k === '6') return arraySubjekTahap6;
+        const noThn = window.dapatkanNoTahunKelasGlobal(namaKelas);
+        if (noThn === 2) return arraySubjekTahap2;
+        if (noThn === 3) return arraySubjekTahap3;
+        if (noThn === 4) return arraySubjekTahap4;
+        if (noThn === 5) return arraySubjekTahap5;
+        if (noThn === 6) return arraySubjekTahap6;
         return arraySubjekTahap1;
     };
 
@@ -2045,15 +2331,15 @@
                         };
                     }
                     let objSlot = { subjek: subj, kodGuru: kodG, warna: warna };
-                    if (slotIdx === 14 || subj === 'PKA') {
-                        const isT1Kelas = kls.includes('1 ') || kls.includes('2 ');
+                  if (slotIdx === 14 || subj === 'PKA') {
+                        const isT1Kelas = window.dapatkanNoTahunKelasGlobal(kls) <= 2;
                         const cbRehatHari = document.getElementById('rehat-' + hari.toLowerCase());
                         const adaRehatHariIni = cbRehatHari ? cbRehatHari.checked : (hari !== 'JUMAAT');
                         objSlot.posisi = isT1Kelas ? (adaRehatHariIni ? 'SEBELUM_REHAT' : 'AKHIR_PDP') : 'AWAL_PAGI';
                     }
                     f2_jadualSediaAda[kls][hari][slotIdx] = objSlot;
                 });
-                f2_senaraiKelasUnik = Array.from(kelasSet).sort();
+                f2_senaraiKelasUnik = window.susunSenaraiKelasMengikutFasa1(Array.from(kelasSet));
                 if (f2_senaraiKelasUnik.length > 0) {
                     document.getElementById('f2-hasil-jadual').classList.remove('hidden');
                     jalankanHealthCheck(true);
@@ -2250,8 +2536,8 @@
       const rekodMemori = [];
 
       const senaraiKelas = (Array.isArray(f2_senaraiKelasUnik) && f2_senaraiKelasUnik.length > 0)
-        ? [...f2_senaraiKelasUnik].sort()
-        : Object.keys(f2_jadualSediaAda || {}).sort();
+        ? window.susunSenaraiKelasMengikutFasa1(f2_senaraiKelasUnik)
+        : window.susunSenaraiKelasMengikutFasa1(Object.keys(f2_jadualSediaAda || {}));
 
       if (senaraiKelas.length === 0) return { rowsSheet, rekodMemori };
 
@@ -7382,9 +7668,10 @@ let selObj = null;
                 isnin: document.getElementById('rehat-isnin').checked, selasa: document.getElementById('rehat-selasa').checked,
                 rabu: document.getElementById('rehat-rabu').checked, khamis: document.getElementById('rehat-khamis').checked, jumaat: document.getElementById('rehat-jumaat').checked
             },
-            f1_hadBeban: {
+           f1_hadBeban: {
                 gb: parseInt(document.getElementById('max-gb').value) || 7, pk: parseInt(document.getElementById('max-pk').value) || 12, gab: parseInt(document.getElementById('max-gab').value) || 30
             },
+            f1_kelas: senaraiKelasFasa1,
             f1_subjekT1: arraySubjekTahap1, f1_subjekT2: arraySubjekTahap2, f1_subjekT3: arraySubjekTahap3,
             f1_subjekT4: arraySubjekTahap4, f1_subjekT5: arraySubjekTahap5, f1_subjekT6: arraySubjekTahap6,
             f2_guru: f2_senaraiGuruPenuh,
@@ -7456,9 +7743,13 @@ let selObj = null;
                     }
                 }
 
-                if(state.f1_hadBeban && document.getElementById('max-gb')) {
+               if(state.f1_hadBeban && document.getElementById('max-gb')) {
                     hadBebanJawatan = state.f1_hadBeban;
                     document.getElementById('max-gb').value = hadBebanJawatan.gb; document.getElementById('max-pk').value = hadBebanJawatan.pk; document.getElementById('max-gab').value = hadBebanJawatan.gab;
+                }
+
+                if (Array.isArray(state.f1_kelas) && state.f1_kelas.length > 0) {
+                    senaraiKelasFasa1 = window.nyahDuplikasiDanSusunKelasFasa1(state.f1_kelas);
                 }
 
                 if(state.f1_subjekT1 && state.f1_subjekT2) {
@@ -7477,9 +7768,9 @@ let selObj = null;
                     renderGridGuru();
                 }
 
-               if(state.f2_jadual && state.f2_kelas && state.f2_kelas.length > 0) {
+                if(state.f2_jadual && state.f2_kelas && state.f2_kelas.length > 0) {
                     f2_jadualSediaAda = state.f2_jadual;
-                    f2_senaraiKelasUnik = state.f2_kelas;
+                    f2_senaraiKelasUnik = window.susunSenaraiKelasMengikutFasa1(state.f2_kelas);
                     document.getElementById('f2-hasil-jadual').classList.remove('hidden');
                     setTimeout(() => {
                         jalankanHealthCheck(true);
@@ -7497,6 +7788,7 @@ let selObj = null;
             console.warn("Memori tempatan versi lama dibersihkan secara automatik:", err);
             localStorage.removeItem('sistemJadualData');
         }
+        if(typeof renderKadboardKelasFasa1 === 'function') renderKadboardKelasFasa1();
         renderSubjekFasa1(); 
         if(typeof kawalInputRehat === 'function') kawalInputRehat(true);
         if(typeof selaraskanMatriksDanSubjekPKA === 'function') selaraskanMatriksDanSubjekPKA(true);
@@ -8172,6 +8464,16 @@ let selObj = null;
            ["Mula_Sekolah", "Waktu", val('waktu-mula-sekolah')]
        ];
 
+       if (!Array.isArray(senaraiKelasFasa1) || senaraiKelasFasa1.length === 0) {
+           hideLoading();
+           showToast('RALAT KELAS: Sila tambah sekurang-kurangnya 1 kelas pada Kadboard Tetapan Kelas!', 'error');
+           return;
+       }
+       senaraiKelasFasa1.forEach(k => {
+           fasa1_asas.push(["Kelas_Sekolah", String(k.tahun), k.penuh]);
+       });
+       if (typeof window.segarkanSemuaDropdownKelasFasa2 === 'function') window.segarkanSemuaDropdownKelasFasa2();
+
        let fasa1_matriks = [
            ["HARI", "WAKTU_MULA_SEKOLAH", "TAHUN_1", "TAHUN_2", "TAHUN_3", "TAHUN_4", "TAHUN_5", "TAHUN_6"],
            ["ISNIN", val('waktu-mula-sekolah'), val('waktu-isn-t1'), val('waktu-isn-t2'), val('waktu-isn-t3'), val('waktu-isn-t4'), val('waktu-isn-t5'), val('waktu-isn-t6')],
@@ -8229,7 +8531,50 @@ let selObj = null;
       kiraTotalWaktu();
     }
 
-   // Fungsi 2: Tambah Barisan Kelas
+  // KOD BAHARU: Pembina Dropdown Kelas Berlabel Mengikut Kumpulan Tahun 1 - Tahun 6
+    window.binaPilihanDropdownKelasFasa2HTML = function(nilaiSemasa = '') {
+      let senarai = (Array.isArray(senaraiKelasFasa1) && senaraiKelasFasa1.length > 0)
+          ? window.nyahDuplikasiDanSusunKelasFasa1(senaraiKelasFasa1)
+          : [];
+
+      const nilaiTrim = String(nilaiSemasa || '').trim();
+      if (nilaiTrim && !senarai.some(k => k.penuh.toUpperCase() === nilaiTrim.toUpperCase())) {
+          const objTambahan = window.binaObjekKelasFasa1('', nilaiTrim);
+          if (objTambahan) senarai = window.nyahDuplikasiDanSusunKelasFasa1([...senarai, objTambahan]);
+      }
+
+      let html = `<option value="">-- Pilih Tahun &amp; Kelas --</option>`;
+      for (let t = 1; t <= 6; t++) {
+          const kumpulanTahun = senarai.filter(k => k.tahun === t);
+          if (kumpulanTahun.length === 0) continue;
+
+          const labelKumpulan = kumpulanTahun.length > 1
+              ? `━━ TAHUN ${t} (${kumpulanTahun.length} Kelas) ━━`
+              : `━━ TAHUN ${t} ━━`;
+
+          html += `<optgroup label="${labelKumpulan}">`;
+          kumpulanTahun.forEach((k, idxK) => {
+              const isSel = (nilaiTrim && nilaiTrim.toUpperCase() === k.penuh.toUpperCase()) ? 'selected' : '';
+              const infoBil = kumpulanTahun.length > 1 ? ` [Kelas ${idxK + 1}/${kumpulanTahun.length}]` : '';
+              html += `<option value="${k.penuh}" data-tahun="${k.tahun}" ${isSel}>Tahun ${k.tahun} ${k.nama}${infoBil}</option>`;
+          });
+          html += `</optgroup>`;
+      }
+      return html;
+    };
+
+    window.segarkanSemuaDropdownKelasFasa2 = function() {
+      for (let i = 1; i <= f2_currentRows; i++) {
+          const selTahun = document.getElementById(`f2-tahun-${i}`);
+          if (!selTahun) continue;
+          const nilaiAsal = selTahun.value;
+          selTahun.innerHTML = window.binaPilihanDropdownKelasFasa2HTML(nilaiAsal);
+          if (nilaiAsal) selTahun.value = nilaiAsal;
+      }
+      if (typeof segarkanSemuaDropdownSubjekFasa2 === 'function') segarkanSemuaDropdownSubjekFasa2();
+    };
+
+    // Fungsi 2: Tambah Barisan Kelas
     function tambahBarisKelas() {
       f2_currentRows++;
       const rowId = f2_currentRows;
@@ -8241,13 +8586,7 @@ let selObj = null;
       
       row.innerHTML = `
           <select id="f2-tahun-${rowId}" onchange="kemaskiniSubjekDropdown(${rowId})" class="w-full md:w-1/3 px-3 py-2 border border-gray-200 rounded text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-300">
-              <option value="">-- Pilih Tahun --</option>
-              <option value="1 Sopan" data-tahun="1">Tahun 1 Sopan</option>
-              <option value="2 Amanah" data-tahun="2">Tahun 2 Amanah</option>
-              <option value="3 Cemerlang" data-tahun="3">Tahun 3 Cemerlang</option>
-              <option value="4 Jujur" data-tahun="4">Tahun 4 Jujur</option>
-              <option value="5 Sopan" data-tahun="5">Tahun 5 Sopan</option>
-              <option value="6 Bersih" data-tahun="6">Tahun 6 Bersih</option>
+              ${window.binaPilihanDropdownKelasFasa2HTML('')}
           </select>
           <select id="f2-subjek-${rowId}" onchange="kemaskiniWaktu(${rowId})" class="w-full md:w-1/3 px-3 py-2 border border-gray-200 rounded text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-300 bg-gray-50" disabled>
               <option value="">-- Pilih Subjek --</option>
@@ -8502,19 +8841,41 @@ let selObj = null;
        }
     }
 
-    // KOD BAHARU: Pelukis Papan Radar Status Subjek 6 Tahun (Merah = Kosong, Oren = Separa PKA, Hijau = Lengkap)
+    // KOD BAHARU: Pelukis Papan Radar Status Subjek Mengikut Semua Kelas Berdaftar Di Fasa 1
     function renderRadarSubjekFasa2() {
        const gridRadar = document.getElementById('f2-radar-subjek-grid');
        if (!gridRadar) return;
 
-       const senaraiKelasConfig = [
-           { kelas: '1 Sopan', tajuk: 'Tahun 1 Sopan', arr: arraySubjekTahap1, warnaHeader: 'from-purple-600 to-indigo-600' },
-           { kelas: '2 Amanah', tajuk: 'Tahun 2 Amanah', arr: arraySubjekTahap2, warnaHeader: 'from-indigo-600 to-blue-600' },
-           { kelas: '3 Cemerlang', tajuk: 'Tahun 3 Cemerlang', arr: arraySubjekTahap3, warnaHeader: 'from-blue-600 to-sky-600' },
-           { kelas: '4 Jujur', tajuk: 'Tahun 4 Jujur', arr: arraySubjekTahap4, warnaHeader: 'from-orange-500 to-amber-600' },
-           { kelas: '5 Sopan', tajuk: 'Tahun 5 Sopan', arr: arraySubjekTahap5, warnaHeader: 'from-teal-600 to-emerald-600' },
-           { kelas: '6 Bersih', tajuk: 'Tahun 6 Bersih', arr: arraySubjekTahap6, warnaHeader: 'from-cyan-600 to-blue-600' }
-       ];
+       const petaSubjekTahun = {
+           1: arraySubjekTahap1, 2: arraySubjekTahap2, 3: arraySubjekTahap3,
+           4: arraySubjekTahap4, 5: arraySubjekTahap5, 6: arraySubjekTahap6
+       };
+       const petaWarnaHeaderTahun = {
+           1: 'from-purple-600 to-indigo-600',
+           2: 'from-indigo-600 to-blue-600',
+           3: 'from-blue-600 to-sky-600',
+           4: 'from-orange-500 to-amber-600',
+           5: 'from-teal-600 to-emerald-600',
+           6: 'from-cyan-600 to-blue-600'
+       };
+
+       const senaraiAktifKelas = (Array.isArray(senaraiKelasFasa1) && senaraiKelasFasa1.length > 0)
+           ? window.nyahDuplikasiDanSusunKelasFasa1(senaraiKelasFasa1)
+           : [];
+       const kiraanTahun = {};
+       senaraiAktifKelas.forEach(k => { kiraanTahun[k.tahun] = (kiraanTahun[k.tahun] || 0) + 1; });
+       const giliranTahun = {};
+
+       const senaraiKelasConfig = senaraiAktifKelas.map(k => {
+           giliranTahun[k.tahun] = (giliranTahun[k.tahun] || 0) + 1;
+           const labelBil = kiraanTahun[k.tahun] > 1 ? ` (${giliranTahun[k.tahun]}/${kiraanTahun[k.tahun]})` : '';
+           return {
+               kelas: k.penuh,
+               tajuk: `Tahun ${k.tahun} ${k.nama}${labelBil}`,
+               arr: petaSubjekTahun[k.tahun] || arraySubjekTahap1,
+               warnaHeader: petaWarnaHeaderTahun[k.tahun] || 'from-indigo-600 to-blue-600'
+           };
+       });
 
        gridRadar.innerHTML = senaraiKelasConfig.map(item => {
            let jumSubjek = item.arr.length;
@@ -8615,7 +8976,10 @@ let selObj = null;
       const selSubjek = document.getElementById(`f2-subjek-${rowId}`);
       const inputWaktu = document.getElementById(`f2-waktu-${rowId}`);
       
-      const tahun = selTahun.options[selTahun.selectedIndex].getAttribute('data-tahun');
+      const optDipilih = selTahun && selTahun.selectedIndex >= 0 ? selTahun.options[selTahun.selectedIndex] : null;
+      const tahun = (optDipilih && optDipilih.getAttribute('data-tahun'))
+          ? optDipilih.getAttribute('data-tahun')
+          : (selTahun && selTahun.value ? String(window.dapatkanNoTahunKelasGlobal(selTahun.value)) : '');
       
       if (!tahun) {
          selSubjek.disabled = true;
@@ -10559,8 +10923,13 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
        }
 
        let kelasSet = new Set();
-       f2_senaraiGuruPenuh.forEach(guru => guru.senaraiTugas.forEach(tugas => kelasSet.add(tugas.tahun)));
-       f2_senaraiKelasUnik = Array.from(kelasSet).sort();
+       if (Array.isArray(senaraiKelasFasa1) && senaraiKelasFasa1.length > 0) {
+           senaraiKelasFasa1.forEach(k => kelasSet.add(k.penuh));
+       }
+       f2_senaraiGuruPenuh.forEach(guru => guru.senaraiTugas.forEach(tugas => {
+           if (tugas.tahun) kelasSet.add(tugas.tahun);
+       }));
+       f2_senaraiKelasUnik = window.susunSenaraiKelasMengikutFasa1(Array.from(kelasSet));
 
 
        if(f2_senaraiKelasUnik.length === 0) { hideLoading(); showToast('Tiada tugasan kelas dijumpai dalam profil guru.', 'error'); return; }
@@ -10576,16 +10945,9 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
            'JUMAAT': document.getElementById('rehat-jumaat') ? document.getElementById('rehat-jumaat').checked : false
        };
 
-      // KOD BAHARU: Sistem "Pemanggil Had Masa Dinamik" untuk setiap kelas/hari (6 Tahun Asing)
+       // KOD BAHARU: Sistem "Pemanggil Had Masa Dinamik" untuk setiap kelas/hari (Mengikut Tahun 1 - Tahun 6)
        const getLimit = (kelas, hariStr) => {
-           let t = 't1';
-           if (kelas.includes('1 ')) t = 't1';
-           else if (kelas.includes('2 ')) t = 't2';
-           else if (kelas.includes('3 ')) t = 't3';
-           else if (kelas.includes('4 ')) t = 't4';
-           else if (kelas.includes('5 ')) t = 't5';
-           else if (kelas.includes('6 ')) t = 't6';
-           
+           let t = 't' + window.dapatkanNoTahunKelasGlobal(kelas);
            let h = hariStr === 'ISNIN' ? 'isn' : (hariStr === 'SELASA' ? 'sel' : (hariStr === 'RABU' ? 'rab' : (hariStr === 'KHAMIS' ? 'kha' : 'jum')));
            return kiraMaxSlotDinamik(`waktu-${h}-${t}`, hariAdaRehat[hariStr], hariStr === 'JUMAAT');
        };
@@ -14848,7 +15210,16 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
 
 
         const selKelas = document.getElementById('pilih-paparan-kelas');
-        selKelas.innerHTML = f2_senaraiKelasUnik.map(k => `<option value="${k}">${k.toUpperCase()}</option>`).join('');
+        let htmlPilihKelas = '';
+        for (let t = 1; t <= 6; t++) {
+            const klsTahunIni = f2_senaraiKelasUnik.filter(k => window.dapatkanNoTahunKelasGlobal(k) === t);
+            if (klsTahunIni.length === 0) continue;
+            const labelGrup = klsTahunIni.length > 1 ? `━━ TAHUN ${t} (${klsTahunIni.length} Kelas) ━━` : `━━ TAHUN ${t} ━━`;
+            htmlPilihKelas += `<optgroup label="${labelGrup}">` +
+                klsTahunIni.map(k => `<option value="${k}">TAHUN ${k.toUpperCase()}</option>`).join('') +
+                `</optgroup>`;
+        }
+        selKelas.innerHTML = htmlPilihKelas || f2_senaraiKelasUnik.map(k => `<option value="${k}">TAHUN ${k.toUpperCase()}</option>`).join('');
         
         const selGuru = document.getElementById('pilih-paparan-guru');
         let semuaGuruList = [...new Set(f2_senaraiGuruPenuh.map(g => g.nama))].sort();
@@ -15444,8 +15815,12 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                     }
                     jumlahWaktuGuru = Math.round((jumlahWaktuGuru + w) * 100) / 100;
 
-                    const namaSubPaparan = kemaskanNamaSubjekAnalisis(namaSubAsal);
-                    const kunciItem = `${noTahun || 0}|${namaSubPaparan.toUpperCase()}`;
+                   const namaSubPaparan = kemaskanNamaSubjekAnalisis(namaSubAsal);
+                    const namaKelasTrim = String(t.tahun || '').trim();
+                    const labelKelasPenuh = namaKelasTrim
+                        ? (/^tahun\s/i.test(namaKelasTrim) ? namaKelasTrim : `Tahun ${namaKelasTrim}`)
+                        : (noTahun ? `Tahun ${noTahun}` : '-');
+                    const kunciItem = `${noTahun || 0}|${namaKelasTrim.toUpperCase()}|${namaSubPaparan.toUpperCase()}`;
                     if (petaSubjekTahun.has(kunciItem)) {
                         const sedia = petaSubjekTahun.get(kunciItem);
                         sedia.waktu = Math.round((sedia.waktu + w) * 100) / 100;
@@ -15453,7 +15828,7 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                         petaSubjekTahun.set(kunciItem, {
                             subjek: namaSubPaparan,
                             noTahun: noTahun || 0,
-                            labelTahun: noTahun ? `Tahun ${noTahun}` : String(t.tahun || '-'),
+                            labelTahun: labelKelasPenuh,
                             waktu: w
                         });
                     }
@@ -15469,9 +15844,10 @@ const spanMax = document.getElementById('f2-max-waktu').innerText;
                 }
             }
 
-            // Susun senarai subjek mengikut Tahun 1 -> Tahun 6, kemudian abjad subjek
+            // Susun senarai subjek mengikut Tahun 1 -> Tahun 6, nama kelas, kemudian abjad subjek
             const senaraiSubjekTahun = Array.from(petaSubjekTahun.values()).sort((a, b) => {
                 if (a.noTahun !== b.noTahun) return a.noTahun - b.noTahun;
+                if (a.labelTahun !== b.labelTahun) return a.labelTahun.localeCompare(b.labelTahun);
                 return a.subjek.localeCompare(b.subjek);
             });
 
